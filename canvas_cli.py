@@ -93,6 +93,8 @@ def init_local(course):
             os.mkdir(str_)
             os.mkdir(str_ + "/" + "assignment_files")
             os.mkdir(str_ + "/" + "quiz_files")
+            os.mkdir(str_ + "/" + "whiteboards")
+            os.mkdir(str_ + "/" + "in_class_code")
             os.mkdir(str_ + "/" + "other_files")
 
 
