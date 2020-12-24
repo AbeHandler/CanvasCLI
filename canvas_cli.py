@@ -278,7 +278,7 @@ if __name__ == "__main__":
     canvas = get_api()
 
     # Map CU course names to Canvas course names
-    CU2Canvas = {"4604": 62561, "sandbox": 62535, "2301": 62559, "3401": 62560}
+    CU2Canvas = {"sandbox": 62535}
 
     # map course to in-class assignment groups
     COURSE2INCLASS = {"4604": "149100"}
@@ -288,8 +288,6 @@ if __name__ == "__main__":
     names2ids = {}
     for coursename, courseno in CU2Canvas.items():
         names2ids[coursename] = get_student_names2_ids(CU2Canvas[coursename])
-
-    # TODO exports
 
     parser = argparse.ArgumentParser()
 
@@ -333,12 +331,21 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # test out overrides
-
     print(args)
 
     if args.html:
-        makeHTMLforSemester(ini_loc=args.ini) # 
+        html = makeHTMLforSemester(ini_loc=args.ini) 
+        # to adjust the hidden attributes
+
+        # new_html = lecture_page.body.replace(template.render(week=max_week), replace_week)
+        # 
+        # from BeautifulSoup import BeautifulSoup
+        # soup = BeautifulSoup(html_string)
+        # for link in soup.findAll('a')
+        #     link['src'] = 'New src'
+        # html_string = str(soup)
+
+        # lecture_page.edit(wiki_page={"body": html_string})
         import os; os._exit(0)
 
     if args.zeros and args.assignmentid is not None:
