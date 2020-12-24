@@ -24,6 +24,11 @@ On my local machine, I "install" by symlinking to this script and aliasing it as
     - ln -s /Users/abramhandler/everything/teaching/scripts/canvas_cli.py ~/bin/canvas_cli.py 
     - In zshrc => alias canvas="canvas_cli.py"
 
+
+# Some API notes
+- update an assignment
+   - https://canvas.instructure.com/doc/api/assignments.html#method.assignments_api.update
+
 '''
 
 import glob
@@ -32,9 +37,12 @@ import os
 import sys
 import argparse
 import configparser
+from copy import copy
+from jinja2 import Template
 from canvasapi import Canvas
 from datetime import datetime
 from datetime import timedelta
+from collections import defaultdict
 from bs4 import BeautifulSoup
 
 
@@ -46,22 +54,7 @@ def str2date(str_):
     return data_date
 
 
-def htmlpage2dates(html_str):
-    soup = BeautifulSoup(html_str, 'html.parser')
-
-    dates = []
-            
-    for i in soup.find_all('h3'):
-        try:
-            data_date = i.attrs["data-date"]
-            data_date = str2date(data_date) 
-            dates.append(data_date)
-        except KeyError:
-            pass
-    return dates
-
-
-def get_dates_for_course(ini_loc='2301F2020.ini'):
+def get_dates_for_course(ini_loc='2301S2020.ini'):
     '''return all dates'''
     config = configparser.ConfigParser()
 
@@ -69,21 +62,56 @@ def get_dates_for_course(ini_loc='2301F2020.ini'):
 
     start = str2date(config['dates']["start"])
     end = str2date(config["dates"]["end"])
-
+    
     counter = start 
     delta = timedelta(days=1)
 
     MON = 0
     WED = 2
     FRI = 4
+    
     dates_for_course = []
+    
+    week = 1
 
     while counter < end:
         if counter.weekday() in [MON, WED, FRI]:
-            dates_for_course.append(counter)
-            # counter.strftime("%A %Y-%m-%d")
+            if counter.weekday() == MON:
+                week += 1
+            dates_for_course.append({"date": copy(counter), "week": week})
         counter += delta 
     return dates_for_course
+
+def makeHTMLforSemester(ini_loc="2301S2021.ini"):
+    '''
+    print out HTML for a whole course to copy/paste into Canvas Pages
+
+    py canvas_cli.py -html -ini "2301S2021.ini" | pbcopy
+    '''
+    
+    dates_for_course = get_dates_for_course(ini_loc=ini_loc)
+
+    weeks2dates = defaultdict(list)
+
+    for d in dates_for_course:
+        weeks2dates[d["week"]].append(d['date'])
+
+    weeks = list(weeks2dates.keys())
+
+    template = Template('''<h3 data-date="{{week_start_date}}" style='display:none'> Week {{ week }}</h3>{% for row in dates %}\n<h4 data-date="{{row.strftime("%Y%m%d")}}" style='display:none'>{{row.strftime("%a %b %d")}}</h4>\n<ul data-date="{{row.strftime("%Y%m%d")}}" style='display:none'>\n{% for item in items %}<li style='display:none' data-date="{{row.strftime("%Y%m%d")}}" data-bullet="{{item | replace(" ", "-") }}">{{item}}</li>\n{% endfor %}</ul>{% endfor %}\n
+                        ''')
+    weeks.sort(reverse=True)
+
+    out = ""
+    
+    for week in weeks:
+        dates = weeks2dates[week]
+        dates.sort()
+        dates = [d for d in dates]
+        bullets = ["in-class code", "whiteboards", "recording"]
+        print(template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0]))
+        
+    return out
 
 
 def init_local(course):
@@ -107,9 +135,6 @@ def get_api():
 
     # Initialize a new Canvas object
     return Canvas(API_URL, API_KEY)
-
-# update an assignment
-# https://canvas.instructure.com/doc/api/assignments.html#method.assignments_api.update
 
 
 def create_in_class_assignment(courseNo, due, name = None, points=3, published=False):
@@ -252,40 +277,8 @@ def comment_and_grade_no_submission(assignment_id, student):
 if __name__ == "__main__":
     canvas = get_api()
 
-
     # Map CU course names to Canvas course names
     CU2Canvas = {"4604": 62561, "sandbox": 62535, "2301": 62559, "3401": 62560}
-
-    # in progress
-    '''
-    course = canvas.get_course(CU2Canvas['2301'])
-    lecture_page = course.get_page("2301")
-
-    last_date_on_page = max(htmlpage2dates(lecture_page.body))
-
-    dates = get_dates_for_course()
-
-    print(last_date_on_page, dates)
-
-    import os; os._exit(0)
-    '''
-
-
-    # pbpaste | python zoom_parser.py | python canvas_cli.py
-
-    '''
-    str_ = get_lecture_page_body(lecture_page)
-
-    lns = []
-    for o in list(sys.stdin):
-        lns.append(o)
-
-    str_ = "".join(lns) + str_
-
-    print(str_)
-
-    import os; os._exit(0)
-    '''
 
     # map course to in-class assignment groups
     COURSE2INCLASS = {"4604": "149100"}
@@ -328,6 +321,10 @@ if __name__ == "__main__":
 
     parser.add_argument('-z', '-zeros', '--zeros', action='store_true', help='assigns zeros to students who have not submitted', dest='zeros', default=False)
 
+    parser.add_argument('-html', action='store_true', help='print HTML for semester', dest='html', default=False)
+
+    parser.add_argument('-ini', help='the ini file for the course')
+
     parser.add_argument('--assignmentid', dest="assignmentid", help='Assignment ID for no submission')
 
     parser.add_argument('-time_limit', '--time_limit', default=10, help='time limit, in minutes')
@@ -339,6 +336,10 @@ if __name__ == "__main__":
     # test out overrides
 
     print(args)
+
+    if args.html:
+        makeHTMLforSemester(ini_loc=args.ini) # 
+        import os; os._exit(0)
 
     if args.zeros and args.assignmentid is not None:
         # py canvas_cli.py -c 2301 -zeros --assignmentid 871212
