@@ -354,15 +354,16 @@ if __name__ == "__main__":
 
         lecture_page.edit(wiki_page={"body": html})
 
-        # new_html = lecture_page.body.replace(template.render(week=max_week), replace_week)
-        # 
-        # from BeautifulSoup import BeautifulSoup
-        # soup = BeautifulSoup(html_string)
-        # for link in soup.findAll('a')
-        #     link['src'] = 'New src'
-        # html_string = str(soup)
+        soup = BeautifulSoup(html, features="html.parser")
+        for header in soup.findAll('h3'):
+            header['style'] = "display:block"
 
-        # lecture_page.edit(wiki_page={"body": html_string})
+        html = str(soup)
+
+        print("[*] Updating {} page again".format(args.course))
+
+        lecture_page.edit(wiki_page={"body": html})
+
         import os; os._exit(0)
 
     if args.zeros and args.assignmentid is not None:
