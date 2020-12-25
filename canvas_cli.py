@@ -109,7 +109,7 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini"):
         dates.sort()
         dates = [d for d in dates]
         bullets = ["in-class code", "whiteboards", "recording"]
-        print(template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0]))
+        out = out + template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0])
         
     return out
 
@@ -139,7 +139,7 @@ def get_api():
 
 def create_in_class_assignment(courseNo, due, name = None, points=3, published=False):
 
-    course = canvas.get_course(CU2Canvas[courseNo])
+    course = canvas.get_course(CUno2canvasno[courseNo])
 
     due = datetime.strptime(due, '%Y%m%d')
 
@@ -211,7 +211,7 @@ def init_quizzes(course):
 
 def set_extra_time_on_quizzes(course, names, names2ids_course, extra_minutes=10):
     '''
-    course = canvas.get_course(CU2Canvas["3401"])
+    course = canvas.get_course(CUno2canvasno["3401"])
     names = [o.replace('\n', "") for o in open("accomodations3401.txt")]
     names2ids_course = names2ids["3401"]
 
@@ -228,11 +228,11 @@ def set_extra_time_on_quizzes(course, names, names2ids_course, extra_minutes=10)
             quiz.set_extensions([{'user_id': id_, 'extra_time': extra_minutes}])
 
 
-def export_all(CU2Canvas):
+def export_all(CUno2canvasno):
     '''This will backup all courses on Canvas'''
-    for course in CU2Canvas:
+    for course in CUno2canvasno:
         print("[*] Exporting {} from Canvas".format(course))
-        course = canvas.get_course(CU2Canvas[course])
+        course = canvas.get_course(CUno2canvasno[course])
         course.export_content(export_type="common_cartridge")
 
 
@@ -277,21 +277,15 @@ def comment_and_grade_no_submission(assignment_id, student):
 if __name__ == "__main__":
     canvas = get_api()
 
-    # Map CU course names to Canvas course names
-    CU2Canvas = {"sandbox": 62535}
-
+    # TODO: send to ini file
     # map course to in-class assignment groups
     COURSE2INCLASS = {"4604": "149100"}
 
     Course2Classtime = {"4604": "T12:40:00", "sandbox": "T12:40:00", "2301": "T10:30:00"}
 
-    names2ids = {}
-    for coursename, courseno in CU2Canvas.items():
-        names2ids[coursename] = get_student_names2_ids(CU2Canvas[coursename])
-
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-c', '-course', '--course', default='sandbox', help='INFO course number, e.g. 4604')
+    parser.add_argument('-c', '-course', '--course', default=None, help='INFO course number, e.g. 4604')
 
     parser.add_argument('-init_files', '--init_files', dest='init_files', default=False, action='store_true', help='Use this flag to init the course files on Canvas')
 
@@ -331,11 +325,34 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print(args)
+    if args.course is None:
+        print("[*] You must specify a course using the --course flag or an alias")
+
+    SEMESTER = "S2021.ini"
+    INI_LOC = args.course + SEMESTER
+
+    config = configparser.ConfigParser()
+
+    config.read(INI_LOC)
+
+    # Map CU course names to Canvas course names
+    CUno2canvasno = {config["course_info"]["course_name"]: int(config["course_info"]["canvas_no"])}
+
+    course_no = config["course_info"]["canvas_no"]
+
+    names2ids = {}
+    for coursename, courseno in CUno2canvasno.items():
+        names2ids[coursename] = get_student_names2_ids(CUno2canvasno[coursename])
 
     if args.html:
-        html = makeHTMLforSemester(ini_loc=args.ini) 
-        # to adjust the hidden attributes
+        html = makeHTMLforSemester(ini_loc=INI_LOC) 
+        print(CUno2canvasno)
+        course = canvas.get_course(CUno2canvasno[args.course])
+        lecture_page = course.get_page(args.course)
+        
+        print("[*] Updating {} page".format(args.course))
+
+        lecture_page.edit(wiki_page={"body": html})
 
         # new_html = lecture_page.body.replace(template.render(week=max_week), replace_week)
         # 
@@ -350,28 +367,28 @@ if __name__ == "__main__":
 
     if args.zeros and args.assignmentid is not None:
         # py canvas_cli.py -c 2301 -zeros --assignmentid 871212
-        course = canvas.get_course(CU2Canvas[args.course])
+        course = canvas.get_course(CUno2canvasno[args.course])
         for student in get_no_submissions(course, args.assignmentid):
             comment_and_grade_no_submission(args.assignmentid, student)
         import os; os._exit(0)
 
 
     if(args.set_extra_time_on_quizzes):
-        course = canvas.get_course(CU2Canvas[args.course])
+        course = canvas.get_course(CUno2canvasno[args.course])
         names = [o.replace('\n', "") for o in open("accomodations{}.txt".format(args.course))]
         names2ids_course = names2ids[args.course]
         set_extra_time_on_quizzes(course, names, names2ids_course)
         import os; os._exit(0)
 
     if(args.export):
-        export_all(CU2Canvas)
+        export_all(CUno2canvasno)
         import os; os._exit(0)
 
     if(args.quiz):
         if args.due is None:
             print("[*] You must set a due date")
             import os;os._exit(0)
-        course = canvas.get_course(CU2Canvas[args.course])
+        course = canvas.get_course(CUno2canvasno[args.course])
         due = datetime.strptime(args.due, '%Y%m%d')
         if args.name is None:
             name = due.strftime("%b %d") + " quiz"
@@ -395,7 +412,7 @@ if __name__ == "__main__":
         import os;os._exit(0)
 
     if(args.init_files):
-        init_course_files(CU2Canvas[args.course])
+        init_course_files(CUno2canvasno[args.course])
         import os;os._exit(0)
 
     if args.upload is not None and args.sync is False:
@@ -403,12 +420,12 @@ if __name__ == "__main__":
         print("*uploading")
 
         def get_week_folder(course_no, week_no):
-            course = canvas.get_course(CU2Canvas[args.course])
+            course = canvas.get_course(CUno2canvasno[args.course])
             for f in course.get_folders():
                 if f.name == "week{}".format(args.week):
                     return f
 
-        folder = get_week_folder(CU2Canvas[args.course], args.week)
+        folder = get_week_folder(CUno2canvasno[args.course], args.week)
 
         for fn in glob.glob(args.upload + "/*"):
             folder.upload(fn)
@@ -418,12 +435,12 @@ if __name__ == "__main__":
         # $ canvas -w 3 -sync -c 2301
 
         def get_week_folder(course_no, week_no):
-            course = canvas.get_course(CU2Canvas[args.course])
+            course = canvas.get_course(CUno2canvasno[args.course])
             for f in course.get_folders():
                 if f.name == "week{}".format(args.week):
                     return f
 
-        folder = get_week_folder(CU2Canvas[args.course], args.week)
+        folder = get_week_folder(CUno2canvasno[args.course], args.week)
 
         for subfolder in folder.get_folders():
             name = subfolder.name
