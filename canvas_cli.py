@@ -273,6 +273,19 @@ def comment_and_grade_no_submission(assignment_id, student):
     print("- Setting {} score to zero".format(student))
     submission.edit(submission={'posted_grade':0}, comment={'text_comment':'no submission'})
 
+def make_link():
+    '''make a link to a file that can be pasted into Canvas'''
+    css_class = "instructure_file_link instructure_scribd_file"
+    title = "D19-5414.pdf"
+    href = "https://canvas.colorado.edu/courses/62535/files/27550350/preview"
+    endpoint = "https://canvas.colorado.edu/api/v1/courses/62535/files/27550350"
+    link_text = "in-class code"
+    t = Template('''<a> class="{{css_class}}" title="{{title}}" href="{{href}}" target="_blank" rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>''')
+    return t.render(css_class=css_class, link_text=link_text, 
+                    title=title, href=href, endpoint=endpoint)
+
+print(make_link())
+import os;os._exit(0)
 
 def show_before_date(canvas_page, in_date = '20210315'):
     '''update a page to show elements w/ data-date before some input date'''
