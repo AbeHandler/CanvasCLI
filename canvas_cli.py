@@ -109,7 +109,7 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini"):
         dates.sort()
         dates = [d for d in dates]
         bullets = ["in-class code", "whiteboards", "recording"]
-        out = out + template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0])
+        out = out + template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0].strftime("%Y%m%d"))
         
     return out
 
@@ -274,6 +274,40 @@ def comment_and_grade_no_submission(assignment_id, student):
     submission.edit(submission={'posted_grade':0}, comment={'text_comment':'no submission'})
 
 
+def show_before_date(canvas_page, in_date = '20210315'):
+    '''update a page to show elements w/ data-date before some input date'''
+
+    def isb4(input_date):
+        '''
+        Returns a function, f: date -> bool 
+        that is true if its input is less than input_date
+        Used for a lambda in bs4
+        '''
+        input_date = datetime.strptime(input_date, '%Y%m%d')
+        def hidden(t):
+            if 'data-date' not in t.attrs:
+                return False
+            if datetime.strptime(t.attrs['data-date'], '%Y%m%d') < input_date:
+                return True
+            else:
+                return False
+        return hidden
+
+    html = canvas_page.body
+    soup = BeautifulSoup(html, features="html.parser")
+
+    for header in soup.findAll(isb4(in_date)):
+        if(header.name == "li"):
+            header['style'] = "display:list-item"
+        else:
+            header['style'] = "display:block"
+
+    html = str(soup)
+
+    print("[*] Updating {} page to show before {}".format(args.course, in_date))
+
+    canvas_page.edit(wiki_page={"body": html})
+
 if __name__ == "__main__":
     canvas = get_api()
 
@@ -351,18 +385,13 @@ if __name__ == "__main__":
         lecture_page = course.get_page(args.course)
         
         print("[*] Updating {} page".format(args.course))
-
         lecture_page.edit(wiki_page={"body": html})
 
-        soup = BeautifulSoup(html, features="html.parser")
-        for header in soup.findAll('h3'):
-            header['style'] = "display:block"
+        # show  before date
+        course = canvas.get_course(CUno2canvasno[args.course])
+        lecture_page = course.get_page(args.course)
 
-        html = str(soup)
-
-        print("[*] Updating {} page again".format(args.course))
-
-        lecture_page.edit(wiki_page={"body": html})
+        show_before_date(canvas_page=lecture_page, in_date='20210201')
 
         import os; os._exit(0)
 
