@@ -116,14 +116,11 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini"):
 
 def init_local(course):
     for i in range(1,17):
-        str_ = os.environ['ROOT'] + '/everything/teaching/{}Fall2020/week{}'.format(course, i)
+        str_ = os.environ['ROOT'] + '/everything/teaching/{}S2020/week{}'.format(course, i)
         if not os.path.isdir(str_):
             os.mkdir(str_)
-            os.mkdir(str_ + "/" + "assignment_files")
-            os.mkdir(str_ + "/" + "quiz_files")
-            os.mkdir(str_ + "/" + "whiteboards")
-            os.mkdir(str_ + "/" + "in_class_code")
-            os.mkdir(str_ + "/" + "other_files")
+            for folder in FOLDERS:
+                os.mkdir(str_ + "/" + folder)
 
 
 def get_api():
@@ -167,10 +164,8 @@ def init_course_files(course_number):
     for week in range(1, 17):
         print("[*] Init folders week {}".format(week))
         parent = "/week{}/".format(week)
-        course.create_folder(name='quiz_files', parent_folder_path=parent)
-        course.create_folder(name='assignment_files', parent_folder_path=parent)
-        course.create_folder(name='other_files', parent_folder_path=parent)
-
+        for folder in FOLDERS:
+            course.create_folder(name=folder, parent_folder_path=parent)
 
 def get_student_names2_ids(course_no):
     '''
@@ -284,9 +279,6 @@ def make_link():
     return t.render(css_class=css_class, link_text=link_text, 
                     title=title, href=href, endpoint=endpoint)
 
-print(make_link())
-import os;os._exit(0)
-
 def show_before_date(canvas_page, in_date = '20210315'):
     '''update a page to show elements w/ data-date before some input date'''
 
@@ -324,9 +316,7 @@ def show_before_date(canvas_page, in_date = '20210315'):
 if __name__ == "__main__":
     canvas = get_api()
 
-    # TODO: send to ini file
-    # map course to in-class assignment groups
-    COURSE2INCLASS = {"4604": "149100"}
+    FOLDERS = ['assignment_files', 'in_class_code', 'other_files', 'other_files', 'quiz_files', 'whiteboards']
 
     Course2Classtime = {"4604": "T12:40:00", "sandbox": "T12:40:00", "2301": "T10:30:00"}
 
@@ -334,15 +324,13 @@ if __name__ == "__main__":
 
     parser.add_argument('-c', '-course', '--course', default=None, help='INFO course number, e.g. 4604')
 
-    parser.add_argument('-init_files', '--init_files', dest='init_files', default=False, action='store_true', help='Use this flag to init the course files on Canvas')
+    parser.add_argument('-init', '--init', dest='init', default=False, action='store_true', help='Use this flag to init the course files on Canvas')
 
     parser.add_argument('-q', '-quiz', '--quiz', dest='quiz', default=False, action='store_true', help='Use this flag to create a quiz')
 
     parser.add_argument('-set_extra_time_on_quizzes', dest='set_extra_time_on_quizzes', default=False, action='store_true', help='Use this flag to set extra time on all quizzes for students w/ accomodations')
 
     parser.add_argument('-a', '-assignment', '--assignment', dest='assignment', default=False, action='store_true', help='Use this flag to create an assignment')
-
-    parser.add_argument('-attachments', '--attachments', nargs='+', help='Input a list of globs; matching files will be uploaded', required=False)
 
     parser.add_argument('-d', '-due', '--due', help='pass a date in YYYYMMDD for the due date, e.g. 20200824')
 
@@ -362,8 +350,6 @@ if __name__ == "__main__":
 
     parser.add_argument('-html', action='store_true', help='print HTML for semester', dest='html', default=False)
 
-    parser.add_argument('-ini', help='the ini file for the course')
-
     parser.add_argument('--assignmentid', dest="assignmentid", help='Assignment ID for no submission')
 
     parser.add_argument('-time_limit', '--time_limit', default=10, help='time limit, in minutes')
@@ -375,8 +361,8 @@ if __name__ == "__main__":
     if args.course is None:
         print("[*] You must specify a course using the --course flag or an alias")
 
-    SEMESTER = "S2021.ini"
-    INI_LOC = args.course + SEMESTER
+    SEMESTER = "S2021"
+    INI_LOC = args.course + SEMESTER + ".ini"
 
     config = configparser.ConfigParser()
 
@@ -406,7 +392,16 @@ if __name__ == "__main__":
 
         show_before_date(canvas_page=lecture_page, in_date='20210201')
 
-        import os; os._exit(0)
+        soup = BeautifulSoup(lecture_page.body, features="html.parser")
+
+        for li in soup.findAll("li"):
+            # the intserted  tthing needs to be a tag not a string
+            
+            li.insert(0, make_link()) 
+            import ipdb;ipdb.set_trace()
+
+        #print(html)
+        import os;os._exit(0)
 
     if args.zeros and args.assignmentid is not None:
         # py canvas_cli.py -c 2301 -zeros --assignmentid 871212
@@ -454,8 +449,9 @@ if __name__ == "__main__":
             print("[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
         import os;os._exit(0)
 
-    if(args.init_files):
+    if(args.init):
         init_course_files(CUno2canvasno[args.course])
+        init_local()
         import os;os._exit(0)
 
     if args.upload is not None and args.sync is False:
