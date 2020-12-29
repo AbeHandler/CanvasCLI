@@ -275,7 +275,7 @@ def make_link():
     href = "https://canvas.colorado.edu/courses/62535/files/27550350/preview"
     endpoint = "https://canvas.colorado.edu/api/v1/courses/62535/files/27550350"
     link_text = "in-class code"
-    t = Template('''<a> class="{{css_class}}" title="{{title}}" href="{{href}}" target="_blank" rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>''')
+    t = Template('''<a class="{{css_class}}" title="{{title}}" href="{{href}}" target="_blank" rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>''')
     return t.render(css_class=css_class, link_text=link_text, 
                     title=title, href=href, endpoint=endpoint)
 
@@ -392,15 +392,16 @@ if __name__ == "__main__":
 
         show_before_date(canvas_page=lecture_page, in_date='20210201')
 
-        soup = BeautifulSoup(lecture_page.body, features="html.parser")
+        html = BeautifulSoup(lecture_page.body, features="html.parser")
 
-        for li in soup.findAll("li"):
+        for li in html.findAll("li"):
             # the intserted  tthing needs to be a tag not a string
+            li.string = ""
+            ll = BeautifulSoup( make_link(), features="html.parser")
             
-            li.insert(0, make_link()) 
-            import ipdb;ipdb.set_trace()
+            li.insert(0, ll)
 
-        #print(html)
+        lecture_page.edit(wiki_page={"body": str(html)})
         import os;os._exit(0)
 
     if args.zeros and args.assignmentid is not None:
