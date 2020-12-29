@@ -395,8 +395,8 @@ if __name__ == "__main__":
         html = BeautifulSoup(lecture_page.body, features="html.parser")
 
         for li in html.findAll("li"):
-            # the intserted  tthing needs to be a tag not a string
-            li.string = ""
+
+            li.string = "" # remove inner text
             ll = BeautifulSoup( make_link(), features="html.parser")
             
             li.insert(0, ll)
