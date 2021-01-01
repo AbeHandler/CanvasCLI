@@ -82,6 +82,27 @@ def get_dates_for_course(ini_loc='2301S2020.ini'):
         counter += delta 
     return dates_for_course
 
+
+def get_weeks2dates(dates_for_course):
+
+    weeks2dates = defaultdict(list)
+
+    for d in dates_for_course:
+        weeks2dates[d["week"]].append(d['date'])
+
+    return weeks2dates
+
+
+def get_dates2weeks(dates_for_course):
+
+    dates2weeks = {}
+
+    for d in dates_for_course:
+        dates2weeks[d['date'].strftime("%Y%m%d")] = d["week"]
+
+    return dates2weeks
+
+
 def makeHTMLforSemester(ini_loc="2301S2021.ini"):
     '''
     print out HTML for a whole course to copy/paste into Canvas Pages
@@ -91,10 +112,7 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini"):
     
     dates_for_course = get_dates_for_course(ini_loc=ini_loc)
 
-    weeks2dates = defaultdict(list)
-
-    for d in dates_for_course:
-        weeks2dates[d["week"]].append(d['date'])
+    weeks2dates = get_weeks2dates(dates_for_course)
 
     weeks = list(weeks2dates.keys())
 
@@ -313,6 +331,27 @@ def show_before_date(canvas_page, in_date = '20210315'):
 
     canvas_page.edit(wiki_page={"body": html})
 
+def get_week_folder(course_no, week_no):
+    '''Get the folder for a given week'''
+    course = canvas.get_course(CUno2canvasno[args.course])
+    for f in course.get_folders():
+        if f.name == "week{}".format(args.week):
+            return f
+
+def get_whiteboards_folder_for_week(week, course):
+    '''
+    Get the Canvas folder for whiteboards for some week
+
+    e.g. files/week16/whiteboards
+    '''
+    course = canvas.get_course(CUno2canvasno[course])
+    for f in course.get_folders():
+        folder_name = f.full_name.split(' ').pop()
+        if folder_name == "files/week{}/whiteboards".format(week):
+            return f
+    return None
+
+
 if __name__ == "__main__":
     canvas = get_api()
 
@@ -377,6 +416,12 @@ if __name__ == "__main__":
     for coursename, courseno in CUno2canvasno.items():
         names2ids[coursename] = get_student_names2_ids(CUno2canvasno[coursename])
 
+    folder = get_whiteboards_folder_for_week(args.week, args.course)
+
+    dates_for_course = get_dates_for_course(INI_LOC)
+
+    dates2weeks = get_dates2weeks(dates_for_course)
+
     if args.html:
         html = makeHTMLforSemester(ini_loc=INI_LOC) 
         print(CUno2canvasno)
@@ -390,7 +435,7 @@ if __name__ == "__main__":
         course = canvas.get_course(CUno2canvasno[args.course])
         lecture_page = course.get_page(args.course)
 
-        show_before_date(canvas_page=lecture_page, in_date='20210201')
+        show_before_date(canvas_page=lecture_page, in_date='20210801')
 
         html = BeautifulSoup(lecture_page.body, features="html.parser")
 
@@ -399,6 +444,13 @@ if __name__ == "__main__":
             li.string = "" # remove inner text
             ll = BeautifulSoup( make_link(), features="html.parser")
             
+            week = dates2weeks[li.attrs["data-date"]]
+
+            if li.attrs["data-bullet"] == "whiteboards":
+                whiteboards_folder = get_whiteboards_folder_for_week(week)
+                # does a whiteboard folder exist?
+                # if so, make a link
+
             li.insert(0, ll)
 
         lecture_page.edit(wiki_page={"body": str(html)})
@@ -459,12 +511,6 @@ if __name__ == "__main__":
         # py canvas_cli.py -u ../2301fall2020/week2/assignment_files/ -c 2301 -w 2
         print("*uploading")
 
-        def get_week_folder(course_no, week_no):
-            course = canvas.get_course(CUno2canvasno[args.course])
-            for f in course.get_folders():
-                if f.name == "week{}".format(args.week):
-                    return f
-
         folder = get_week_folder(CUno2canvasno[args.course], args.week)
 
         for fn in glob.glob(args.upload + "/*"):
@@ -473,12 +519,6 @@ if __name__ == "__main__":
     if args.sync and args.week is not None:
 
         # $ canvas -w 3 -sync -c 2301
-
-        def get_week_folder(course_no, week_no):
-            course = canvas.get_course(CUno2canvasno[args.course])
-            for f in course.get_folders():
-                if f.name == "week{}".format(args.week):
-                    return f
 
         folder = get_week_folder(CUno2canvasno[args.course], args.week)
 
