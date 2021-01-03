@@ -286,10 +286,10 @@ def comment_and_grade_no_submission(assignment_id, student):
     print("- Setting {} score to zero".format(student))
     submission.edit(submission={'posted_grade':0}, comment={'text_comment':'no submission'})
 
-def make_link():
+def make_link(title = "D19-5414.pdf"):
     '''make a link to a file that can be pasted into Canvas'''
     css_class = "instructure_file_link instructure_scribd_file"
-    title = "D19-5414.pdf"
+    title = title
     href = "https://canvas.colorado.edu/courses/62535/files/27550350/preview"
     endpoint = "https://canvas.colorado.edu/api/v1/courses/62535/files/27550350"
     link_text = "in-class code"
@@ -442,20 +442,23 @@ if __name__ == "__main__":
         for li in html.findAll("li"):
 
             li.string = "" # remove inner text
-            ll = BeautifulSoup( make_link(), features="html.parser")
-            
+                        
             week = dates2weeks[li.attrs["data-date"]]
+
+            ll = None
 
             if li.attrs["data-bullet"] == "whiteboards":
                 whiteboards_folder = get_whiteboards_folder_for_week(week, args.course)
                 if whiteboards_folder is not None:
                     for file in whiteboards_folder.get_files():
-                        print(file.display_name, file.display_name[-15:])
-                        import ipdb;ipdb.set_trace()
-                # does a whiteboard. folder exist?
-                # if so, make a link
+                        expected_name = li.attrs["data-date"] + "whiteboards.pdf"
+                        print(file.display_name, expected_name, file.display_name == expected_name)
+                        # does a whiteboard. folder exist?
+                        # if so, make a link
+                        ll = BeautifulSoup( make_link(), features="html.parser")
 
-            li.insert(0, ll)
+            if ll is not None:
+                li.insert(0, ll)
 
         lecture_page.edit(wiki_page={"body": str(html)})
         import os;os._exit(0)
