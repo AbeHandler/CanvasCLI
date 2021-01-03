@@ -447,8 +447,12 @@ if __name__ == "__main__":
             week = dates2weeks[li.attrs["data-date"]]
 
             if li.attrs["data-bullet"] == "whiteboards":
-                whiteboards_folder = get_whiteboards_folder_for_week(week)
-                # does a whiteboard folder exist?
+                whiteboards_folder = get_whiteboards_folder_for_week(week, args.course)
+                if whiteboards_folder is not None:
+                    for file in whiteboards_folder.get_files():
+                        print(file.display_name, file.display_name[-15:])
+                        import ipdb;ipdb.set_trace()
+                # does a whiteboard. folder exist?
                 # if so, make a link
 
             li.insert(0, ll)
