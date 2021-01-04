@@ -132,9 +132,9 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini"):
     return out
 
 
-def init_local(course):
+def init_local(course, semester="S2020"):
     for i in range(1,17):
-        str_ = os.environ['ROOT'] + '/everything/teaching/{}S2020/week{}'.format(course, i)
+        str_ = os.environ['ROOT'] + '/everything/teaching/{}{}/week{}'.format(course, semester, i)
         if not os.path.isdir(str_):
             os.mkdir(str_)
             for folder in FOLDERS:
@@ -355,7 +355,7 @@ def get_whiteboards_folder_for_week(week, course):
 if __name__ == "__main__":
     canvas = get_api()
 
-    FOLDERS = ['assignment_files', 'in_class_code', 'other_files', 'other_files', 'quiz_files', 'whiteboards']
+    FOLDERS = ['assignment_files', 'in_class_code', 'other_files', 'quiz_files', 'whiteboards']
 
     Course2Classtime = {"4604": "T12:40:00", "sandbox": "T12:40:00", "2301": "T10:30:00"}
 
@@ -510,8 +510,12 @@ if __name__ == "__main__":
         import os;os._exit(0)
 
     if(args.init):
+        '''
+        Initialize course locally and on canvas
+        Assumes ~/everything/teaching/courseno[S|F]year, e.g. 2301S2021
+        '''
         init_course_files(CUno2canvasno[args.course])
-        init_local()
+        init_local(args.course, semester=SEMESTER)
         import os;os._exit(0)
 
     if args.upload is not None and args.sync is False:
