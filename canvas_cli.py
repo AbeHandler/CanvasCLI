@@ -103,7 +103,7 @@ def get_dates2weeks(dates_for_course):
     return dates2weeks
 
 
-def makeHTMLforSemester(ini_loc="2301S2021.ini"):
+def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_no_cu=2301):
     '''
     print out HTML for a whole course to copy/paste into Canvas Pages
 
@@ -121,15 +121,20 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini"):
     weeks.sort(reverse=True)
 
     out = ""
-    
+
     for week in weeks:
         dates = weeks2dates[week]
         dates.sort()
         dates = [d for d in dates]
         bullets = ["in-class code", "whiteboards", "recording"]
         out = out + template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0].strftime("%Y%m%d"))
-        
-    return out
+
+    course = canvas.get_course(course_no_canvas)
+
+    lecture_page = course.get_page(course_no_cu)
+    
+    print("[*] Setting up {} page".format(course_no_cu))
+    lecture_page.edit(wiki_page={"body": out})
 
 
 def init_local(course, semester="S2020"):
@@ -423,13 +428,6 @@ if __name__ == "__main__":
     dates2weeks = get_dates2weeks(dates_for_course)
 
     if args.html:
-        html = makeHTMLforSemester(ini_loc=INI_LOC) 
-        print(CUno2canvasno)
-        course = canvas.get_course(CUno2canvasno[args.course])
-        lecture_page = course.get_page(args.course)
-        
-        print("[*] Updating {} page".format(args.course))
-        lecture_page.edit(wiki_page={"body": html})
 
         # show  before date
         course = canvas.get_course(CUno2canvasno[args.course])
@@ -514,8 +512,14 @@ if __name__ == "__main__":
         Initialize course locally and on canvas
         Assumes ~/everything/teaching/courseno[S|F]year, e.g. 2301S2021
         '''
-        init_course_files(CUno2canvasno[args.course])
-        init_local(args.course, semester=SEMESTER)
+        print("- Init files on Canvas")
+        #init_course_files(CUno2canvasno[args.course])
+        print("- Init local files")
+        #init_local(args.course, semester=SEMESTER)
+        print("- Init HTML")
+        makeHTMLforSemester(ini_loc=INI_LOC,
+                            course_no_canvas=CUno2canvasno[args.course],
+                            course_no_cu=args.course) 
         import os;os._exit(0)
 
     if args.upload is not None and args.sync is False:
