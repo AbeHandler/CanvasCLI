@@ -522,7 +522,7 @@ if __name__ == "__main__":
         Assumes ~/everything/teaching/courseno[S|F]year, e.g. 2301S2021
         '''
         print("- Init files on Canvas")
-        #init_course_files(CUno2canvasno[args.course])
+        init_course_files(CUno2canvasno[args.course])
         print("- Init local files")
         init_local(args.course, semester=SEMESTER)
         print("- Init HTML")
