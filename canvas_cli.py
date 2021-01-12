@@ -1,5 +1,5 @@
 #! /opt/anaconda3/bin/python 
-# replace shebang w/ your local python version 
+# replace shebang w/ your local Python version 
 
 '''
 An opinionated command-line interface to the canvas API.
