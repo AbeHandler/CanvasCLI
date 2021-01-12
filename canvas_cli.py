@@ -45,17 +45,26 @@ from datetime import timedelta
 from collections import defaultdict
 from bs4 import BeautifulSoup
 
+STANDARDDATE = "%Y%m%d"
+
 
 def str2date(str_):
     '''
     format = YYYYMMDD
     '''
-    data_date = datetime.strptime(str_, "%Y%m%d")
+    data_date = datetime.strptime(str_, STANDARDDATE)
     return data_date
 
 
-def get_dates_for_course(ini_loc='2301S2020.ini'):
-    '''return all dates'''
+def get_dates_for_course(ini_loc='3402S2021.ini', days_of_week = [0,2,4]):
+    '''
+    return all dates
+    
+    Days_of_week = [MON = 0, WED = 2, FRI = 4]
+    '''
+    MON = 0
+    WED = 2
+    FRI = 4
     config = configparser.ConfigParser()
 
     config.read(ini_loc)
@@ -65,17 +74,13 @@ def get_dates_for_course(ini_loc='2301S2020.ini'):
     
     counter = start 
     delta = timedelta(days=1)
-
-    MON = 0
-    WED = 2
-    FRI = 4
     
     dates_for_course = []
     
     week = 1
 
     while counter < end:
-        if counter.weekday() in [MON, WED, FRI]:
+        if counter.weekday() in days_of_week:
             if counter.weekday() == MON:
                 week += 1
             dates_for_course.append({"date": copy(counter), "week": week})
@@ -98,7 +103,7 @@ def get_dates2weeks(dates_for_course):
     dates2weeks = {}
 
     for d in dates_for_course:
-        dates2weeks[d['date'].strftime("%Y%m%d")] = d["week"]
+        dates2weeks[d['date'].strftime(STANDARDDATE)] = d["week"]
 
     return dates2weeks
 
@@ -127,7 +132,7 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_
         dates.sort()
         dates = [d for d in dates]
         bullets = ["in-class code", "whiteboards", "recording"]
-        out = out + template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0].strftime("%Y%m%d"))
+        out = out + template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0].strftime(STANDARDDATE))
 
     course = canvas.get_course(course_no_canvas)
 
@@ -141,6 +146,7 @@ def init_local(course, semester="S2020"):
     for i in range(1,17):
         str_ = os.environ['ROOT'] + '/everything/teaching/{}{}/week{}'.format(course, semester, i)
         if not os.path.isdir(str_):
+            # TODO: this failed mkdir /Users/abramhandler/everything/teaching/3402S2021/
             os.mkdir(str_)
             for folder in FOLDERS:
                 os.mkdir(str_ + "/" + folder)
@@ -358,6 +364,9 @@ def get_whiteboards_folder_for_week(week, course):
 
 
 if __name__ == "__main__":
+
+
+    # TODO this is a global variable. Fix.
     canvas = get_api()
 
     FOLDERS = ['assignment_files', 'in_class_code', 'other_files', 'quiz_files', 'whiteboards']
@@ -513,7 +522,7 @@ if __name__ == "__main__":
         Assumes ~/everything/teaching/courseno[S|F]year, e.g. 2301S2021
         '''
         print("- Init files on Canvas")
-        init_course_files(CUno2canvasno[args.course])
+        #init_course_files(CUno2canvasno[args.course])
         print("- Init local files")
         init_local(args.course, semester=SEMESTER)
         print("- Init HTML")
