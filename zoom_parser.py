@@ -4,11 +4,7 @@ from jinja2 import Template
 ### "Show detailed recording info" on Zoom
 
 
-template = '''
-<ul>
-<li><a href="{{link}}">{{date}}</a> (PW: {{pw}})</li>
-</ul>
-'''
+template = '''<li><a href="{{link}}">{{date}}</a> (PW: {{pw}})</li>'''
 
 template = Template(template)
 link = None
