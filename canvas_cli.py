@@ -41,6 +41,7 @@ from copy import copy
 from jinja2 import Template
 from canvasapi import Canvas
 from datetime import datetime
+from datetime import date
 from datetime import timedelta
 from collections import defaultdict
 from bs4 import BeautifulSoup
@@ -311,17 +312,17 @@ def make_link(title = "D19-5414.pdf"):
 def show_before_date(canvas_page, in_date = '20210315'):
     '''update a page to show elements w/ data-date before some input date'''
 
-    def isb4(input_date):
+    def isb4Eq(input_date):
         '''
         Returns a function, f: date -> bool 
-        that is true if its input is less than input_date
+        that is true if its input is less than or equal to input_date
         Used for a lambda in bs4
         '''
         input_date = datetime.strptime(input_date, '%Y%m%d')
         def hidden(t):
             if 'data-date' not in t.attrs:
                 return False
-            if datetime.strptime(t.attrs['data-date'], '%Y%m%d') < input_date:
+            if datetime.strptime(t.attrs['data-date'], '%Y%m%d') <= input_date:
                 return True
             else:
                 return False
@@ -330,7 +331,7 @@ def show_before_date(canvas_page, in_date = '20210315'):
     html = canvas_page.body
     soup = BeautifulSoup(html, features="html.parser")
 
-    for header in soup.findAll(isb4(in_date)):
+    for header in soup.findAll(isb4Eq(in_date)):
         if(header.name == "li"):
             header['style'] = "display:list-item"
         else:
@@ -397,6 +398,8 @@ if __name__ == "__main__":
 
     parser.add_argument('-u', '-upload', '--upload', help='Uploads all files in this folder to canvas.', dest='upload', type=str)
 
+    parser.add_argument('-v', '-visible', '--visible', dest='visible', default='false', action='store_true', help='Make html visible')
+
     parser.add_argument('-s', '-sync', '--sync', action='store_true', help='syncs a directory to canvas', dest='sync', default=False)
 
     parser.add_argument('-z', '-zeros', '--zeros', action='store_true', help='assigns zeros to students who have not submitted', dest='zeros', default=False)
@@ -436,13 +439,19 @@ if __name__ == "__main__":
 
     dates2weeks = get_dates2weeks(dates_for_course)
 
+    if args.visible:
+        today = date.today()
+        d1 = today.strftime("%Y%m%d")
+        course = canvas.get_course(CUno2canvasno[args.course])
+        lecture_page = course.get_page(args.course)
+        print("[*] updating {} to make visible before {}".format(args.course, today.strftime("%b %d")))
+        show_before_date(canvas_page=lecture_page, in_date=today.strftime("%Y%m%d"))
+        import os;os._exit(0)
+
     if args.html:
 
         # show  before date
         course = canvas.get_course(CUno2canvasno[args.course])
-        lecture_page = course.get_page(args.course)
-
-        show_before_date(canvas_page=lecture_page, in_date='20210801')
 
         html = BeautifulSoup(lecture_page.body, features="html.parser")
 
