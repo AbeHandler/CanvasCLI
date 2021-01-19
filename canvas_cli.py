@@ -400,6 +400,8 @@ if __name__ == "__main__":
 
     parser.add_argument('-v', '-visible', '--visible', dest='visible', default='false', action='store_true', help='Make html visible')
 
+    parser.add_argument('-t', '-tomorrow', '--tomorrow', dest='tomorrow', default=False, action='store_true', help='Use this flag to add an extra day to canvas visibility')
+
     parser.add_argument('-s', '-sync', '--sync', action='store_true', help='syncs a directory to canvas', dest='sync', default=False)
 
     parser.add_argument('-z', '-zeros', '--zeros', action='store_true', help='assigns zeros to students who have not submitted', dest='zeros', default=False)
@@ -440,12 +442,14 @@ if __name__ == "__main__":
     dates2weeks = get_dates2weeks(dates_for_course)
 
     if args.visible:
-        today = date.today()
-        d1 = today.strftime("%Y%m%d")
+        day = date.today()
+        if args.tomorrow:
+            day += timedelta(days=1)
+        d1 = day.strftime("%Y%m%d")
         course = canvas.get_course(CUno2canvasno[args.course])
         lecture_page = course.get_page(args.course)
-        print("[*] updating {} to make visible before {}".format(args.course, today.strftime("%b %d")))
-        show_before_date(canvas_page=lecture_page, in_date=today.strftime("%Y%m%d"))
+        print("[*] updating {} to make visible before {}".format(args.course, day.strftime("%b %d")))
+        show_before_date(canvas_page=lecture_page, in_date=day.strftime("%Y%m%d"))
         import os;os._exit(0)
 
     if args.html:
