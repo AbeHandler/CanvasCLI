@@ -21,7 +21,7 @@ To make an API call when logged into canvas do this
 https://canvas.colorado.edu/api/v1/courses/62535/assignment_groups
 
 On my local machine, I "install" by symlinking to this script and aliasing it as "canvas"
-    - ln -s /Users/abramhandler/everything/teaching/scripts/canvas_cli.py ~/bin/canvas_cli.py 
+    - ln -s /Users/abramhandler/CanvasCLI/canvas_cli.py ~/bin/canvas_cli.py 
     - In zshrc => alias canvas="canvas_cli.py"
 
 
@@ -418,6 +418,7 @@ if __name__ == "__main__":
 
     if args.course is None:
         print("[*] You must specify a course using the --course flag or an alias")
+        import os; os._exit(0)
 
     SEMESTER = "S2021"
     INI_LOC = args.course + SEMESTER + ".ini"
