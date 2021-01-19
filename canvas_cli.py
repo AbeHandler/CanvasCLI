@@ -307,8 +307,7 @@ def make_link(title = "D19-5414.pdf",
     
     t = Template('''<a class="{{css_class}}" title="{{title}}" 
                         href="{{href}}" target="_blank" 
-                        rel="noopener" data-api-endpoint="{{endpoint}}" 
-                        data-api-returntype="File">{{link_text}}</a>''')
+                        rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>''')
     return t.render(css_class=css_class, link_text=link_text, 
                     title=title, href=href, endpoint=endpoint)
 
@@ -399,9 +398,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-p', '-points', '--points', dest='points', default=None, type=int)
 
-    parser.add_argument('-u', '-upload', '--upload', help='Uploads all files in this folder to canvas.', dest='upload', type=str)
-
-    parser.add_argument('-v', '-visible', '--visible', dest='visible', default='false', action='store_true', help='Make html visible')
+    parser.add_argument('-v', '-visible', '--visible', dest='visible', default=False, action='store_true', help='Make html visible')
 
     parser.add_argument('-t', '-tomorrow', '--tomorrow', dest='tomorrow', default=False, action='store_true', help='Use this flag to add an extra day to canvas visibility')
 
@@ -454,6 +451,9 @@ if __name__ == "__main__":
         import os;os._exit(0)
 
     if args.html:
+
+        print(args)
+        import os;os._exit(0)
 
         # show  before date
         course = canvas.get_course(CUno2canvasno[args.course])
@@ -543,15 +543,6 @@ if __name__ == "__main__":
                             course_no_cu=args.course) 
         import os;os._exit(0)
 
-    if args.upload is not None and args.sync is False:
-        # py canvas_cli.py -u ../2301fall2020/week2/assignment_files/ -c 2301 -w 2
-        print("*uploading")
-
-        folder = get_week_folder(CUno2canvasno[args.course], args.week)
-
-        for fn in glob.glob(args.upload + "/*"):
-            folder.upload(fn)
-
     if args.sync and args.week is not None:
 
         # $ canvas -w 3 -sync -c 2301
@@ -560,7 +551,7 @@ if __name__ == "__main__":
 
         for subfolder in folder.get_folders():
             name = subfolder.name
-            glb =  os.environ["ROOT"] +  "/everything/teaching/{}fall2020/week{}/{}/*".format(args.course, args.week, name)
+            glb =  os.environ["ROOT"] +  "/everything/teaching/{}{}/week{}/{}/*".format(args.course, SEMESTER, args.week, name)
             print(glb)
             for fn in glob.glob(glb):
                 print("fn=", fn)
