@@ -298,14 +298,17 @@ def comment_and_grade_no_submission(assignment_id, student):
     print("- Setting {} score to zero".format(student))
     submission.edit(submission={'posted_grade':0}, comment={'text_comment':'no submission'})
 
-def make_link(title = "D19-5414.pdf"):
+def make_link(title = "D19-5414.pdf",
+              link_text = "in-class code", 
+              href = "https://canvas.colorado.edu/courses/62535/files/27550350/preview"):
     '''make a link to a file that can be pasted into Canvas'''
     css_class = "instructure_file_link instructure_scribd_file"
-    title = title
-    href = "https://canvas.colorado.edu/courses/62535/files/27550350/preview"
-    endpoint = "https://canvas.colorado.edu/api/v1/courses/62535/files/27550350"
-    link_text = "in-class code"
-    t = Template('''<a class="{{css_class}}" title="{{title}}" href="{{href}}" target="_blank" rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>''')
+    endpoint = "/".join(href.split("/")[0:-1])
+    
+    t = Template('''<a class="{{css_class}}" title="{{title}}" 
+                        href="{{href}}" target="_blank" 
+                        rel="noopener" data-api-endpoint="{{endpoint}}" 
+                        data-api-returntype="File">{{link_text}}</a>''')
     return t.render(css_class=css_class, link_text=link_text, 
                     title=title, href=href, endpoint=endpoint)
 
@@ -350,7 +353,7 @@ def get_week_folder(course_no, week_no):
         if f.name == "week{}".format(args.week):
             return f
 
-def get_whiteboards_folder_for_week(week, course):
+def get_folder_for_week(week, course, folder_kind = 'whiteboards'):
     '''
     Get the Canvas folder for whiteboards for some week
 
@@ -359,7 +362,7 @@ def get_whiteboards_folder_for_week(week, course):
     course = canvas.get_course(CUno2canvasno[course])
     for f in course.get_folders():
         folder_name = f.full_name.split(' ').pop()
-        if folder_name == "files/week{}/whiteboards".format(week):
+        if folder_name == "files/week{}/{}".format(week, folder_kind):
             return f
     return None
 
@@ -435,8 +438,6 @@ if __name__ == "__main__":
     for coursename, courseno in CUno2canvasno.items():
         names2ids[coursename] = get_student_names2_ids(CUno2canvasno[coursename])
 
-    folder = get_whiteboards_folder_for_week(args.week, args.course)
-
     dates_for_course = get_dates_for_course(INI_LOC)
 
     dates2weeks = get_dates2weeks(dates_for_course)
@@ -467,14 +468,12 @@ if __name__ == "__main__":
 
             ll = None
 
-            if li.attrs["data-bullet"] == "whiteboards":
-                whiteboards_folder = get_whiteboards_folder_for_week(week, args.course)
+            folder_kind = "whiteboards"
+
+            if li.attrs["data-bullet"] == folder_kind:
+                whiteboards_folder = get_folder_for_week(week, args.course, folder_kind=folder_kind)
                 if whiteboards_folder is not None:
                     for file in whiteboards_folder.get_files():
-                        expected_name = li.attrs["data-date"] + "whiteboards.pdf"
-                        print(file.display_name, expected_name, file.display_name == expected_name)
-                        # does a whiteboard. folder exist?
-                        # if so, make a link
                         ll = BeautifulSoup( make_link(), features="html.parser")
 
             if ll is not None:
