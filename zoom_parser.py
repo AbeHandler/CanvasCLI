@@ -4,23 +4,12 @@ from jinja2 import Template
 ### "Show detailed recording info" on Zoom
 
 
-template = '''<li><a href="{{link}}">{{date}}</a> (PW: {{pw}})</li>'''
+template = '''<li><a href="{{link}}">recording</a> (PW: {{pw}})</li>'''
 
 template = Template(template)
 link = None
 
-for o in list(sys.stdin):
-    if "cuboulder" in o:
-        link = o.replace("\n", "")
-    if "Passcode" in o:
-        o = o.replace("Access Passcode", "").replace(":", "")
-        pw = o 
+for o in sys.stdin:
+    url, junk, pw = o.split(" ")
 
-    if "Start" in o:
-        date = (o.split(":")[1].split(",")[0]).strip()
-
-
-    if "Date" in o:
-        date = (o.split(":")[1].split(",")[0]).strip()
-
-print(template.render(pw=pw, link=link, date=date))
+print(template.render(pw=pw, link=url))
