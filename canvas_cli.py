@@ -305,9 +305,8 @@ def make_link(title = "D19-5414.pdf",
     css_class = "instructure_file_link instructure_scribd_file"
     endpoint = "/".join(href.split("/")[0:-1])
     
-    t = Template('''<a class="{{css_class}}" title="{{title}}" 
-                        href="{{href}}" target="_blank" 
-                        rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>''')
+    # needs to be 1 line?
+    t = Template('''<a class="{{css_class}}" title="{{title}}" href="{{href}}" target="_blank"  rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>''')
     return t.render(css_class=css_class, link_text=link_text, 
                     title=title, href=href, endpoint=endpoint)
 
@@ -372,7 +371,7 @@ if __name__ == "__main__":
     # TODO this is a global variable. Fix.
     canvas = get_api()
 
-    FOLDERS = ['assignment_files', 'in_class_code', 'other_files', 'quiz_files', 'whiteboards']
+    FOLDERS = ['assignment_files', 'in-class-code', 'other_files', 'quiz_files', 'whiteboards']
 
     Course2Classtime = {"4604": "T12:40:00", "sandbox": "T12:40:00", "2301": "T10:30:00"}
 
@@ -453,34 +452,47 @@ if __name__ == "__main__":
 
     if args.html:
 
-        print(args)
-        import os;os._exit(0)
-
         # show  before date
         course = canvas.get_course(CUno2canvasno[args.course])
+
+        lecture_page = course.get_page(args.course)
 
         html = BeautifulSoup(lecture_page.body, features="html.parser")
 
         for li in html.findAll("li"):
+            
+            try:    
+                week = dates2weeks[li.attrs["data-date"]]
 
-            li.string = "" # remove inner text
-                        
-            week = dates2weeks[li.attrs["data-date"]]
+                folder_kind = "in-class-code"
 
-            ll = None
+                if args.week is None:
+                    print("You must specify a week")
+                    import os;os._exit(0)
 
-            folder_kind = "whiteboards"
+                if week == args.week:
 
-            if li.attrs["data-bullet"] == folder_kind:
-                whiteboards_folder = get_folder_for_week(week, args.course, folder_kind=folder_kind)
-                if whiteboards_folder is not None:
-                    for file in whiteboards_folder.get_files():
-                        ll = BeautifulSoup( make_link(), features="html.parser")
+                    if li.attrs["data-bullet"] == folder_kind:
+                        folder = get_folder_for_week(week, args.course, folder_kind=folder_kind)
+                        if folder is not None:
+                            for file in folder.get_files():
+                                if li["data-date"] in file.display_name:
+                                    link = make_link(link_text=folder_kind,
+                                                     href = file.url,
+                                                     title=file.display_name)
 
-            if ll is not None:
-                li.insert(0, ll)
+                                    ll = BeautifulSoup( link, features="html.parser")
+                                    print("inserting")
 
-        lecture_page.edit(wiki_page={"body": str(html)})
+                                    li.string = "" # remove inner text
+                                    li.insert(0, ll)
+                                    lecture_page.edit(wiki_page={"body": str(html)})
+                                    import os;os._exit(0)
+            except KeyError:
+                print(li)
+                print("key error")
+
+        
         import os;os._exit(0)
 
     if args.zeros and args.assignmentid is not None:
@@ -552,7 +564,7 @@ if __name__ == "__main__":
 
         for subfolder in folder.get_folders():
             name = subfolder.name
-            glb =  os.environ["ROOT"] +  "/everything/teaching/{}{}/week{}/{}/*".format(args.course, SEMESTER, args.week, name)
+            glb =  os.environ["ROOT"] + "/everything/teaching/{}{}/week{}/{}/*".format(args.course, SEMESTER, args.week, name)
             print(glb)
             for fn in glob.glob(glb):
                 print("fn=", fn)
