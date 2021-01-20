@@ -477,8 +477,10 @@ if __name__ == "__main__":
                         if folder is not None:
                             for file in folder.get_files():
                                 if li["data-date"] in file.display_name:
+
+                                    url = file.url.split("/download")[0]
                                     link = make_link(link_text=folder_kind,
-                                                     href = file.url,
+                                                     href = url,
                                                      title=file.display_name)
 
                                     ll = BeautifulSoup( link, features="html.parser")
@@ -489,8 +491,7 @@ if __name__ == "__main__":
                                     lecture_page.edit(wiki_page={"body": str(html)})
                                     import os;os._exit(0)
             except KeyError:
-                print(li)
-                print("key error")
+                pass
 
         
         import os;os._exit(0)
