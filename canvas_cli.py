@@ -130,9 +130,9 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_
 
     for week in weeks:
         dates = weeks2dates[week]
-        dates.sort()
+        dates.sort(reverse=True)
         dates = [d for d in dates]
-        bullets = ["in-class code", "whiteboards", "recording"]
+        bullets = ["in-class code", "whiteboards", "recording", "in-class assignment"]
         out = out + template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0].strftime(STANDARDDATE))
 
     course = canvas.get_course(course_no_canvas)
