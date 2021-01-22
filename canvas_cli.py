@@ -164,7 +164,9 @@ def get_api():
     return Canvas(API_URL, API_KEY)
 
 
-def create_in_class_assignment(courseNo, due, name = None, points=3, published=False):
+def create_in_class_assignment(courseNo, due, name = None, points=3, published=False, group_id=166877):
+
+    # to find assignment groups ids do: https://canvas.colorado.edu/api/v1/courses/70073/assignment_groups
 
     course = canvas.get_course(CUno2canvasno[courseNo])
 
@@ -179,7 +181,8 @@ def create_in_class_assignment(courseNo, due, name = None, points=3, published=F
         'name': name,
         'published': published,
         'due_at': due.strftime('%Y-%m-%d') + "T23:59:00",
-        "points_possible": points
+        "points_possible": points,
+        "assignment_group_id": str(group_id),
     })
 
     print("   - Added assignment to {}".format(course.name))
