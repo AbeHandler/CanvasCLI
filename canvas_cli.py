@@ -534,13 +534,20 @@ if __name__ == "__main__":
         import os; os._exit(0)
 
     if(args.assignment):
-        try:
-            datetime.strptime(args.due, '%Y%m%d')
-            create_in_class_assignment(courseNo=args.course, due=args.due, name=args.name, points=args.points)
-            import os; os._exit(0)
-        except ValueError:
-            print("[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
-        import os;os._exit(0)
+
+        if args.due is None:
+            print("[*] No due date, assuming it's for today")
+            args.due = date.today().strftime('%Y%m%d')
+        elif args.due is not None:
+            try:
+                if args.due is not None:
+                    datetime.strptime(args.due, '%Y%m%d')
+            except ValueError:
+                print("[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
+        
+        create_in_class_assignment(courseNo=args.course, due=args.due, name=args.name, points=args.points)
+        import os; os._exit(0)
+
 
     if(args.init):
         '''
