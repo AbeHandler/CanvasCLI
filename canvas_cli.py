@@ -177,11 +177,15 @@ def create_in_class_assignment(courseNo, due, name = None, points=3, published=F
     if name is None:
         name = due.strftime("%b %d") + " : in-class"
 
+    description = "Use this link to turn in your in-class work. You will be graded based on participation. You are NOT expected to work on this outside of class."
+
     course.create_assignment({
         'name': name,
         'published': published,
         'due_at': due.strftime('%Y-%m-%d') + "T23:59:00",
         "points_possible": points,
+        "description": description,
+        "submission_types": ["online_upload", "online_text_entry"],
         "assignment_group_id": str(group_id),
     })
 
@@ -398,7 +402,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-e', '-export', '--export', dest='export', help='Export all', default=False, action='store_true')
 
-    parser.add_argument('-p', '-points', '--points', dest='points', default=None, type=int)
+    parser.add_argument('-p', '-points', '--points', dest='points', default=3, type=int)
 
     parser.add_argument('-v', '-visible', '--visible', dest='visible', default=False, action='store_true', help='Make html visible')
 
