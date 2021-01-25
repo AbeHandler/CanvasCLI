@@ -380,8 +380,6 @@ if __name__ == "__main__":
 
     FOLDERS = ['assignment_files', 'in-class-code', 'other_files', 'quiz_files', 'whiteboards']
 
-    Course2Classtime = {"4604": "T12:40:00", "sandbox": "T12:40:00", "2301": "T10:30:00"}
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-c', '-course', '--course', default=None, help='INFO course number, e.g. 4604')
@@ -435,6 +433,8 @@ if __name__ == "__main__":
 
     # Map CU course names to Canvas course names
     CUno2canvasno = {config["course_info"]["course_name"]: int(config["course_info"]["canvas_no"])}
+
+    Course2Classtime = {args.course : config["course_info"]["start_time"]}
 
     course_no = config["course_info"]["canvas_no"]
 
