@@ -523,9 +523,13 @@ if __name__ == "__main__":
         import os; os._exit(0)
 
     if(args.quiz):
-        if args.due is None:
+        if args.due is None and args.tomorrow is None:
             print("[*] You must set a due date")
             import os;os._exit(0)
+        if args.due is None and args.tomorrow is not None:
+            day = date.today()
+            day += timedelta(days=1)
+            args.due = day.strftime('%Y%m%d')
         course = canvas.get_course(CUno2canvasno[args.course])
         due = datetime.strptime(args.due, '%Y%m%d')
         if args.name is None:
