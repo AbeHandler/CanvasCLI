@@ -5,7 +5,8 @@ attendanceCount = defaultdict(int)
 
 DIR = "3402"
 for fileName in os.listdir(DIR):
-    if (fileName != ".ipynb_checkpoints"):
+    if (fileName != ".ipynb_checkpoints" and "processed_" not in fileName):
+        print(fileName)
         with open(os.path.join(DIR, fileName), 'r') as currentFile:
             if (fileName.split("_")[0] == "participants"):
                 # attendance file
@@ -27,6 +28,4 @@ for fileName in os.listdir(DIR):
         # write to file
         if value >= 40: # must attend 40 minues
             attendanceFile.write(key+","+str(value)+"\n")
-        else:
-            print("skipping", key, value)
     attendanceFile.close()
