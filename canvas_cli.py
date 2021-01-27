@@ -45,6 +45,7 @@ from datetime import date
 from datetime import timedelta
 from collections import defaultdict
 from bs4 import BeautifulSoup
+import pandas as pd
 
 STANDARDDATE = "%Y%m%d"
 
@@ -303,6 +304,24 @@ def update_roll_call(roll_call_attendance_no, student_id):
     submission.edit(submission={'posted_grade':100}, comment={'present'})
     # write student's attendance history to a csv called history.csv
     submission.upload_comment("your_attendance.csv") # reference 
+
+
+def get_student_attendance(email, folder = "3402"):
+    '''
+    Input: a CU email
+    Output: a dataframe saying when they were present or not
+    Assumes you run py atttendence.py to fill folder (e.g. 3402)
+    '''
+    all_ = pd.concat(pd.read_csv(fn) for fn in glob.glob(folder + "/pro*"))
+
+    dates = pd.DataFrame(all_["date"].unique())
+    dates.columns = ["date"]
+
+    stu = all_[all_['email'] == email]
+    stu = pd.merge(dates, stu, how="outer", on=["date"])
+    stu["student"] = student
+    stu = stu.fillna(0)
+    return stu
 
 
 def comment_and_grade_no_submission(assignment_id, student):
