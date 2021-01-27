@@ -293,14 +293,19 @@ def get_no_submissions(course, assignment):
     return non_submitting_students
 
 
-def update_roll_call(roll_call_attendance_no, student_id):
+def update_roll_call(roll_call_attendance_no, canvas_student_id):
     '''
     - Canvas has a built in roll call attendance feature
     - Each student automatically is submitted to roll call attendance
     - Write their history to your_attendance.csv and upload to justify attendance
     '''
+    for u in course.get_users(enrollment_type=['student']):
+        print(u, u.email,  u.sis_user_id, dir(u))
+    user = canvas.get_user(canvas_student_id)
+    email = user.email
+    attendance_csv = get_student_attendance(email)
     assignment = course.get_assignment(assignment=roll_call_attendance_no)
-    submission = assignment.get_submission(student_id) # student id 
+    submission = assignment.get_submission(canvas_student_id) # student id 
     submission.edit(submission={'posted_grade':100}, comment={'present'})
     # write student's attendance history to a csv called history.csv
     submission.upload_comment("your_attendance.csv") # reference 
@@ -414,6 +419,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('-attendance', '--attendance', dest='attendance', default=False, action='store_true', help='Take attendance')
+
     parser.add_argument('-c', '-course', '--course', default=None, help='INFO course number, e.g. 4604')
 
     parser.add_argument('-init', '--init', dest='init', default=False, action='store_true', help='Use this flag to init the course files on Canvas')
@@ -477,6 +484,14 @@ if __name__ == "__main__":
     dates_for_course = get_dates_for_course(INI_LOC)
 
     dates2weeks = get_dates2weeks(dates_for_course)
+
+    if args.attendance:
+        course = canvas.get_course(CUno2canvasno[args.course])
+        canvasID2email = {} 
+        for u in course.get_users(enrollment_type=['student']):
+            canvasID2email[u.id] = u.email
+        print(canvasID2email)
+        import os;os._exit(0)
 
     if args.visible:
         day = date.today()
