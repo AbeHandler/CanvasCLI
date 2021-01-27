@@ -18,14 +18,15 @@ for fileName in os.listdir(DIR):
                 next(csvReader)
 
                 for row in csvReader:
+                    print(row)
                     minutes = row[-2] # total minutes. Canvas makes 2 rows 
                     if (row[1].find("@") != -1): # has an email
-                        attendanceCount[row[1]] += int(minutes)
+                        attendanceCount[row[0]] += int(minutes)
 
         fn = DIR + "/processed_" + fileName
 
         with open(fn, "w") as of:
-            of.write("email,present,date\n")
+            of.write("name,present,date\n")
             for key, value in sorted(attendanceCount.items()):
                 #print(key+": "+str(value))
                 # write to file

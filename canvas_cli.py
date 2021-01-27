@@ -299,6 +299,7 @@ def update_roll_call(course, roll_call_attendance_no, canvas_student_email, canv
     - Each student automatically is submitted to roll call attendance
     - Write their history to your_attendance.csv and upload to justify attendance
     '''
+    print(canvas_student_email)
     attendance_csv = get_student_attendance(canvas_student_email)
     assignment = course.get_assignment(assignment=roll_call_attendance_no)
     submission = assignment.get_submission(canvas_student_id) # student id 
@@ -325,6 +326,7 @@ def get_student_attendance(email, folder = "3402"):
 
     stu = all_[all_['email'] == email]
     stu = pd.merge(dates, stu, how="outer", on=["date"])
+    print(all_, email)
     stu = stu.fillna(0)
     return stu
 
