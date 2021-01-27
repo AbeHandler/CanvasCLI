@@ -292,6 +292,19 @@ def get_no_submissions(course, assignment):
     return non_submitting_students
 
 
+def update_roll_call(roll_call_attendance_no, student_id):
+    '''
+    - Canvas has a built in roll call attendance feature
+    - Each student automatically is submitted to roll call attendance
+    - Write their history to your_attendance.csv and upload to justify attendance
+    '''
+    assignment = course.get_assignment(assignment=roll_call_attendance_no)
+    submission = assignment.get_submission(student_id) # student id 
+    submission.edit(submission={'posted_grade':100}, comment={'present'})
+    # write student's attendance history to a csv called history.csv
+    submission.upload_comment("your_attendance.csv") # reference 
+
+
 def comment_and_grade_no_submission(assignment_id, student):
     '''
     Give 0 + comment "no submission" to student on assignment
