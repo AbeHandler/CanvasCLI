@@ -301,14 +301,17 @@ def update_roll_call(roll_call_attendance_no, canvas_student_id):
     '''
     for u in course.get_users(enrollment_type=['student']):
         print(u, u.email,  u.sis_user_id, dir(u))
-    user = canvas.get_user(canvas_student_id)
-    email = user.email
-    attendance_csv = get_student_attendance(email)
-    assignment = course.get_assignment(assignment=roll_call_attendance_no)
-    submission = assignment.get_submission(canvas_student_id) # student id 
-    submission.edit(submission={'posted_grade':100}, comment={'present'})
-    # write student's attendance history to a csv called history.csv
-    submission.upload_comment("your_attendance.csv") # reference 
+
+        '''
+        user = canvas.get_user(canvas_student_id)
+        email = user.email
+        attendance_csv = get_student_attendance(email)
+        assignment = course.get_assignment(assignment=roll_call_attendance_no)
+        submission = assignment.get_submission(canvas_student_id) # student id 
+        submission.edit(submission={'posted_grade':100}, comment={'present'})
+        # write student's attendance history to a csv called history.csv
+        submission.upload_comment("your_attendance.csv") # reference 
+        '''
 
 
 def get_student_attendance(email, folder = "3402"):
@@ -487,9 +490,15 @@ if __name__ == "__main__":
 
     if args.attendance:
         course = canvas.get_course(CUno2canvasno[args.course])
+        roll_call_attendance_no = config["course_info"]["roll_call_attendance_no"]
+
         canvasID2email = {} 
+
         for u in course.get_users(enrollment_type=['student']):
             canvasID2email[u.id] = u.email
+            print(roll_call_attendance_no, u.id)
+            #update_roll_call(roll_call_attendance_no, canvas_student_id=u.id)
+
         print(canvasID2email)
         import os;os._exit(0)
 
