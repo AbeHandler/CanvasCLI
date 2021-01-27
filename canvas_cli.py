@@ -293,25 +293,23 @@ def get_no_submissions(course, assignment):
     return non_submitting_students
 
 
-def update_roll_call(roll_call_attendance_no, canvas_student_id):
+def update_roll_call(course, roll_call_attendance_no, canvas_student_email, canvas_student_id):
     '''
     - Canvas has a built in roll call attendance feature
     - Each student automatically is submitted to roll call attendance
     - Write their history to your_attendance.csv and upload to justify attendance
     '''
-    for u in course.get_users(enrollment_type=['student']):
-        print(u, u.email,  u.sis_user_id, dir(u))
+    attendance_csv = get_student_attendance(canvas_student_email)
+    assignment = course.get_assignment(assignment=roll_call_attendance_no)
+    submission = assignment.get_submission(canvas_student_id) # student id 
 
-        '''
-        user = canvas.get_user(canvas_student_id)
-        email = user.email
-        attendance_csv = get_student_attendance(email)
-        assignment = course.get_assignment(assignment=roll_call_attendance_no)
-        submission = assignment.get_submission(canvas_student_id) # student id 
-        submission.edit(submission={'posted_grade':100}, comment={'present'})
-        # write student's attendance history to a csv called history.csv
-        submission.upload_comment("your_attendance.csv") # reference 
-        '''
+    print(attendance_csv)
+
+    '''
+    submission.edit(submission={'posted_grade':100}, comment={'present'})
+    # write student's attendance history to a csv called history.csv
+    submission.upload_comment("your_attendance.csv") # reference 
+    '''
 
 
 def get_student_attendance(email, folder = "3402"):
@@ -327,7 +325,6 @@ def get_student_attendance(email, folder = "3402"):
 
     stu = all_[all_['email'] == email]
     stu = pd.merge(dates, stu, how="outer", on=["date"])
-    stu["student"] = student
     stu = stu.fillna(0)
     return stu
 
@@ -492,14 +489,16 @@ if __name__ == "__main__":
         course = canvas.get_course(CUno2canvasno[args.course])
         roll_call_attendance_no = config["course_info"]["roll_call_attendance_no"]
 
-        canvasID2email = {} 
+        canvasID2email = {}
 
         for u in course.get_users(enrollment_type=['student']):
             canvasID2email[u.id] = u.email
-            print(roll_call_attendance_no, u.id)
-            #update_roll_call(roll_call_attendance_no, canvas_student_id=u.id)
+            update_roll_call(course=course,
+                             roll_call_attendance_no=roll_call_attendance_no,
+                             canvas_student_email=u.email,
+                             canvas_student_id=u.id)
 
-        print(canvasID2email)
+            print(u)
         import os;os._exit(0)
 
     if args.visible:
