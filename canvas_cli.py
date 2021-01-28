@@ -293,14 +293,14 @@ def get_no_submissions(course, assignment):
     return non_submitting_students
 
 
-def update_roll_call(course, roll_call_attendance_no, canvas_student_email, canvas_student_id):
+def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canvas_student_id):
     '''
     - Canvas has a built in roll call attendance feature
     - Each student automatically is submitted to roll call attendance
     - Write their history to your_attendance.csv and upload to justify attendance
     '''
-    print(canvas_student_email)
-    attendance_csv = get_student_attendance(canvas_student_email)
+
+    attendance_csv = get_student_attendance(canvas_student_name)
     assignment = course.get_assignment(assignment=roll_call_attendance_no)
     submission = assignment.get_submission(canvas_student_id) # student id 
 
@@ -313,7 +313,7 @@ def update_roll_call(course, roll_call_attendance_no, canvas_student_email, canv
     '''
 
 
-def get_student_attendance(email, folder = "3402"):
+def get_student_attendance(name, folder = "3402"):
     '''
     Input: a CU email
     Output: a dataframe saying when they were present or not
@@ -324,10 +324,10 @@ def get_student_attendance(email, folder = "3402"):
     dates = pd.DataFrame(all_["date"].unique())
     dates.columns = ["date"]
 
-    stu = all_[all_['email'] == email]
+    stu = all_[all_['name'] == name]
     stu = pd.merge(dates, stu, how="outer", on=["date"])
-    print(all_, email)
     stu = stu.fillna(0)
+    print(stu)
     return stu
 
 
@@ -341,7 +341,8 @@ def comment_and_grade_no_submission(assignment_id, student):
     '''
     assignment = course.get_assignment(assignment=assignment_id)
     submission = assignment.get_submission(student.id) # student id 
-    print("- Setting {} score to zero".format(student))
+    #print("- Setting {} score to zero".format(student))
+
     submission.edit(submission={'posted_grade':0}, comment={'text_comment':'no submission'})
 
 def make_link(title = "D19-5414.pdf",
@@ -411,6 +412,25 @@ def get_folder_for_week(week, course, folder_kind = 'whiteboards'):
     return None
 
 
+def comment_and_grade_participation(assignment_id, student):
+    '''
+    Give 0 + comment "no submission" to student on assignment
+
+    e.g. 
+    for student in get_no_submissions(course, assignment):
+        comment_and_grade_no_submission(assignment_id=880992, student_id=student)
+    '''
+    assignment = course.get_assignment(assignment=assignment_id)
+    submission = assignment.get_submission(student.id) # student id
+
+    if submission.submitted_at is None:
+        print('- no submission yet for {}'.format(student))
+    else:
+        print("- Setting {} score to full".format(student))
+        submission.edit(submission={'posted_grade':assignment.points_possible}, comment={'text_comment':'no submission'})
+
+
+
 if __name__ == "__main__":
 
 
@@ -449,11 +469,13 @@ if __name__ == "__main__":
 
     parser.add_argument('-s', '-sync', '--sync', action='store_true', help='syncs a directory to canvas', dest='sync', default=False)
 
+    parser.add_argument('--participation', action='store_true', help='assigns full points to students who submitted', dest='participation', default=False)
+
     parser.add_argument('-z', '-zeros', '--zeros', action='store_true', help='assigns zeros to students who have not submitted', dest='zeros', default=False)
 
     parser.add_argument('-html', action='store_true', help='print HTML for semester', dest='html', default=False)
 
-    parser.add_argument('--assignmentid', dest="assignmentid", help='Assignment ID for no submission')
+    parser.add_argument('--assignment_id', dest="assignment_id", help='Assignment ID for no submission')
 
     parser.add_argument('-time_limit', '--time_limit', default=10, help='time limit, in minutes')
 
@@ -497,7 +519,7 @@ if __name__ == "__main__":
             canvasID2email[u.id] = u.email
             update_roll_call(course=course,
                              roll_call_attendance_no=roll_call_attendance_no,
-                             canvas_student_email=u.email,
+                             canvas_student_name=u.name,
                              canvas_student_id=u.id)
 
             print(u)
@@ -560,7 +582,15 @@ if __name__ == "__main__":
         
         import os;os._exit(0)
 
-    if args.zeros and args.assignmentid is not None:
+    if args.participation and args.assignment_id is not None:
+        course = canvas.get_course(CUno2canvasno[args.course])
+        assignment = course.get_assignment(args.assignment_id)
+        for student in assignment.get_gradeable_students():
+            comment_and_grade_participation(args.assignment_id, student)
+        import os;os._exit(0)
+
+
+    if args.zeros and args.assignment_id is not None:
         # py canvas_cli.py -c 2301 -zeros --assignmentid 871212
         course = canvas.get_course(CUno2canvasno[args.course])
         for student in get_no_submissions(course, args.assignmentid):
