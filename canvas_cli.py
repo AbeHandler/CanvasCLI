@@ -427,7 +427,7 @@ def comment_and_grade_participation(assignment_id, student):
         print('- no submission yet for {}'.format(student))
     else:
         print("- Setting {} score to full".format(student))
-        submission.edit(submission={'posted_grade':assignment.points_possible}, comment={'text_comment':'no submission'})
+        submission.edit(submission={'posted_grade':assignment.points_possible})
 
 
 
