@@ -681,5 +681,7 @@ if __name__ == "__main__":
             already_uploaded = [j.display_name for j in subfolder.get_files()]
 
             for fn in glob.glob(glb):
+                fname = fn.split("/").pop()
                 if fn.split("/").pop() not in already_uploaded:
+                    print("- uploading {} to {}".format(fname, subfolder))
                     subfolder.upload(fn, on_duplicate="overwrite")
