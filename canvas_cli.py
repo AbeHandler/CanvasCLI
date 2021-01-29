@@ -304,14 +304,16 @@ def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canva
     assignment = course.get_assignment(assignment=roll_call_attendance_no)
     submission = assignment.get_submission(canvas_student_id) # student id 
 
+    score = sum(attendance_csv["present"])/len(attendance_csv["present"])
+    print(canvas_student_name, score)
+    attendance_csv.to_csv("your_attendance.csv", index=False)
 
-    print(attendance_csv)
-
-    '''
-    submission.edit(submission={'posted_grade':100}, comment={'present'})
+    submission.edit(submission={'posted_grade': int(score * 100)}, comment={'present'})
     # write student's attendance history to a csv called history.csv
     submission.upload_comment("your_attendance.csv") # reference 
-    '''
+
+    import os;os._exit(0)
+
 
 def get_student_attendance(name, folder = "3402"):
     '''
@@ -323,13 +325,24 @@ def get_student_attendance(name, folder = "3402"):
     This is sufficient for 3402
     '''
     name = name.replace("'", "")
+
     all_ = pd.concat(pd.read_csv(fn) for fn in glob.glob(folder + "/pro*"))
     all_["last"] = all_["name"].apply(lambda x: x.split()[-1].lower().replace("'", ""))
     all_["first3"] = all_["name"].apply(lambda x: x.split()[0].lower()[0:3])
 
+    all_["date"] = all_["date"].apply(lambda x: str(x))
+
+
     dates = pd.DataFrame(all_["date"].unique())
     dates.columns = ["date"]
 
+    dates["date"] = dates["date"].apply(lambda x: datetime.strptime(str(x), "%Y%m%d"))
+
+    dates.sort_values(by='date', inplace=True)
+
+    dates["date"] = dates["date"].apply(lambda x: datetime.strftime(x, "%Y%m%d"))
+
+    # get student values
     stu = all_[all_['last'] == name.split()[-1].lower()]
 
     # merge on all dates
@@ -339,7 +352,8 @@ def get_student_attendance(name, folder = "3402"):
 
     unique_names = [j for j in stu.name.unique().tolist() if type(j) == str]
     if len(unique_names) > 1:
-        # additional matching on first 4 chars of first name     
+
+        # additional matching on first 3 chars of first name 
         stu = stu[stu['first3'] == name.split()[0].lower()[0:3]]
 
     stu = stu[["date",'present', 'name']]
@@ -539,7 +553,6 @@ if __name__ == "__main__":
                              canvas_student_name=u.name,
                              canvas_student_id=u.id)
 
-            print(u)
         import os;os._exit(0)
 
     if args.visible:
