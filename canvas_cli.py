@@ -312,8 +312,6 @@ def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canva
     # write student's attendance history to a csv called history.csv
     submission.upload_comment("your_attendance.csv") # reference 
 
-    import os;os._exit(0)
-
 
 def get_student_attendance(name, folder = "3402"):
     '''
