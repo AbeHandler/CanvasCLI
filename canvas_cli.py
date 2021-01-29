@@ -634,8 +634,12 @@ if __name__ == "__main__":
     if(args.assignment):
 
         if args.due is None:
-            print("[*] No due date, assuming it's for today")
-            args.due = date.today().strftime('%Y%m%d')
+            if args.tomorrow is None:
+                print("[*] No due date, assuming it's for today")
+                args.due = date.today().strftime('%Y%m%d')
+            else:
+                print("[*] Assignment is for tomorrow")
+                args.due = (date.today() + timedelta(days=1)).strftime('%Y%m%d')
         elif args.due is not None:
             try:
                 if args.due is not None:
