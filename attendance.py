@@ -18,7 +18,6 @@ for fileName in os.listdir(DIR):
                 next(csvReader)
 
                 for row in csvReader:
-                    print(row)
                     minutes = row[-2] # total minutes. Canvas makes 2 rows 
                     if (row[1].find("@") != -1): # has an email
                         attendanceCount[row[0]] += int(minutes)
@@ -31,4 +30,5 @@ for fileName in os.listdir(DIR):
                 #print(key+": "+str(value))
                 # write to file
                 present = 1 if (value >= 40) else 0
+                key = key.replace("'", "")
                 of.write(key + ", " + str(present) + "," + date + "\n")

@@ -304,6 +304,7 @@ def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canva
     assignment = course.get_assignment(assignment=roll_call_attendance_no)
     submission = assignment.get_submission(canvas_student_id) # student id 
 
+
     print(attendance_csv)
 
     '''
@@ -312,22 +313,38 @@ def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canva
     submission.upload_comment("your_attendance.csv") # reference 
     '''
 
-
 def get_student_attendance(name, folder = "3402"):
     '''
     Input: a CU email
     Output: a dataframe saying when they were present or not
     Assumes you run py atttendence.py to fill folder (e.g. 3402)
+
+    Matches based on last name lower case. If that is not unique matches on first 3 of first
+    This is sufficient for 3402
     '''
+    name = name.replace("'", "")
     all_ = pd.concat(pd.read_csv(fn) for fn in glob.glob(folder + "/pro*"))
+    all_["last"] = all_["name"].apply(lambda x: x.split()[-1].lower().replace("'", ""))
+    all_["first3"] = all_["name"].apply(lambda x: x.split()[0].lower()[0:3])
 
     dates = pd.DataFrame(all_["date"].unique())
     dates.columns = ["date"]
 
-    stu = all_[all_['name'] == name]
+    stu = all_[all_['last'] == name.split()[-1].lower()]
+
+    # merge on all dates
     stu = pd.merge(dates, stu, how="outer", on=["date"])
+
     stu = stu.fillna(0)
-    print(stu)
+
+    unique_names = [j for j in stu.name.unique().tolist() if type(j) == str]
+    if len(unique_names) > 1:
+        # additional matching on first 4 chars of first name     
+        stu = stu[stu['first3'] == name.split()[0].lower()[0:3]]
+
+    stu = stu[["date",'present', 'name']]
+    stu["name"] = name
+
     return stu
 
 
