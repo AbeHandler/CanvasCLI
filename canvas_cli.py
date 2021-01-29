@@ -666,6 +666,9 @@ if __name__ == "__main__":
                             course_no_cu=args.course) 
         import os;os._exit(0)
 
+    if args.sync and args.week is None:
+        print("[*] you must scecify a week with sync")
+
     if args.sync and args.week is not None:
 
         # $ canvas -w 3 -sync -c 2301
@@ -675,8 +678,8 @@ if __name__ == "__main__":
         for subfolder in folder.get_folders():
             name = subfolder.name
             glb =  os.environ["ROOT"] + "/everything/teaching/{}{}/week{}/{}/*".format(args.course, SEMESTER, args.week, name)
-            print(glb)
+            already_uploaded = [j.display_name for j in subfolder.get_files()]
+
             for fn in glob.glob(glb):
-                print("fn=", fn)
-                print("[*] Uploading {} to {}".format(fn, name))
-                subfolder.upload(fn, on_duplicate="overwrite")
+                if fn.split("/").pop() not in already_uploaded:
+                    subfolder.upload(fn, on_duplicate="overwrite")
