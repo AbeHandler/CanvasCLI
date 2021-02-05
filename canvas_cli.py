@@ -453,7 +453,8 @@ def comment_and_grade_participation(assignment_id, student):
     submission = assignment.get_submission(student.id) # student id
 
     if submission.submitted_at is None:
-        print('- no submission yet for {}'.format(student))
+        print('- No submission yet for {}'.format(student))
+        submission.edit(submission={'posted_grade':0, 'comment': "no submission"})
     else:
         print("- Setting {} score to full".format(student))
         submission.edit(submission={'posted_grade':assignment.points_possible})
@@ -494,7 +495,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-v', '-visible', '--visible', dest='visible', default=False, action='store_true', help='Make html visible')
 
-    parser.add_argument('-t', '-tomorrow', '--tomorrow', dest='tomorrow', default=False, action='store_true', help='Use this flag to add an extra day to canvas visibility')
+    parser.add_argument('-t', '-tomorrow', '--tomorrow', action='store_true', help='syncs a directory to canvas', dest='tomorrow', default=False)
 
     parser.add_argument('-s', '-sync', '--sync', action='store_true', help='syncs a directory to canvas', dest='sync', default=False)
 
@@ -505,8 +506,6 @@ if __name__ == "__main__":
     parser.add_argument('-html', action='store_true', help='print HTML for semester', dest='html', default=False)
 
     parser.add_argument('--assignment_id', dest="assignment_id", help='Assignment ID for no submission')
-
-    parser.add_argument('-time_limit', '--time_limit', default=10, help='time limit, in minutes')
 
     parser.add_argument('--publish', dest='publish', default='false', action='store_true', help='Use this flag to immediately publish the assignment')
 
@@ -662,7 +661,8 @@ if __name__ == "__main__":
     if(args.assignment):
 
         if args.due is None:
-            if args.tomorrow is None:
+
+            if args.tomorrow is False:
                 print("[*] No due date, assuming it's for today")
                 args.due = date.today().strftime('%Y%m%d')
             else:
@@ -674,7 +674,7 @@ if __name__ == "__main__":
                     datetime.strptime(args.due, '%Y%m%d')
             except ValueError:
                 print("[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
-        
+
         create_in_class_assignment(courseNo=args.course, due=args.due, name=args.name, points=args.points)
         import os; os._exit(0)
 
