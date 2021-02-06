@@ -15,3 +15,7 @@ A canvas CLI. Use the `-c` flag to run a command for a particular course (using 
 #### Export
 
 `$py canvas_cli.py --export -c 3402`
+
+#### Initialize local files and canvas files
+
+`$py canvas_cli.py -init -c 3402`
