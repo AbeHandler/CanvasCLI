@@ -525,7 +525,7 @@ if __name__ == "__main__":
     # Map CU course names to Canvas course names
     CUno2canvasno = {config["course_info"]["course_name"]: int(config["course_info"]["canvas_no"])}
 
-    Course2Classtime = {args.course : config["course_info"]["start_time"]}
+    Course2Classtime = {args.course : config["course_info"]["end_time"]}
 
     course_no = config["course_info"]["canvas_no"]
 
@@ -652,7 +652,7 @@ if __name__ == "__main__":
             name = args.name
         course.create_quiz({'title': name,
                             'published': args.publish,
-                            'time_limit': args.time_limit,
+                            'time_limit': 5,
                             "points_possible": args.points,
                             "due_at": args.due + "T" + Course2Classtime[args.course]})
         print("[*] created quiz for {}".format(args.course))
