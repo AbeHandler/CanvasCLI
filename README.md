@@ -16,9 +16,9 @@ A canvas CLI. Use the `-c` flag to run a command for a particular course (using 
 
 - To make a quiz for tomorrow, use the `-t` flag
 
-#### Daily in-class assignment
+#### Daily in-class assignment for tomorrow
 
-`$py canvas_cli.py -assignment -c 2301 -points 3`
+`$py canvas_cli.py -assignment -c 2301 -points 3 -t`
 
 #### Export
 
