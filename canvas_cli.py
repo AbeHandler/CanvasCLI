@@ -47,6 +47,8 @@ from collections import defaultdict
 from bs4 import BeautifulSoup
 import pandas as pd
 
+from canvasapi.exceptions import CanvasException
+
 STANDARDDATE = "%Y%m%d"
 
 
@@ -308,9 +310,12 @@ def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canva
     print(canvas_student_name, score)
     attendance_csv.to_csv("your_attendance.csv", index=False)
 
-    submission.edit(submission={'posted_grade': int(score * 100)}, comment={'present'})
-    # write student's attendance history to a csv called history.csv
-    submission.upload_comment("your_attendance.csv") # reference 
+    try:
+        submission.edit(submission={'posted_grade': int(score * 100)}, comment={'present'})
+        # write student's attendance history to a csv called history.csv
+        submission.upload_comment("your_attendance.csv") # reference 
+    except CanvasException: 
+        print("error on {}".format(canvas_student_name))
 
 
 def get_student_attendance(name, folder = "3402"):
