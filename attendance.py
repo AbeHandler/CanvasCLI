@@ -31,4 +31,4 @@ for fileName in os.listdir(DIR):
                 # write to file
                 present = 1 if (value >= 40) else 0
                 key = key.replace("'", "").replace(" (They/Them)", "")
-                of.write(key + ", " + str(present) + "," + date + "\n")
+                of.write(key + ", " + str(present) + "," + date + "," + str(value) + "\n")
