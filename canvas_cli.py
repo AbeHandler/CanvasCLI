@@ -512,7 +512,7 @@ def assign_grades_if_peer_review_exists(course, assignment_id):
     _assignment_pr_assessment_df = get_peer_reviews(course, assignment_id)
     for r in _assignment_pr_assessment_df.to_dict('records'):
         if r['state'] == 'completed':
-            _assignment.get_submission(r['submitter_user_id']).edit(submission={'posted_grade':r['score'], 'text_comment':"Peer review grade"})
+            _assignment.get_submission(r['submitter_user_id']).edit(submission={'posted_grade':r['score']}, comment={'text_comment':"Peer review grade"})
         else:
             print("[*] Warning no review {}".format(r))
 
