@@ -548,8 +548,9 @@ def deduct_for_missing_reviews(course, assignment_id):
             _penalty = round(_assignment.points_possible * .1)
             _penalty_score = _current_score - _penalty
             
-            #_assignment.get_submission(r['assessor_user_id']).edit(submission={'posted_grade':_penalty_score},
-            #                                                       comment={'text_comment':"Incomplete peer review, grade dropped by 10%"})
+            _assignment.get_submission(r['assessor_user_id']).edit(submission={'posted_grade':_penalty_score},
+                                                                   comment={'text_comment':"Incomplete peer review, grade dropped by 10%"})
+            print("[*] deducted", r)
         except TypeError:
             print(r, _assignment.get_submission(r['assessor_user_id']))
             print("Assessor {0}'s assignment has not been submitted/graded".format(r['assessor_user_id']))
@@ -817,3 +818,4 @@ if __name__ == "__main__":
         else:
             course = canvas.get_course(CUno2canvasno[args.course])
             assign_grades_if_peer_review_exists(course, args.assignment_id)
+            deduct_for_missing_reviews(course, args.assignment_id)
