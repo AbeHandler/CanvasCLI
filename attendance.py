@@ -25,7 +25,7 @@ for fileName in os.listdir(DIR):
         fn = DIR + "/processed_" + fileName
 
         with open(fn, "w") as of:
-            of.write("name,present,date\n")
+            of.write("name,present,date,minutes\n")
             for key, value in sorted(attendanceCount.items()):
                 #print(key+": "+str(value))
                 # write to file
