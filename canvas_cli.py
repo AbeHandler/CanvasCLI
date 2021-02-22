@@ -302,6 +302,7 @@ def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canva
     - Write their history to your_attendance.csv and upload to justify attendance
     '''
 
+    print(canvas_student_name)
     attendance_csv = get_student_attendance(canvas_student_name)
     assignment = course.get_assignment(assignment=roll_call_attendance_no)
     submission = assignment.get_submission(canvas_student_id) # student id 
@@ -331,7 +332,12 @@ def get_student_attendance(name, folder = "3402"):
     '''
     name = name.replace("'", "")
 
+    #print(name)
+
     all_ = pd.concat(pd.read_csv(fn) for fn in glob.glob(folder + "/pro*"))
+
+    #import ipdb;ipdb.set_trace()
+
     all_["last"] = all_["name"].apply(lambda x: x.split()[-1].lower().replace("'", ""))
     all_["first3"] = all_["name"].apply(lambda x: x.split()[0].lower()[0:3])
 
@@ -636,6 +642,7 @@ if __name__ == "__main__":
     dates2weeks = get_dates2weeks(dates_for_course)
 
     if args.attendance:
+        # first run $py attendance.py
         course = canvas.get_course(CUno2canvasno[args.course])
         roll_call_attendance_no = config["course_info"]["roll_call_attendance_no"]
 
@@ -643,10 +650,13 @@ if __name__ == "__main__":
 
         for u in course.get_users(enrollment_type=['student']):
             canvasID2email[u.id] = u.email
-            update_roll_call(course=course,
-                             roll_call_attendance_no=roll_call_attendance_no,
-                             canvas_student_name=u.name,
-                             canvas_student_id=u.id)
+            try:
+                update_roll_call(course=course,
+                                 roll_call_attendance_no=roll_call_attendance_no,
+                                 canvas_student_name=u.name,
+                                 canvas_student_id=u.id)
+            except AttributeError:
+                print("-", "error on student ", u)
 
         import os;os._exit(0)
 
