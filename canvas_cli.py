@@ -295,23 +295,30 @@ def get_no_submissions(course, assignment):
     return non_submitting_students
 
 
-def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canvas_student_id):
+def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canvas_student_id, excused):
     '''
     - Canvas has a built in roll call attendance feature
     - Each student automatically is submitted to roll call attendance
     - Write their history to your_attendance.csv and upload to justify attendance
     '''
 
-    print(canvas_student_name)
+    # print(canvas_student_name)
     attendance_csv = get_student_attendance(canvas_student_name)
     assignment = course.get_assignment(assignment=roll_call_attendance_no)
     submission = assignment.get_submission(canvas_student_id) # student id 
 
-    score = sum(attendance_csv["present"])/len(attendance_csv["present"])
-    print(canvas_student_name, score)
-    attendance_csv.to_csv("your_attendance.csv", index=False)
+    # 5 free excused absences
+    score = (sum(attendance_csv["present"]) + excused[canvas_student_id])/len(attendance_csv["present"])
+
+    score = 1.0 if score > 1.0 else score
+
+    print(canvas_student_name, score * 100)
+
     submission.edit(submission={'posted_grade': int(score * 100)}, comment={'present'})
+ 
     '''
+    Not used 
+    attendance_csv.to_csv("your_attendance.csv", index=False)
     try:
         submission.edit(submission={'posted_grade': int(score * 100)}, comment={'present'})
         # write student's attendance history to a csv called history.csv
@@ -646,6 +653,16 @@ if __name__ == "__main__":
         course = canvas.get_course(CUno2canvasno[args.course])
         roll_call_attendance_no = config["course_info"]["roll_call_attendance_no"]
 
+
+        # read in excused absences
+        excused = config["attendance_info"]["excused"]
+        excused = defaultdict(lambda: int(config["attendance_info"]["excused"]))
+
+        for alt in config["attendance_info"].keys():
+            if alt[0:7] == "student":
+                student_no = int(alt.split("_")[1])
+                excused[student_no] = int(config["attendance_info"][alt])
+
         canvasID2email = {}
 
         for u in course.get_users(enrollment_type=['student']):
@@ -654,7 +671,8 @@ if __name__ == "__main__":
                 update_roll_call(course=course,
                                  roll_call_attendance_no=roll_call_attendance_no,
                                  canvas_student_name=u.name,
-                                 canvas_student_id=u.id)
+                                 canvas_student_id=u.id,
+                                 excused=excused)
             except AttributeError:
                 print("-", "error on student ", u)
 
