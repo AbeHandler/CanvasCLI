@@ -135,7 +135,7 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_
         dates = weeks2dates[week]
         dates.sort(reverse=True)
         dates = [d for d in dates]
-        bullets = ["in-class code", "whiteboards", "recording", "in-class assignment"]
+        bullets = ["in-class code", "whiteboards", "recording", "in-class assignment", "quiz"]
         out = out + template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0].strftime(STANDARDDATE))
 
     course = canvas.get_course(course_no_canvas)
@@ -560,7 +560,9 @@ def deduct_for_missing_reviews(course, assignment_id):
             _current_score = _assignment.get_submission(r['assessor_user_id']).score
             _penalty = round(_assignment.points_possible * .1)
             _penalty_score = _current_score - _penalty
-            
+            if _penalty_score < 0:
+                _penalty_score = 0
+
             _assignment.get_submission(r['assessor_user_id']).edit(submission={'posted_grade':_penalty_score},
                                                                    comment={'text_comment':"Incomplete peer review, grade dropped by 10%"})
             print("[*] deducted", r)
