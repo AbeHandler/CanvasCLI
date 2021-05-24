@@ -146,9 +146,22 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_
     lecture_page.edit(wiki_page={"body": out})
 
 
-def init_local(course, semester="S2020"):
-    for i in range(1,17):
-        str_ = os.environ['ROOT'] + '/everything/teaching/{}{}/week{}'.format(course, semester, i)
+def init_local(course, ini_loc, semester="S2020"):
+    local_dir = '/Users/abramhandler/everything/teaching'
+    primary = local_dir + '/{}{}'.format(course, semester)
+
+    dates_for_course = get_dates_for_course(ini_loc=ini_loc)
+    weeks2dates = get_weeks2dates(dates_for_course)
+
+    if not os.path.isdir(primary):
+        os.mkdir(primary)
+    
+    # find out how many weeks in course
+    weeks = list(weeks2dates.keys())
+    weeks.sort()
+
+    for i in weeks:
+        str_ = local_dir + '/{}{}/week{}'.format(course, semester, i)
         if not os.path.isdir(str_):
             # TODO: this failed mkdir /Users/abramhandler/everything/teaching/3402S2021/
             os.mkdir(str_)
@@ -628,7 +641,8 @@ if __name__ == "__main__":
         print("[*] You must specify a course using the --course flag or an alias")
         import os; os._exit(0)
 
-    SEMESTER = "S2021"
+    SEMESTER = "V2021"
+
     INI_LOC = args.course + SEMESTER + ".ini"
 
     config = configparser.ConfigParser()
@@ -812,14 +826,26 @@ if __name__ == "__main__":
         Initialize course locally and on canvas
         Assumes ~/everything/teaching/courseno[S|F]year, e.g. 2301S2021
         '''
+        print("- Init a course Canvas")
+        
+        '''
+        # create the front page and set it as home on Canvas
+        course = canvas.get_course(CUno2canvasno[args.course])
+        course.create_page(wiki_page={"title": args.course,
+                                      "published": True,
+                                      "front_page": True,
+                                      "body": "Welcome!"})
+        course.update(course={"default_view": "wiki"})
+
         print("- Init files on Canvas")
         init_course_files(CUno2canvasno[args.course])
+        '''
         print("- Init local files")
-        init_local(args.course, semester=SEMESTER)
+        init_local(course=args.course, semester=SEMESTER, ini_loc=INI_LOC)
         print("- Init HTML")
-        makeHTMLforSemester(ini_loc=INI_LOC,
-                            course_no_canvas=CUno2canvasno[args.course],
-                            course_no_cu=args.course) 
+        #makeHTMLforSemester(ini_loc=INI_LOC,
+        #                    course_no_canvas=CUno2canvasno[args.course],
+        #                    course_no_cu=args.course) 
         import os;os._exit(0)
 
     if args.sync and args.week is None:
