@@ -27,3 +27,9 @@ A canvas CLI. Use the `-c` flag to run a command for a particular course (using 
 #### Initialize local files and canvas files
 
 `$py canvas_cli.py -init -c 3402`
+
+#### Semester naming conventions
+
+S = Spring 
+V = Summer (verano)
+F = Fall
