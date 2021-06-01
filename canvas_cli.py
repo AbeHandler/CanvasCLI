@@ -700,7 +700,7 @@ if __name__ == "__main__":
             day += timedelta(days=1)
         d1 = day.strftime("%Y%m%d")
         course = canvas.get_course(CUno2canvasno[args.course])
-        lecture_page = course.get_page(args.course)
+        lecture_page = course.get_page(config["course_info"]["main_page"])
         print("[*] updating {} to make visible before {}".format(args.course, day.strftime("%b %d")))
         show_before_date(canvas_page=lecture_page, in_date=day.strftime("%Y%m%d"))
         import os;os._exit(0)
