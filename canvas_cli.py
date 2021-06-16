@@ -474,7 +474,7 @@ def get_folder_for_week(week, course, folder_kind = 'whiteboards'):
     return None
 
 
-def comment_and_grade_participation(assignment_id, student):
+def comment_and_grade_participation(assignment_id, student, course):
     '''
     Give 0 + comment "no submission" to student on assignment
 
@@ -587,6 +587,14 @@ def get_ungraded_in_class_assignments_for_course(course):
         if not any_graded:
             ids.add(j.id)
     return ids
+
+def grade_in_class_assignments(course):
+    '''Grade ungraded in-class assignments (for participation)'''
+    for assignment in get_ungraded_in_class_assignments_for_course(course):
+        print("[*] ", assignment)
+        for student in assignment.get_gradeable_students():
+            comment_and_grade_participation(assignment.id, student, course=course)
+
 
 def deduct_for_missing_reviews(course, assignment_id):
     '''
@@ -791,7 +799,7 @@ if __name__ == "__main__":
         course = canvas.get_course(CUno2canvasno[args.course])
         assignment = course.get_assignment(args.assignment_id)
         for student in assignment.get_gradeable_students():
-            comment_and_grade_participation(args.assignment_id, student)
+            comment_and_grade_participation(args.assignment_id, student, course)
         import os;os._exit(0)
 
 
