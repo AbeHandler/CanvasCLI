@@ -556,6 +556,38 @@ def find_missing_peer_reviews(course, assignment_id):
             out.append(r)
     return out
 
+def get_in_class_assignment_group(course):
+    '''Get the in-class assignment group for the course'''
+    for i in course.get_assignment_groups():
+        if "In-class assignments" in str(i):
+            id_ = i.id
+
+    return course.get_assignment_group(id_)
+
+def get_in_class_assignments_for_course(course):
+    '''return the in-class assignments for a course'''
+    gp = get_in_class_assignment_group(course)
+    assignments = []
+    for assignment in course.get_assignments_for_group(gp.id):
+        assignments.append(assignment)
+    return assignments
+
+def get_ungraded_in_class_assignments_for_course(course):
+    '''
+    Return the in-class assignments for a course if no grades have
+    been assigned yet for the whole class
+    '''
+    ids = set()
+    for j in get_in_class_assignments_for_course(course):
+        any_graded = False
+        for user in course.get_users(enrollment_type=['student']):
+            sub = j.get_submission(user=user.id)
+            if sub.graded_at != None:
+                any_graded = True
+        if not any_graded:
+            ids.add(j.id)
+    return ids
+
 def deduct_for_missing_reviews(course, assignment_id):
     '''
     Assign a student's grade based on peer review, if it exists
@@ -608,6 +640,8 @@ if __name__ == "__main__":
     parser.add_argument('-a', '-assignment', '--assignment', dest='assignment', default=False, action='store_true', help='Use this flag to create an assignment')
 
     parser.add_argument('-d', '-due', '--due', help='pass a date in YYYYMMDD for the due date, e.g. 20200824')
+
+    parser.add_argument('-date', dest='date', default="None", help='pass a date in YYYYMMDD for the date, e.g. 20200824')
 
     parser.add_argument('-n', '-name', '--name', help='the name of the quiz or assignment')
 
@@ -698,6 +732,8 @@ if __name__ == "__main__":
         day = date.today()
         if args.tomorrow:
             day += timedelta(days=1)
+        elif args.date:
+            day = datetime.strptime(args.date, '%Y%m%d')
         d1 = day.strftime("%Y%m%d")
         course = canvas.get_course(CUno2canvasno[args.course])
         lecture_page = course.get_page(config["course_info"]["main_page"])
