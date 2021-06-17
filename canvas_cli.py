@@ -673,9 +673,9 @@ if __name__ == "__main__":
 
     parser.add_argument('--assignment_id', dest="assignment_id", help='Assignment ID for no submission')
 
-    parser.add_argument('--publish', dest='publish', default='false', action='store_true', help='Use this flag to immediately publish the assignment')
+    parser.add_argument('--publish', dest='publish', default=False, action='store_true', help='Use this flag to immediately publish the assignment')
 
-    parser.add_argument('--peer_review', dest='peer_review', default='false', action='store_true', help='Use this flag to run peer reviews')
+    parser.add_argument('--peer_review', dest='peer_review', default=False, action='store_true', help='Use this flag to run peer reviews')
 
     args = parser.parse_args()
 
