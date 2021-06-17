@@ -741,6 +741,7 @@ if __name__ == "__main__":
         if args.tomorrow:
             day += timedelta(days=1)
         elif args.date:
+            assert args.date is not None, "expecting date to be input"
             day = datetime.strptime(args.date, '%Y%m%d')
         d1 = day.strftime("%Y%m%d")
         course = canvas.get_course(CUno2canvasno[args.course])
