@@ -1,5 +1,5 @@
-#! /opt/anaconda3/bin/python 
-# replace shebang w/ your local Python version 
+#! /opt/anaconda3/bin/python
+# replace shebang w/ your local Python version
 
 '''
 An opinionated command-line interface to the canvas API.
@@ -16,12 +16,12 @@ Questions and contact:
 abram.handler@gmail.com
 www.abehandler.com
 
-To make an API call when logged into canvas do this 
+To make an API call when logged into canvas do this
 
 https://canvas.colorado.edu/api/v1/courses/62535/assignment_groups
 
 On my local machine, I "install" by symlinking to this script and aliasing it as "canvas"
-    - ln -s /Users/abramhandler/CanvasCLI/canvas_cli.py ~/bin/canvas_cli.py 
+    - ln -s /Users/abramhandler/CanvasCLI/canvas_cli.py ~/bin/canvas_cli.py
     - In zshrc => alias canvas="canvas_cli.py"
 
 
@@ -60,10 +60,10 @@ def str2date(str_):
     return data_date
 
 
-def get_dates_for_course(ini_loc='3402S2021.ini', days_of_week = [0,2,4]):
+def get_dates_for_course(ini_loc='3402S2021.ini', days_of_week=[0, 2, 4]):
     '''
     return all dates
-    
+
     Days_of_week = [MON = 0, WED = 2, FRI = 4]
     '''
     MON = 0
@@ -75,12 +75,12 @@ def get_dates_for_course(ini_loc='3402S2021.ini', days_of_week = [0,2,4]):
 
     start = str2date(config['dates']["start"])
     end = str2date(config["dates"]["end"])
-    
-    counter = start 
+
+    counter = start
     delta = timedelta(days=1)
-    
+
     dates_for_course = []
-    
+
     week = 1
 
     while counter < end:
@@ -88,7 +88,7 @@ def get_dates_for_course(ini_loc='3402S2021.ini', days_of_week = [0,2,4]):
             if counter.weekday() == MON:
                 week += 1
             dates_for_course.append({"date": copy(counter), "week": week})
-        counter += delta 
+        counter += delta
     return dates_for_course
 
 
@@ -118,7 +118,7 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_
 
     py canvas_cli.py -html -ini "2301S2021.ini" | pbcopy
     '''
-    
+
     dates_for_course = get_dates_for_course(ini_loc=ini_loc)
 
     weeks2dates = get_weeks2dates(dates_for_course)
@@ -135,13 +135,15 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_
         dates = weeks2dates[week]
         dates.sort(reverse=True)
         dates = [d for d in dates]
-        bullets = ["in-class code", "whiteboards", "recording", "in-class assignment", "quiz"]
-        out = out + template.render(week=week, dates = dates, items=bullets, week_start_date=dates[0].strftime(STANDARDDATE))
+        bullets = ["in-class code", "whiteboards",
+                   "recording", "in-class assignment", "quiz"]
+        out = out + template.render(week=week, dates=dates, items=bullets,
+                                    week_start_date=dates[0].strftime(STANDARDDATE))
 
     course = canvas.get_course(course_no_canvas)
 
     lecture_page = course.get_page(course_no_cu)
-    
+
     print("[*] Setting up {} page".format(course_no_cu))
     lecture_page.edit(wiki_page={"body": out})
 
@@ -155,7 +157,7 @@ def init_local(course, ini_loc, semester="S2020"):
 
     if not os.path.isdir(primary):
         os.mkdir(primary)
-    
+
     # find out how many weeks in course
     weeks = list(weeks2dates.keys())
     weeks.sort()
@@ -180,7 +182,7 @@ def get_api():
     return Canvas(API_URL, API_KEY)
 
 
-def create_in_class_assignment(courseNo, due, name = None, points=3, published=False, group_id=166877):
+def create_in_class_assignment(courseNo, due, name=None, points=3, published=False, group_id=166877):
 
     # to find assignment groups ids do: https://canvas.colorado.edu/api/v1/courses/70073/assignment_groups
 
@@ -219,6 +221,7 @@ def init_course_files(course_number):
         parent = "/week{}/".format(week)
         for folder in FOLDERS:
             course.create_folder(name=folder, parent_folder_path=parent)
+
 
 def get_student_names2_ids(course_no):
     '''
@@ -273,7 +276,8 @@ def set_extra_time_on_quizzes(course, names, names2ids_course, extra_minutes=10)
         print("[*] Setting accomodation for {}".format(quiz.title))
         for id_ in ids:
             print("-", id_)
-            quiz.set_extensions([{'user_id': id_, 'extra_time': extra_minutes}])
+            quiz.set_extensions(
+                [{'user_id': id_, 'extra_time': extra_minutes}])
 
 
 def export_all(CUno2canvasno):
@@ -318,30 +322,32 @@ def update_roll_call(course, roll_call_attendance_no, canvas_student_name, canva
     # print(canvas_student_name)
     attendance_csv = get_student_attendance(canvas_student_name)
     assignment = course.get_assignment(assignment=roll_call_attendance_no)
-    submission = assignment.get_submission(canvas_student_id) # student id 
+    submission = assignment.get_submission(canvas_student_id)  # student id
 
     # 5 free excused absences
-    score = (sum(attendance_csv["present"]) + excused[canvas_student_id])/len(attendance_csv["present"])
+    score = (sum(attendance_csv["present"]) +
+             excused[canvas_student_id])/len(attendance_csv["present"])
 
     score = 1.0 if score > 1.0 else score
 
     print(canvas_student_name, score * 100)
 
-    submission.edit(submission={'posted_grade': int(score * 100)}, comment={'present'})
- 
+    submission.edit(submission={'posted_grade': int(
+        score * 100)}, comment={'present'})
+
     '''
-    Not used 
+    Not used
     attendance_csv.to_csv("your_attendance.csv", index=False)
     try:
         submission.edit(submission={'posted_grade': int(score * 100)}, comment={'present'})
         # write student's attendance history to a csv called history.csv
-        submission.upload_comment("your_attendance.csv") # reference 
-    except CanvasException: 
+        submission.upload_comment("your_attendance.csv") # reference
+    except CanvasException:
         print("error on {}".format(canvas_student_name))
     '''
 
 
-def get_student_attendance(name, folder = "3402"):
+def get_student_attendance(name, folder="3402"):
     '''
     Input: a CU email
     Output: a dataframe saying when they were present or not
@@ -352,26 +358,28 @@ def get_student_attendance(name, folder = "3402"):
     '''
     name = name.replace("'", "")
 
-    #print(name)
+    # print(name)
 
     all_ = pd.concat(pd.read_csv(fn) for fn in glob.glob(folder + "/pro*"))
 
     #import ipdb;ipdb.set_trace()
 
-    all_["last"] = all_["name"].apply(lambda x: x.split()[-1].lower().replace("'", ""))
+    all_["last"] = all_["name"].apply(
+        lambda x: x.split()[-1].lower().replace("'", ""))
     all_["first3"] = all_["name"].apply(lambda x: x.split()[0].lower()[0:3])
 
     all_["date"] = all_["date"].apply(lambda x: str(x))
 
-
     dates = pd.DataFrame(all_["date"].unique())
     dates.columns = ["date"]
 
-    dates["date"] = dates["date"].apply(lambda x: datetime.strptime(str(x), "%Y%m%d"))
+    dates["date"] = dates["date"].apply(
+        lambda x: datetime.strptime(str(x), "%Y%m%d"))
 
     dates.sort_values(by='date', inplace=True)
 
-    dates["date"] = dates["date"].apply(lambda x: datetime.strftime(x, "%Y%m%d"))
+    dates["date"] = dates["date"].apply(
+        lambda x: datetime.strftime(x, "%Y%m%d"))
 
     # get student values
     stu = all_[all_['last'] == name.split()[-1].lower()]
@@ -384,10 +392,10 @@ def get_student_attendance(name, folder = "3402"):
     unique_names = [j for j in stu.name.unique().tolist() if type(j) == str]
     if len(unique_names) > 1:
 
-        # additional matching on first 3 chars of first name 
+        # additional matching on first 3 chars of first name
         stu = stu[stu['first3'] == name.split()[0].lower()[0:3]]
 
-    stu = stu[["date",'present', 'name']]
+    stu = stu[["date", 'present', 'name']]
     stu["name"] = name
 
     return stu
@@ -397,38 +405,43 @@ def comment_and_grade_no_submission(assignment_id, student):
     '''
     Give 0 + comment "no submission" to student on assignment
 
-    e.g. 
+    e.g.
     for student in get_no_submissions(course, assignment):
         comment_and_grade_no_submission(assignment_id=880992, student_id=student)
     '''
     assignment = course.get_assignment(assignment=assignment_id)
-    submission = assignment.get_submission(student.id) # student id 
+    submission = assignment.get_submission(student.id)  # student id
     #print("- Setting {} score to zero".format(student))
 
-    submission.edit(submission={'posted_grade':0}, comment={'text_comment':'no submission'})
+    submission.edit(submission={'posted_grade': 0}, comment={
+                    'text_comment': 'no submission'})
 
-def make_link(title = "D19-5414.pdf",
-              link_text = "in-class code", 
-              href = "https://canvas.colorado.edu/courses/62535/files/27550350/preview"):
+
+def make_link(title="D19-5414.pdf",
+              link_text="in-class code",
+              href="https://canvas.colorado.edu/courses/62535/files/27550350/preview"):
     '''make a link to a file that can be pasted into Canvas'''
     css_class = "instructure_file_link instructure_scribd_file"
     endpoint = "/".join(href.split("/")[0:-1])
-    
+
     # needs to be 1 line?
-    t = Template('''<a class="{{css_class}}" title="{{title}}" href="{{href}}" target="_blank"  rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>''')
-    return t.render(css_class=css_class, link_text=link_text, 
+    t = Template(
+        '''<a class="{{css_class}}" title="{{title}}" href="{{href}}" target="_blank"  rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>''')
+    return t.render(css_class=css_class, link_text=link_text,
                     title=title, href=href, endpoint=endpoint)
 
-def show_before_date(canvas_page, in_date = '20210315'):
+
+def show_before_date(canvas_page, in_date='20210315'):
     '''update a page to show elements w/ data-date before some input date'''
 
     def isb4Eq(input_date):
         '''
-        Returns a function, f: date -> bool 
+        Returns a function, f: date -> bool
         that is true if its input is less than or equal to input_date
         Used for a lambda in bs4
         '''
         input_date = datetime.strptime(input_date, '%Y%m%d')
+
         def hidden(t):
             if 'data-date' not in t.attrs:
                 return False
@@ -453,6 +466,7 @@ def show_before_date(canvas_page, in_date = '20210315'):
 
     canvas_page.edit(wiki_page={"body": html})
 
+
 def get_week_folder(course_no, week_no):
     '''Get the folder for a given week'''
     course = canvas.get_course(CUno2canvasno[args.course])
@@ -460,7 +474,8 @@ def get_week_folder(course_no, week_no):
         if f.name == "week{}".format(args.week):
             return f
 
-def get_folder_for_week(week, course, folder_kind = 'whiteboards'):
+
+def get_folder_for_week(week, course, folder_kind='whiteboards'):
     '''
     Get the Canvas folder for whiteboards for some week
 
@@ -478,67 +493,71 @@ def comment_and_grade_participation(assignment_id, student, course):
     '''
     Give 0 + comment "no submission" to student on assignment
 
-    e.g. 
+    e.g.
     for student in get_no_submissions(course, assignment):
         comment_and_grade_no_submission(assignment_id=880992, student_id=student)
     '''
     assignment = course.get_assignment(assignment=assignment_id)
-    submission = assignment.get_submission(student.id) # student id
+    submission = assignment.get_submission(student.id)  # student id
 
     if submission.submitted_at is None:
         print('- No submission yet for {}'.format(student))
-        submission.edit(submission={'posted_grade':0, 'comment': "no submission"})
+        submission.edit(
+            submission={'posted_grade': 0, 'comment': "no submission"})
     else:
         print("- Setting {} score to full".format(student))
-        submission.edit(submission={'posted_grade':assignment.points_possible})
+        submission.edit(
+            submission={'posted_grade': assignment.points_possible})
 
 
 def get_peer_reviews(course, assignment_id):
     '''
     Get the peer review scores for an assignment_id for a course
-    
+
     thanks to Brian Keegan for this code
-    
+
     '''
-        
+
     _assignment = course.get_assignment(assignment_id)
 
     # Get peer reviews
-    _pr_l = [{'submitter_user_id':_pr.user_id,
-             'assessor_user_id':_pr.assessor_id,
-             'asset_id':_pr.asset_id,
-             'state':_pr.workflow_state}
-            for _pr in _assignment.get_peer_reviews()]
+    _pr_l = [{'submitter_user_id': _pr.user_id,
+              'assessor_user_id': _pr.assessor_id,
+              'asset_id': _pr.asset_id,
+              'state': _pr.workflow_state}
+             for _pr in _assignment.get_peer_reviews()]
 
     # Get peer review assessments
     _assignment_rubric = _assignment.rubric_settings['id']
-    _ra_l = [{'asset_id':_a['artifact_id'],
-             'assessor_user_id':_a['assessor_id'],
-             'score':_a['score']}
-            for _a in course.get_rubric(_assignment_rubric,include='peer_assessments',style='full').assessments]
+    _ra_l = [{'asset_id': _a['artifact_id'],
+              'assessor_user_id':_a['assessor_id'],
+              'score':_a['score']}
+             for _a in course.get_rubric(_assignment_rubric, include='peer_assessments', style='full').assessments]
 
     # Combine
     _assignment_pr_assessment_df = pd.merge(
-        left = pd.DataFrame(_pr_l),
-        right = pd.DataFrame(_ra_l),
-        left_on = ['assessor_user_id','asset_id'],
-        right_on = ['assessor_user_id','asset_id'],
-        how = 'outer'
-        )
-    
+        left=pd.DataFrame(_pr_l),
+        right=pd.DataFrame(_ra_l),
+        left_on=['assessor_user_id', 'asset_id'],
+        right_on=['assessor_user_id', 'asset_id'],
+        how='outer'
+    )
+
     return _assignment_pr_assessment_df
+
 
 def assign_grades_if_peer_review_exists(course, assignment_id):
     '''
     Assign a student's grade based on peer review, if it exists
-    
+
     thanks to Brian Keegan for this code
     '''
     _assignment = course.get_assignment(assignment_id)
     _assignment_pr_assessment_df = get_peer_reviews(course, assignment_id)
     for r in _assignment_pr_assessment_df.to_dict('records'):
         if r['state'] == 'completed':
-            _assignment.get_submission(r['submitter_user_id']).edit(submission={'posted_grade':r['score']}, comment={'text_comment':"Peer review grade"})
+            _assignment.get_submission(r['submitter_user_id']).edit(submission={
+                'posted_grade': r['score']}, comment={'text_comment': "Peer review grade"})
         else:
             print("[*] Warning no review {}".format(r))
 
@@ -546,7 +565,7 @@ def assign_grades_if_peer_review_exists(course, assignment_id):
 def find_missing_peer_reviews(course, assignment_id):
     '''
     Assign a student's grade based on peer review, if it exists
-    
+
     thanks to Brian Keegan for this code
     '''
     _assignment_pr_assessment_df = get_peer_reviews(course, assignment_id)
@@ -556,6 +575,7 @@ def find_missing_peer_reviews(course, assignment_id):
             out.append(r)
     return out
 
+
 def get_in_class_assignment_group(course):
     '''Get the in-class assignment group for the course'''
     for i in course.get_assignment_groups():
@@ -564,6 +584,7 @@ def get_in_class_assignment_group(course):
 
     return course.get_assignment_group(id_)
 
+
 def get_in_class_assignments_for_course(course):
     '''return the in-class assignments for a course'''
     gp = get_in_class_assignment_group(course)
@@ -571,6 +592,7 @@ def get_in_class_assignments_for_course(course):
     for assignment in course.get_assignments_for_group(gp.id):
         assignments.append(assignment)
     return assignments
+
 
 def get_ungraded_in_class_assignments_for_course(course):
     '''
@@ -588,119 +610,148 @@ def get_ungraded_in_class_assignments_for_course(course):
             ids.add(j.id)
     return ids
 
+
 def grade_in_class_assignments(course):
     '''Grade ungraded in-class assignments (for participation)'''
     for assignment in get_ungraded_in_class_assignments_for_course(course):
         print("[*] ", assignment)
         for student in assignment.get_gradeable_students():
-            comment_and_grade_participation(assignment.id, student, course=course)
+            comment_and_grade_participation(
+                assignment.id, student, course=course)
 
 
 def deduct_for_missing_reviews(course, assignment_id):
     '''
     Assign a student's grade based on peer review, if it exists
-    
+
     thanks to Brian Keegan for this code
     '''
-    
+
     missing = find_missing_peer_reviews(course, assignment_id)
-    
+
     _assignment = course.get_assignment(assignment_id)
 
     # Deduct points from submissions missing peer reviews
     for r in missing:
         try:
-            _current_score = _assignment.get_submission(r['assessor_user_id']).score
+            _current_score = _assignment.get_submission(
+                r['assessor_user_id']).score
             _penalty = round(_assignment.points_possible * .1)
             _penalty_score = _current_score - _penalty
             if _penalty_score < 0:
                 _penalty_score = 0
 
-            _assignment.get_submission(r['assessor_user_id']).edit(submission={'posted_grade':_penalty_score},
-                                                                   comment={'text_comment':"Incomplete peer review, grade dropped by 10%"})
+            _assignment.get_submission(r['assessor_user_id']).edit(submission={'posted_grade': _penalty_score},
+                                                                   comment={'text_comment': "Incomplete peer review, grade dropped by 10%"})
             print("[*] deducted", r)
         except TypeError:
             print(r, _assignment.get_submission(r['assessor_user_id']))
-            print("Assessor {0}'s assignment has not been submitted/graded".format(r['assessor_user_id']))
+            print(
+                "Assessor {0}'s assignment has not been submitted/graded".format(r['assessor_user_id']))
             pass
 
 
 if __name__ == "__main__":
 
-
     # TODO this is a global variable. Fix.
     canvas = get_api()
 
-    FOLDERS = ['assignment_files', 'in-class-code', 'other_files', 'quiz_files', 'whiteboards']
+    FOLDERS = ['assignment_files', 'in-class-code',
+               'other_files', 'quiz_files', 'whiteboards']
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-attendance', '--attendance', dest='attendance', default=False, action='store_true', help='Take attendance')
+    parser.add_argument('-attendance', '--attendance', dest='attendance',
+                        default=False, action='store_true', help='Take attendance')
 
-    parser.add_argument('-c', '-course', '--course', default=None, help='INFO course number, e.g. 4604')
+    parser.add_argument('-c', '-course', '--course',
+                        default=None, help='INFO course number, e.g. 4604')
 
-    parser.add_argument('-init', '--init', dest='init', default=False, action='store_true', help='Use this flag to init the course files on Canvas')
+    parser.add_argument('-init', '--init', dest='init', default=False,
+                        action='store_true', help='Use this flag to init the course files on Canvas')
 
-    parser.add_argument('-q', '-quiz', '--quiz', dest='quiz', default=False, action='store_true', help='Use this flag to create a quiz')
+    parser.add_argument('-q', '-quiz', '--quiz', dest='quiz', default=False,
+                        action='store_true', help='Use this flag to create a quiz')
 
-    parser.add_argument('-set_extra_time_on_quizzes', dest='set_extra_time_on_quizzes', default=False, action='store_true', help='Use this flag to set extra time on all quizzes for students w/ accomodations')
+    parser.add_argument('-set_extra_time_on_quizzes', dest='set_extra_time_on_quizzes', default=False,
+                        action='store_true', help='Use this flag to set extra time on all quizzes for students w/ accomodations')
 
-    parser.add_argument('-a', '-assignment', '--assignment', dest='assignment', default=False, action='store_true', help='Use this flag to create an assignment')
+    parser.add_argument('-a', '-assignment', '--assignment', dest='assignment',
+                        default=False, action='store_true', help='Use this flag to create an assignment')
 
-    parser.add_argument('-d', '-due', '--due', help='pass a date in YYYYMMDD for the due date, e.g. 20200824')
+    parser.add_argument('-d', '-due', '--due',
+                        help='pass a date in YYYYMMDD for the due date, e.g. 20200824')
 
-    parser.add_argument('-date', dest='date', default="None", help='pass a date in YYYYMMDD for the date, e.g. 20200824')
+    parser.add_argument('-date', dest='date', default="None",
+                        help='pass a date in YYYYMMDD for the date, e.g. 20200824')
 
-    parser.add_argument('-n', '-name', '--name', help='the name of the quiz or assignment')
+    parser.add_argument('-n', '-name', '--name',
+                        help='the name of the quiz or assignment')
 
     parser.add_argument('-w', '-week', '--week', dest='week', type=int)
 
-    parser.add_argument('-e', '-export', '--export', dest='export', help='Export all', default=False, action='store_true')
+    parser.add_argument('-e', '-export', '--export', dest='export',
+                        help='Export all', default=False, action='store_true')
 
-    parser.add_argument('-p', '-points', '--points', dest='points', default=3, type=int)
+    parser.add_argument('-p', '-points', '--points',
+                        dest='points', default=3, type=int)
 
-    parser.add_argument('-v', '-visible', '--visible', dest='visible', default=False, action='store_true', help='Make html visible')
+    parser.add_argument('-v', '-visible', '--visible', dest='visible',
+                        default=False, action='store_true', help='Make html visible')
 
-    parser.add_argument('-t', '-tomorrow', '--tomorrow', action='store_true', help='syncs a directory to canvas', dest='tomorrow', default=False)
+    parser.add_argument('-t', '-tomorrow', '--tomorrow', action='store_true',
+                        help='syncs a directory to canvas', dest='tomorrow', default=False)
 
-    parser.add_argument('-s', '-sync', '--sync', action='store_true', help='syncs a directory to canvas', dest='sync', default=False)
+    parser.add_argument('-s', '-sync', '--sync', action='store_true',
+                        help='syncs a directory to canvas', dest='sync', default=False)
 
-    parser.add_argument('--participation', action='store_true', help='assigns full points to students who submitted', dest='participation', default=False)
+    parser.add_argument('--participation', action='store_true',
+                        help='assigns full points to students who submitted', dest='participation', default=False)
 
-    parser.add_argument('-z', '-zeros', '--zeros', action='store_true', help='assigns zeros to students who have not submitted', dest='zeros', default=False)
+    parser.add_argument('-z', '-zeros', '--zeros', action='store_true',
+                        help='assigns zeros to students who have not submitted', dest='zeros', default=False)
 
-    parser.add_argument('-html', action='store_true', help='print HTML for semester', dest='html', default=False)
+    parser.add_argument('-html', action='store_true',
+                        help='print HTML for semester', dest='html', default=False)
 
-    parser.add_argument('--assignment_id', dest="assignment_id", help='Assignment ID for no submission')
+    parser.add_argument('--assignment_id', dest="assignment_id",
+                        help='Assignment ID for no submission')
 
-    parser.add_argument('--publish', dest='publish', default=False, action='store_true', help='Use this flag to immediately publish the assignment')
+    parser.add_argument('--publish', dest='publish', default=False, action='store_true',
+                        help='Use this flag to immediately publish the assignment')
 
-    parser.add_argument('--peer_review', dest='peer_review', default=False, action='store_true', help='Use this flag to run peer reviews')
+    parser.add_argument('--peer_review', dest='peer_review', default=False,
+                        action='store_true', help='Use this flag to run peer reviews')
 
     args = parser.parse_args()
 
     if args.course is None:
         print("[*] You must specify a course using the --course flag or an alias")
-        import os; os._exit(0)
+        import os
+        os._exit(0)
 
-    SEMESTER = "V2021"
+    SEMESTER = "F2021"
 
     INI_LOC = args.course + SEMESTER + ".ini"
+
+    assert os.path.isfile(
+        INI_LOC), "Config file not found. Do you have the wrong semester?"
 
     config = configparser.ConfigParser()
 
     config.read(INI_LOC)
 
     # Map CU course names to Canvas course names
-    CUno2canvasno = {config["course_info"]["course_name"]: int(config["course_info"]["canvas_no"])}
+    CUno2canvasno = {config["course_info"]["course_name"]                     : int(config["course_info"]["canvas_no"])}
 
-    Course2Classtime = {args.course : config["course_info"]["end_time"]}
+    Course2Classtime = {args.course: config["course_info"]["end_time"]}
 
     course_no = config["course_info"]["canvas_no"]
 
     names2ids = {}
     for coursename, courseno in CUno2canvasno.items():
-        names2ids[coursename] = get_student_names2_ids(CUno2canvasno[coursename])
+        names2ids[coursename] = get_student_names2_ids(
+            CUno2canvasno[coursename])
 
     dates_for_course = get_dates_for_course(INI_LOC)
 
@@ -711,10 +762,10 @@ if __name__ == "__main__":
         course = canvas.get_course(CUno2canvasno[args.course])
         roll_call_attendance_no = config["course_info"]["roll_call_attendance_no"]
 
-
         # read in excused absences
         excused = config["attendance_info"]["excused"]
-        excused = defaultdict(lambda: int(config["attendance_info"]["excused"]))
+        excused = defaultdict(lambda: int(
+            config["attendance_info"]["excused"]))
 
         for alt in config["attendance_info"].keys():
             if alt[0:7] == "student":
@@ -734,7 +785,8 @@ if __name__ == "__main__":
             except AttributeError:
                 print("-", "error on student ", u)
 
-        import os;os._exit(0)
+        import os
+        os._exit(0)
 
     if args.visible:
         day = date.today()
@@ -746,9 +798,12 @@ if __name__ == "__main__":
         d1 = day.strftime("%Y%m%d")
         course = canvas.get_course(CUno2canvasno[args.course])
         lecture_page = course.get_page(config["course_info"]["main_page"])
-        print("[*] updating {} to make visible before {}".format(args.course, day.strftime("%b %d")))
-        show_before_date(canvas_page=lecture_page, in_date=day.strftime("%Y%m%d"))
-        import os;os._exit(0)
+        print("[*] updating {} to make visible before {}".format(args.course,
+                                                                 day.strftime("%b %d")))
+        show_before_date(canvas_page=lecture_page,
+                         in_date=day.strftime("%Y%m%d"))
+        import os
+        os._exit(0)
 
     if args.html:
 
@@ -760,73 +815,83 @@ if __name__ == "__main__":
         html = BeautifulSoup(lecture_page.body, features="html.parser")
 
         for li in html.findAll("li"):
-            
-            try:    
+
+            try:
                 week = dates2weeks[li.attrs["data-date"]]
 
                 folder_kind = "in-class-code"
 
                 if args.week is None:
                     print("You must specify a week")
-                    import os;os._exit(0)
+                    import os
+                    os._exit(0)
 
                 if week == args.week:
 
                     if li.attrs["data-bullet"] == folder_kind:
-                        folder = get_folder_for_week(week, args.course, folder_kind=folder_kind)
+                        folder = get_folder_for_week(
+                            week, args.course, folder_kind=folder_kind)
                         if folder is not None:
                             for file in folder.get_files():
                                 if li["data-date"] in file.display_name:
 
                                     url = file.url.split("/download")[0]
                                     link = make_link(link_text=folder_kind,
-                                                     href = url,
+                                                     href=url,
                                                      title=file.display_name)
 
-                                    ll = BeautifulSoup( link, features="html.parser")
+                                    ll = BeautifulSoup(
+                                        link, features="html.parser")
                                     print("inserting")
 
-                                    li.string = "" # remove inner text
+                                    li.string = ""  # remove inner text
                                     li.insert(0, ll)
-                                    lecture_page.edit(wiki_page={"body": str(html)})
-                                    import os;os._exit(0)
+                                    lecture_page.edit(
+                                        wiki_page={"body": str(html)})
+                                    import os
+                                    os._exit(0)
             except KeyError:
                 pass
 
-        
-        import os;os._exit(0)
+        import os
+        os._exit(0)
 
     if args.participation and args.assignment_id is not None:
         course = canvas.get_course(CUno2canvasno[args.course])
         assignment = course.get_assignment(args.assignment_id)
         for student in assignment.get_gradeable_students():
-            comment_and_grade_participation(args.assignment_id, student, course)
-        import os;os._exit(0)
-
+            comment_and_grade_participation(
+                args.assignment_id, student, course)
+        import os
+        os._exit(0)
 
     if args.zeros and args.assignment_id is not None:
         # py canvas_cli.py -c 2301 -zeros --assignmentid 871212
         course = canvas.get_course(CUno2canvasno[args.course])
         for student in get_no_submissions(course, args.assignmentid):
             comment_and_grade_no_submission(args.assignmentid, student)
-        import os; os._exit(0)
-
+        import os
+        os._exit(0)
 
     if(args.set_extra_time_on_quizzes):
         course = canvas.get_course(CUno2canvasno[args.course])
-        names = [o.replace('\n', "") for o in open("accomodations{}.txt".format(args.course))]
+        names = [o.replace('\n', "") for o in open(
+            "accomodations{}.txt".format(args.course))]
         names2ids_course = names2ids[args.course]
         set_extra_time_on_quizzes(course, names, names2ids_course)
-        import os; os._exit(0)
+        import os
+        os._exit(0)
 
     if(args.export):
         export_all(CUno2canvasno)
-        import os; os._exit(0)
+        import os
+        os._exit(0)
 
     if(args.quiz):
         if args.due is None and args.tomorrow is None:
             print("[*] You must set a due date")
-            import os;os._exit(0)
+            import os
+            os._exit(0)
         if args.due is None and args.tomorrow is not None:
             day = date.today()
             day += timedelta(days=1)
@@ -843,7 +908,8 @@ if __name__ == "__main__":
                             "points_possible": args.points,
                             "due_at": args.due + "T" + Course2Classtime[args.course]})
         print("[*] created quiz for {}".format(args.course))
-        import os; os._exit(0)
+        import os
+        os._exit(0)
 
     if(args.assignment):
 
@@ -854,17 +920,20 @@ if __name__ == "__main__":
                 args.due = date.today().strftime('%Y%m%d')
             else:
                 print("[*] Assignment is for tomorrow")
-                args.due = (date.today() + timedelta(days=1)).strftime('%Y%m%d')
+                args.due = (date.today() + timedelta(days=1)
+                            ).strftime('%Y%m%d')
         elif args.due is not None:
             try:
                 if args.due is not None:
                     datetime.strptime(args.due, '%Y%m%d')
             except ValueError:
-                print("[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
+                print(
+                    "[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
 
-        create_in_class_assignment(courseNo=args.course, due=args.due, name=args.name, points=args.points)
-        import os; os._exit(0)
-
+        create_in_class_assignment(
+            courseNo=args.course, due=args.due, name=args.name, points=args.points)
+        import os
+        os._exit(0)
 
     if(args.init):
         '''
@@ -872,8 +941,7 @@ if __name__ == "__main__":
         Assumes ~/everything/teaching/courseno[S|F]year, e.g. 2301S2021
         '''
         print("- Init a course Canvas")
-        
-        '''
+
         # create the front page and set it as home on Canvas
         course = canvas.get_course(CUno2canvasno[args.course])
         course.create_page(wiki_page={"title": args.course,
@@ -884,14 +952,15 @@ if __name__ == "__main__":
 
         print("- Init files on Canvas")
         init_course_files(CUno2canvasno[args.course])
-        '''
+
         print("- Init local files")
         init_local(course=args.course, semester=SEMESTER, ini_loc=INI_LOC)
         print("- Init HTML")
-        #makeHTMLforSemester(ini_loc=INI_LOC,
-        #                    course_no_canvas=CUno2canvasno[args.course],
-        #                    course_no_cu=args.course) 
-        import os;os._exit(0)
+        makeHTMLforSemester(ini_loc=INI_LOC,
+                            course_no_canvas=CUno2canvasno[args.course],
+                            course_no_cu=args.course)
+        import os
+        os._exit(0)
 
     if args.sync and args.week is None:
         print("[*] you must scecify a week with sync")
@@ -904,7 +973,8 @@ if __name__ == "__main__":
 
         for subfolder in folder.get_folders():
             name = subfolder.name
-            glb =  os.environ["ROOT"] + "/everything/teaching/{}{}/week{}/{}/*".format(args.course, SEMESTER, args.week, name)
+            glb = os.environ["ROOT"] + "/everything/teaching/{}{}/week{}/{}/*".format(
+                args.course, SEMESTER, args.week, name)
             already_uploaded = [j.display_name for j in subfolder.get_files()]
 
             for fn in glob.glob(glb):
