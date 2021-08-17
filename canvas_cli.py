@@ -727,7 +727,6 @@ if __name__ == "__main__":
 
     if args.course is None:
         print("[*] You must specify a course using the --course flag or an alias")
-        import os
         os._exit(0)
 
     SEMESTER = "F2021"
@@ -785,7 +784,6 @@ if __name__ == "__main__":
             except AttributeError:
                 print("-", "error on student ", u)
 
-        import os
         os._exit(0)
 
     if args.visible:
@@ -802,7 +800,6 @@ if __name__ == "__main__":
                                                                  day.strftime("%b %d")))
         show_before_date(canvas_page=lecture_page,
                          in_date=day.strftime("%Y%m%d"))
-        import os
         os._exit(0)
 
     if args.html:
@@ -823,7 +820,6 @@ if __name__ == "__main__":
 
                 if args.week is None:
                     print("You must specify a week")
-                    import os
                     os._exit(0)
 
                 if week == args.week:
@@ -848,12 +844,10 @@ if __name__ == "__main__":
                                     li.insert(0, ll)
                                     lecture_page.edit(
                                         wiki_page={"body": str(html)})
-                                    import os
                                     os._exit(0)
             except KeyError:
                 pass
 
-        import os
         os._exit(0)
 
     if args.participation and args.assignment_id is not None:
@@ -862,7 +856,6 @@ if __name__ == "__main__":
         for student in assignment.get_gradeable_students():
             comment_and_grade_participation(
                 args.assignment_id, student, course)
-        import os
         os._exit(0)
 
     if args.zeros and args.assignment_id is not None:
@@ -870,7 +863,6 @@ if __name__ == "__main__":
         course = canvas.get_course(CUno2canvasno[args.course])
         for student in get_no_submissions(course, args.assignmentid):
             comment_and_grade_no_submission(args.assignmentid, student)
-        import os
         os._exit(0)
 
     if(args.set_extra_time_on_quizzes):
@@ -879,18 +871,15 @@ if __name__ == "__main__":
             "accomodations{}.txt".format(args.course))]
         names2ids_course = names2ids[args.course]
         set_extra_time_on_quizzes(course, names, names2ids_course)
-        import os
         os._exit(0)
 
     if(args.export):
         export_all(CUno2canvasno)
-        import os
         os._exit(0)
 
     if(args.quiz):
         if args.due is None and args.tomorrow is None:
             print("[*] You must set a due date")
-            import os
             os._exit(0)
         if args.due is None and args.tomorrow is not None:
             day = date.today()
@@ -908,7 +897,6 @@ if __name__ == "__main__":
                             "points_possible": args.points,
                             "due_at": args.due + "T" + Course2Classtime[args.course]})
         print("[*] created quiz for {}".format(args.course))
-        import os
         os._exit(0)
 
     if(args.assignment):
@@ -932,7 +920,6 @@ if __name__ == "__main__":
 
         create_in_class_assignment(
             courseNo=args.course, due=args.due, name=args.name, points=args.points)
-        import os
         os._exit(0)
 
     if(args.init):
@@ -959,7 +946,6 @@ if __name__ == "__main__":
         makeHTMLforSemester(ini_loc=INI_LOC,
                             course_no_canvas=CUno2canvasno[args.course],
                             course_no_cu=args.course)
-        import os
         os._exit(0)
 
     if args.sync and args.week is None:
