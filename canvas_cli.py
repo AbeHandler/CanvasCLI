@@ -755,9 +755,6 @@ if __name__ == "__main__":
     course = canvas.get_course(CUno2canvasno[args.course])
     init_groups(config=config, course=course)
 
-    import os
-    os._exit(0)
-
     # Map CU course names to Canvas course names
 
     Course2Classtime = {args.course: config["course_info"]["end_time"]}
@@ -821,6 +818,7 @@ if __name__ == "__main__":
                          in_date=day.strftime("%Y%m%d"))
         os._exit(0)
 
+    # mostly used for 3402
     if args.participation and args.assignment_id is not None:
         course = canvas.get_course(CUno2canvasno[args.course])
         assignment = course.get_assignment(args.assignment_id)
