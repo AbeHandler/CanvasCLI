@@ -467,28 +467,6 @@ def show_before_date(canvas_page, in_date='20210315'):
     canvas_page.edit(wiki_page={"body": html})
 
 
-def get_week_folder(course_no, week_no):
-    '''Get the folder for a given week'''
-    course = canvas.get_course(CUno2canvasno[args.course])
-    for f in course.get_folders():
-        if f.name == "week{}".format(args.week):
-            return f
-
-
-def get_folder_for_week(week, course, folder_kind='whiteboards'):
-    '''
-    Get the Canvas folder for whiteboards for some week
-
-    e.g. files/week16/whiteboards
-    '''
-    course = canvas.get_course(CUno2canvasno[course])
-    for f in course.get_folders():
-        folder_name = f.full_name.split(' ').pop()
-        if folder_name == "files/week{}/{}".format(week, folder_kind):
-            return f
-    return None
-
-
 def comment_and_grade_participation(assignment_id, student, course):
     '''
     Give 0 + comment "no submission" to student on assignment
