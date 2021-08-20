@@ -240,12 +240,10 @@ def init_quizzes(course):
     '''
     Initialize weekly quizzes for a course
 
-    This code starts on week 3 b/c Brian already made the first 2 weeks of quizzes
-
     The day of the week will be determined by the initial value of the now variable
     '''
     now = datetime(2020, 9, 11)
-    for week in range(3, 17):
+    for week in range(1, 17):
         title = "Week {} ".format(str(week).zfill(2)) + "Quiz"
         time_limit = 10
         due_at = now.strftime('%Y-%m-%d') + "T11:20:00"
