@@ -651,6 +651,17 @@ def deduct_for_missing_reviews(course, assignment_id):
             pass
 
 
+def init_groups(course, config):
+
+    course = canvas.get_course(CUno2canvasno[args.course])
+    groups = config["assignment_configs"]
+    names = groups["groups"].split(",")
+    weights = groups["weights"].split(",")
+    assert len(names) == len(weights)
+    for name, weight in zip(names, weights):
+        course.create_assignment_group(name=name, group_weight=weight)
+
+
 if __name__ == "__main__":
 
     # TODO this is a global variable. Fix.
@@ -702,9 +713,6 @@ if __name__ == "__main__":
     parser.add_argument('-t', '-tomorrow', '--tomorrow', action='store_true',
                         help='syncs a directory to canvas', dest='tomorrow', default=False)
 
-    parser.add_argument('-s', '-sync', '--sync', action='store_true',
-                        help='syncs a directory to canvas', dest='sync', default=False)
-
     parser.add_argument('--participation', action='store_true',
                         help='assigns full points to students who submitted', dest='participation', default=False)
 
@@ -740,8 +748,17 @@ if __name__ == "__main__":
 
     config.read(INI_LOC)
 
+    CUno2canvasno = {config["course_info"]["course_name"]:
+                     int(config["course_info"]["canvas_no"])}
+
+    print(config["assignment_configs"])
+    course = canvas.get_course(CUno2canvasno[args.course])
+    init_groups(config=config, course=course)
+
+    import os
+    os._exit(0)
+
     # Map CU course names to Canvas course names
-    CUno2canvasno = {config["course_info"]["course_name"]                     : int(config["course_info"]["canvas_no"])}
 
     Course2Classtime = {args.course: config["course_info"]["end_time"]}
 
@@ -755,6 +772,8 @@ if __name__ == "__main__":
     dates_for_course = get_dates_for_course(INI_LOC)
 
     dates2weeks = get_dates2weeks(dates_for_course)
+
+    course = canvas.get_course(CUno2canvasno[args.course])
 
     if args.attendance:
         # first run $py attendance.py
@@ -800,54 +819,6 @@ if __name__ == "__main__":
                                                                  day.strftime("%b %d")))
         show_before_date(canvas_page=lecture_page,
                          in_date=day.strftime("%Y%m%d"))
-        os._exit(0)
-
-    if args.html:
-
-        # show  before date
-        course = canvas.get_course(CUno2canvasno[args.course])
-
-        lecture_page = course.get_page(args.course)
-
-        html = BeautifulSoup(lecture_page.body, features="html.parser")
-
-        for li in html.findAll("li"):
-
-            try:
-                week = dates2weeks[li.attrs["data-date"]]
-
-                folder_kind = "in-class-code"
-
-                if args.week is None:
-                    print("You must specify a week")
-                    os._exit(0)
-
-                if week == args.week:
-
-                    if li.attrs["data-bullet"] == folder_kind:
-                        folder = get_folder_for_week(
-                            week, args.course, folder_kind=folder_kind)
-                        if folder is not None:
-                            for file in folder.get_files():
-                                if li["data-date"] in file.display_name:
-
-                                    url = file.url.split("/download")[0]
-                                    link = make_link(link_text=folder_kind,
-                                                     href=url,
-                                                     title=file.display_name)
-
-                                    ll = BeautifulSoup(
-                                        link, features="html.parser")
-                                    print("inserting")
-
-                                    li.string = ""  # remove inner text
-                                    li.insert(0, ll)
-                                    lecture_page.edit(
-                                        wiki_page={"body": str(html)})
-                                    os._exit(0)
-            except KeyError:
-                pass
-
         os._exit(0)
 
     if args.participation and args.assignment_id is not None:
@@ -946,28 +917,8 @@ if __name__ == "__main__":
         makeHTMLforSemester(ini_loc=INI_LOC,
                             course_no_canvas=CUno2canvasno[args.course],
                             course_no_cu=args.course)
+        init_groups(course=course, config=config)
         os._exit(0)
-
-    if args.sync and args.week is None:
-        print("[*] you must scecify a week with sync")
-
-    if args.sync and args.week is not None:
-
-        # $ canvas -w 3 -sync -c 2301
-
-        folder = get_week_folder(CUno2canvasno[args.course], args.week)
-
-        for subfolder in folder.get_folders():
-            name = subfolder.name
-            glb = os.environ["ROOT"] + "/everything/teaching/{}{}/week{}/{}/*".format(
-                args.course, SEMESTER, args.week, name)
-            already_uploaded = [j.display_name for j in subfolder.get_files()]
-
-            for fn in glob.glob(glb):
-                fname = fn.split("/").pop()
-                if fn.split("/").pop() not in already_uploaded:
-                    print("- uploading {} to {}".format(fname, subfolder))
-                    subfolder.upload(fn, on_duplicate="overwrite")
 
     if(args.peer_review):
         if args.assignment_id is None:
