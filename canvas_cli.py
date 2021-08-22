@@ -8,7 +8,8 @@ An opinionated command-line interface to the canvas API.
 - Mostly just a wrapper over https://github.com/ucfopen/canvasapi
 
 Setup for CU users:
-1. Go to https://canvas.colorado.edu/profile/settings and click "+ New Access Token"
+1. Go to https://canvas.colorado.edu/profile/settings
+    and click "+ New Access Token"
 2. in your local shell, run export CANVAS_TOKEN="my_secret_token"
 3. Install the python client $pip install canvasapi
 
@@ -20,14 +21,11 @@ To make an API call when logged into canvas do this
 
 https://canvas.colorado.edu/api/v1/courses/62535/assignment_groups
 
-On my local machine, I "install" by symlinking to this script and aliasing it as "canvas"
+On my local machine, I "install" by symlinking to this script
+and aliasing it as "canvas"
     - ln -s /Users/abramhandler/CanvasCLI/canvas_cli.py ~/bin/canvas_cli.py
     - In zshrc => alias canvas="canvas_cli.py"
 
-
-# Some API notes
-- update an assignment
-   - https://canvas.instructure.com/doc/api/assignments.html#method.assignments_api.update
 
 '''
 
@@ -85,7 +83,7 @@ def get_dates_for_course(ini_loc='3402S2021.ini', days_of_week=[0, 2, 4]):
 
     while counter < end:
         if counter.weekday() in days_of_week:
-            if counter.weekday() == MON:
+            if counter.weekday() == MON and counter != start:
                 week += 1
             dates_for_course.append({"date": copy(counter), "week": week})
         counter += delta
@@ -137,8 +135,10 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_
         dates = [d for d in dates]
         bullets = ["in-class code", "whiteboards",
                    "recording", "in-class assignment", "quiz"]
+
+        week_start_date = dates[-1].strftime(STANDARDDATE)
         out = out + template.render(week=week, dates=dates, items=bullets,
-                                    week_start_date=dates[0].strftime(STANDARDDATE))
+                                    week_start_date=week_start_date)
 
     course = canvas.get_course(course_no_canvas)
 
@@ -643,6 +643,8 @@ if __name__ == "__main__":
     # TODO this is a global variable. Fix.
     canvas = get_api()
 
+    INI_DIR = "/Users/abramhandler/CanvasCLI"
+
     FOLDERS = ['assignment_files', 'in-class-code',
                'other_files', 'quiz_files', 'whiteboards']
 
@@ -715,7 +717,7 @@ if __name__ == "__main__":
 
     SEMESTER = "F2021"
 
-    INI_LOC = args.course + SEMESTER + ".ini"
+    INI_LOC = INI_DIR + "/" + args.course + SEMESTER + ".ini"
 
     assert os.path.isfile(
         INI_LOC), "Config file not found. Do you have the wrong semester?"
@@ -727,9 +729,7 @@ if __name__ == "__main__":
     CUno2canvasno = {config["course_info"]["course_name"]:
                      int(config["course_info"]["canvas_no"])}
 
-    print(config["assignment_configs"])
     course = canvas.get_course(CUno2canvasno[args.course])
-    init_groups(config=config, course=course)
 
     # Map CU course names to Canvas course names
 
@@ -747,6 +747,8 @@ if __name__ == "__main__":
     dates2weeks = get_dates2weeks(dates_for_course)
 
     course = canvas.get_course(CUno2canvasno[args.course])
+
+    
 
     if args.attendance:
         # first run $py attendance.py
