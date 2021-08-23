@@ -148,6 +148,7 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_
     lecture_page.edit(wiki_page={"body": out})
 
 
+'''
 def init_local(course, ini_loc, semester="S2020"):
     local_dir = '/Users/abramhandler/everything/teaching'
     primary = local_dir + '/{}{}'.format(course, semester)
@@ -169,6 +170,7 @@ def init_local(course, ini_loc, semester="S2020"):
             os.mkdir(str_)
             for folder in FOLDERS:
                 os.mkdir(str_ + "/" + folder)
+'''
 
 
 def get_api():
@@ -748,8 +750,6 @@ if __name__ == "__main__":
 
     course = canvas.get_course(CUno2canvasno[args.course])
 
-    
-
     if args.attendance:
         # first run $py attendance.py
         course = canvas.get_course(CUno2canvasno[args.course])
@@ -887,8 +887,8 @@ if __name__ == "__main__":
         print("- Init files on Canvas")
         init_course_files(CUno2canvasno[args.course])
 
-        print("- Init local files")
-        init_local(course=args.course, semester=SEMESTER, ini_loc=INI_LOC)
+        #print("- Init local files")
+        #init_local(course=args.course, semester=SEMESTER, ini_loc=INI_LOC)
         print("- Init HTML")
         makeHTMLforSemester(ini_loc=INI_LOC,
                             course_no_canvas=CUno2canvasno[args.course],
