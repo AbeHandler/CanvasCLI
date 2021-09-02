@@ -863,6 +863,10 @@ if __name__ == "__main__":
 
     if(args.assignment):
 
+        # TODO auto link w/ HTML in Canvas
+        # TODO put in the in-class assignment group. There is code for
+            # that if you follow args.cron
+
         if args.due is None:
 
             if args.tomorrow is False:
