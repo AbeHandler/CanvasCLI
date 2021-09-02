@@ -434,11 +434,6 @@ def make_link(title="D19-5414.pdf",
 def show_before_date(course, in_date='20210315'):
     '''update a page to show elements w/ data-date before some input date'''
 
-    lecture_page = course.get_page(config["course_info"]["main_page"])
-    print("[*] updating {} to make visible before {}".format(args.course,
-                                                             day))
-        
-
     def isb4Eq(input_date):
         '''
         Returns a function, f: date -> bool
@@ -455,6 +450,10 @@ def show_before_date(course, in_date='20210315'):
             else:
                 return False
         return hidden
+
+    canvas_page = course.get_page(config["course_info"]["main_page"])
+    print("[*] updating {} to make visible before {}".format(args.course,
+                                                             day))
 
     html = canvas_page.body
     soup = BeautifulSoup(html, features="html.parser")
