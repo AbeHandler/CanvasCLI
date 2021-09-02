@@ -431,8 +431,13 @@ def make_link(title="D19-5414.pdf",
                     title=title, href=href, endpoint=endpoint)
 
 
-def show_before_date(canvas_page, in_date='20210315'):
+def show_before_date(course, in_date='20210315'):
     '''update a page to show elements w/ data-date before some input date'''
+
+    lecture_page = course.get_page(config["course_info"]["main_page"])
+    print("[*] updating {} to make visible before {}".format(args.course,
+                                                             day))
+        
 
     def isb4Eq(input_date):
         '''
@@ -591,8 +596,8 @@ def get_ungraded_in_class_assignments_for_course(course):
 
 def grade_in_class_assignments(course):
     '''Grade ungraded in-class assignments (for participation)'''
-    for assignment in get_ungraded_in_class_assignments_for_course(course):
-        print("[*] ", assignment)
+    for assignment_id in get_ungraded_in_class_assignments_for_course(course):
+        assignment = course.get_assignment(assignment_id)
         for student in assignment.get_gradeable_students():
             comment_and_grade_participation(
                 assignment.id, student, course=course)
@@ -639,6 +644,17 @@ def init_groups(course, config):
     for name, weight in zip(names, weights):
         course.create_assignment_group(name=name, group_weight=weight)
 
+def get_day(args):
+    '''
+    A helper method for --visible
+    '''
+    day = date.today()
+    if args.tomorrow:
+        day += timedelta(days=1)
+    elif args.date:
+        assert args.date is not None, "expecting date to be input"
+        day = datetime.strptime(args.date, '%Y%m%d')
+    return day.strftime("%Y%m%d")
 
 if __name__ == "__main__":
 
@@ -652,11 +668,16 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
+    # TODO alphabetize
+
     parser.add_argument('-attendance', '--attendance', dest='attendance',
                         default=False, action='store_true', help='Take attendance')
 
     parser.add_argument('-c', '-course', '--course',
                         default=None, help='INFO course number, e.g. 4604')
+
+    parser.add_argument('-cron', '--cron', action='store_true',
+                        help='run maintence jobs', dest='cron', default=False)
 
     parser.add_argument('-init', '--init', dest='init', default=False,
                         action='store_true', help='Use this flag to init the course files on Canvas')
@@ -750,6 +771,10 @@ if __name__ == "__main__":
 
     course = canvas.get_course(CUno2canvasno[args.course])
 
+    if args.cron:
+        grade_in_class_assignments(course)
+        # TODO visible also
+
     if args.attendance:
         # first run $py attendance.py
         course = canvas.get_course(CUno2canvasno[args.course])
@@ -781,25 +806,16 @@ if __name__ == "__main__":
         os._exit(0)
 
     if args.visible:
-        day = date.today()
-        if args.tomorrow:
-            day += timedelta(days=1)
-        elif args.date:
-            assert args.date is not None, "expecting date to be input"
-            day = datetime.strptime(args.date, '%Y%m%d')
-        d1 = day.strftime("%Y%m%d")
+        # TODO refactor for cron
+        day = get_day(args)
         course = canvas.get_course(CUno2canvasno[args.course])
-        lecture_page = course.get_page(config["course_info"]["main_page"])
-        print("[*] updating {} to make visible before {}".format(args.course,
-                                                                 day.strftime("%b %d")))
-        show_before_date(canvas_page=lecture_page,
-                         in_date=day.strftime("%Y%m%d"))
+        show_before_date(course=course,
+                         in_date=day)
         os._exit(0)
 
     # mostly used for 3402
     if args.participation and args.assignment_id is not None:
         course = canvas.get_course(CUno2canvasno[args.course])
-        assignment = course.get_assignment(args.assignment_id)
         for student in assignment.get_gradeable_students():
             comment_and_grade_participation(
                 args.assignment_id, student, course)
