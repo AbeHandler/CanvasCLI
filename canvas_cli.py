@@ -30,9 +30,7 @@ and aliasing it as "canvas"
 '''
 
 import glob
-import time
 import os
-import sys
 import argparse
 import configparser
 from copy import copy
@@ -643,6 +641,7 @@ def init_groups(course, config):
     for name, weight in zip(names, weights):
         course.create_assignment_group(name=name, group_weight=weight)
 
+
 def get_day(args):
     '''
     A helper method for --visible
@@ -654,6 +653,7 @@ def get_day(args):
         assert args.date is not None, "expecting date to be input"
         day = datetime.strptime(args.date, '%Y%m%d')
     return day.strftime("%Y%m%d")
+
 
 if __name__ == "__main__":
 
@@ -733,23 +733,28 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.course is None:
+    if args.course is None and not args.visible:  # don't need to specify a course if args are visible
         print("[*] You must specify a course using the --course flag or an alias")
         os._exit(0)
 
     SEMESTER = "F2021"
 
-    INI_LOC = INI_DIR + "/" + args.course + SEMESTER + ".ini"
-
-    assert os.path.isfile(
-        INI_LOC), "Config file not found. Do you have the wrong semester?"
+    CUno2canvasno = {}
+    with open("semester.txt", "r") as inf:
+        for course in inf:
+            course = course.replace("\n", "")
+            INI_LOC = INI_DIR + "/" + course + SEMESTER + ".ini"
+            assert os.path.isfile(
+                INI_LOC), "Config file not found. Do you have the wrong semester?"
+            config = configparser.ConfigParser()
+            config.read(INI_LOC)
+            CUno2canvasno[config["course_info"]["course_name"]] = int(
+                config["course_info"]["canvas_no"])
 
     config = configparser.ConfigParser()
 
     config.read(INI_LOC)
-
-    CUno2canvasno = {config["course_info"]["course_name"]:
-                     int(config["course_info"]["canvas_no"])}
+    INI_LOC = INI_DIR + "/" + args.course + SEMESTER + ".ini"
 
     course = canvas.get_course(CUno2canvasno[args.course])
 
@@ -804,13 +809,13 @@ if __name__ == "__main__":
 
         os._exit(0)
 
-    if args.visible:
+    if args.visible:  # this will run for all course
         # TODO refactor for cron
         day = get_day(args)
-        course = canvas.get_course(CUno2canvasno[args.course])
-        show_before_date(course=course,
-                         in_date=day)
-        os._exit(0)
+        for course_no in CUno2canvasno.values():
+            course = canvas.get_course(CUno2canvasno[args.course])
+            show_before_date(course=course,
+                             in_date=day)
 
     # mostly used for 3402
     if args.participation and args.assignment_id is not None:
@@ -865,7 +870,7 @@ if __name__ == "__main__":
 
         # TODO auto link w/ HTML in Canvas
         # TODO put in the in-class assignment group. There is code for
-            # that if you follow args.cron
+        # that if you follow args.cron
 
         if args.due is None:
 
