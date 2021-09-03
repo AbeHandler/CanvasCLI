@@ -835,8 +835,9 @@ if __name__ == "__main__":
     if args.visible:  # this will run for all course
         # TODO refactor for cron
         day = get_day(args.date, args.tomorrow)
+        canvas_no = CUno2canvasno[args.course]
         show_before_date(course=course,
-                         main_page=Canvasno2mainpage[course_no],
+                         main_page=Canvasno2mainpage[canvas_no],
                          in_date=day)
 
     if args.all_visible:
