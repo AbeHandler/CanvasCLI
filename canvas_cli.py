@@ -97,7 +97,8 @@ def get_weeks2dates(dates_for_course):
 
     return weeks2dates
 
-
+'''
+suspected dead code 9/2/21
 def get_dates2weeks(dates_for_course):
 
     dates2weeks = {}
@@ -106,7 +107,7 @@ def get_dates2weeks(dates_for_course):
         dates2weeks[d['date'].strftime(STANDARDDATE)] = d["week"]
 
     return dates2weeks
-
+'''
 
 def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_no_cu=2301):
     '''
@@ -429,7 +430,7 @@ def make_link(title="D19-5414.pdf",
                     title=title, href=href, endpoint=endpoint)
 
 
-def show_before_date(course, in_date='20210315'):
+def show_before_date(course, main_page, in_date='20210315'):
     '''update a page to show elements w/ data-date before some input date'''
 
     def isb4Eq(input_date):
@@ -449,7 +450,7 @@ def show_before_date(course, in_date='20210315'):
                 return False
         return hidden
 
-    canvas_page = course.get_page(config["course_info"]["main_page"])
+    canvas_page = course.get_page(main_page)
     print("[*] updating {} to make visible before {}".format(args.course,
                                                              day))
 
@@ -642,17 +643,49 @@ def init_groups(course, config):
         course.create_assignment_group(name=name, group_weight=weight)
 
 
-def get_day(args):
+def get_day(args_date, tomorrow):
     '''
     A helper method for --visible
     '''
     day = date.today()
-    if args.tomorrow:
+    if tomorrow:
         day += timedelta(days=1)
-    elif args.date:
-        assert args.date is not None, "expecting date to be input"
-        day = datetime.strptime(args.date, '%Y%m%d')
+    elif args_date != "None":
+        day = datetime.strptime(args_date, '%Y%m%d')
     return day.strftime("%Y%m%d")
+
+
+def read_configs():
+    CUno2canvasno = {}
+    Canvasno2mainpage = {}
+    CUno2Classtime = {}
+
+    with open("semester.txt", "r") as inf:
+        for course in inf:
+            course = course.replace("\n", "")
+            INI_LOC = INI_DIR + "/" + course + SEMESTER + ".ini"
+            assert os.path.isfile(
+                INI_LOC), "Config file not found. Do you have the wrong semester?"
+            config = configparser.ConfigParser()
+            config.read(INI_LOC)
+            CUno2canvasno[config["course_info"]["course_name"]] = int(
+                config["course_info"]["canvas_no"])
+            Canvasno2mainpage[int(config["course_info"]["canvas_no"]
+                                  )] = config["course_info"]["main_page"]
+
+            CUno2Classtime[course] = config["course_info"]["end_time"]
+
+    return {"CUno2canvasno": CUno2canvasno,
+            "CUno2Classtime": CUno2Classtime,
+            "Canvasno2mainpage": Canvasno2mainpage}
+
+
+def get_names2ids(CUno2canvasno):
+    names2ids = {}
+    for coursename, courseno in CUno2canvasno.items():
+        names2ids[coursename] = get_student_names2_ids(
+            CUno2canvasno[coursename])
+    return names2ids
 
 
 if __name__ == "__main__":
@@ -668,9 +701,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # TODO alphabetize
+    parser.add_argument('-a', '-assignment', '--assignment', dest='assignment',
+                        default=False, action='store_true', help='Use this flag to create an assignment')
+
+    parser.add_argument('-all_visible', '--all_visible', dest='all_visible',
+                        default=False, action='store_true')
 
     parser.add_argument('-attendance', '--attendance', dest='attendance',
                         default=False, action='store_true', help='Take attendance')
+
+    parser.add_argument('--assignment_id', dest="assignment_id",
+                        help='Assignment ID for no submission')
 
     parser.add_argument('-c', '-course', '--course',
                         default=None, help='INFO course number, e.g. 4604')
@@ -678,52 +719,29 @@ if __name__ == "__main__":
     parser.add_argument('-cron', '--cron', action='store_true',
                         help='run maintence jobs', dest='cron', default=False)
 
-    parser.add_argument('-init', '--init', dest='init', default=False,
-                        action='store_true', help='Use this flag to init the course files on Canvas')
-
-    parser.add_argument('-q', '-quiz', '--quiz', dest='quiz', default=False,
-                        action='store_true', help='Use this flag to create a quiz')
-
-    parser.add_argument('-set_extra_time_on_quizzes', dest='set_extra_time_on_quizzes', default=False,
-                        action='store_true', help='Use this flag to set extra time on all quizzes for students w/ accomodations')
-
-    parser.add_argument('-a', '-assignment', '--assignment', dest='assignment',
-                        default=False, action='store_true', help='Use this flag to create an assignment')
-
     parser.add_argument('-d', '-due', '--due',
                         help='pass a date in YYYYMMDD for the due date, e.g. 20200824')
 
     parser.add_argument('-date', dest='date', default="None",
                         help='pass a date in YYYYMMDD for the date, e.g. 20200824')
 
-    parser.add_argument('-n', '-name', '--name',
-                        help='the name of the quiz or assignment')
-
-    parser.add_argument('-w', '-week', '--week', dest='week', type=int)
-
     parser.add_argument('-e', '-export', '--export', dest='export',
                         help='Export all', default=False, action='store_true')
-
-    parser.add_argument('-p', '-points', '--points',
-                        dest='points', default=3, type=int)
-
-    parser.add_argument('-v', '-visible', '--visible', dest='visible',
-                        default=False, action='store_true', help='Make html visible')
-
-    parser.add_argument('-t', '-tomorrow', '--tomorrow', action='store_true',
-                        help='syncs a directory to canvas', dest='tomorrow', default=False)
-
-    parser.add_argument('--participation', action='store_true',
-                        help='assigns full points to students who submitted', dest='participation', default=False)
-
-    parser.add_argument('-z', '-zeros', '--zeros', action='store_true',
-                        help='assigns zeros to students who have not submitted', dest='zeros', default=False)
 
     parser.add_argument('-html', action='store_true',
                         help='print HTML for semester', dest='html', default=False)
 
-    parser.add_argument('--assignment_id', dest="assignment_id",
-                        help='Assignment ID for no submission')
+    parser.add_argument('-init', '--init', dest='init', default=False,
+                        action='store_true', help='Use this flag to init the course files on Canvas')
+
+    parser.add_argument('-n', '-name', '--name',
+                        help='the name of the quiz or assignment')
+
+    parser.add_argument('-p', '-points', '--points',
+                        dest='points', default=3, type=int)
+
+    parser.add_argument('--participation', action='store_true',
+                        help='assigns full points to students who submitted', dest='participation', default=False)
 
     parser.add_argument('--publish', dest='publish', default=False, action='store_true',
                         help='Use this flag to immediately publish the assignment')
@@ -731,47 +749,52 @@ if __name__ == "__main__":
     parser.add_argument('--peer_review', dest='peer_review', default=False,
                         action='store_true', help='Use this flag to run peer reviews')
 
+    parser.add_argument('-q', '-quiz', '--quiz', dest='quiz', default=False,
+                        action='store_true', help='Use this flag to create a quiz')
+
+    parser.add_argument('-set_extra_time_on_quizzes', dest='set_extra_time_on_quizzes', default=False,
+                        action='store_true', help='Use this flag to set extra time on all quizzes for students w/ accomodations')
+
+    parser.add_argument('-t', '-tomorrow', '--tomorrow', action='store_true',
+                        help='syncs a directory to canvas', dest='tomorrow', default=False)
+
+    parser.add_argument('-w', '-week', '--week', dest='week', type=int)
+
+    parser.add_argument('-v', '-visible', '--visible', dest='visible',
+                        default=False, action='store_true', help='Make html visible')
+
+    parser.add_argument('-z', '-zeros', '--zeros', action='store_true',
+                        help='assigns zeros to students who have not submitted', dest='zeros', default=False)
+
     args = parser.parse_args()
 
-    if args.course is None and not args.visible:  # don't need to specify a course if args are visible
+    if args.course is None and not args.all_visible:  # don't need to specify a course if args are visible
         print("[*] You must specify a course using the --course flag or an alias")
         os._exit(0)
 
     SEMESTER = "F2021"
 
-    CUno2canvasno = {}
-    with open("semester.txt", "r") as inf:
-        for course in inf:
-            course = course.replace("\n", "")
-            INI_LOC = INI_DIR + "/" + course + SEMESTER + ".ini"
-            assert os.path.isfile(
-                INI_LOC), "Config file not found. Do you have the wrong semester?"
-            config = configparser.ConfigParser()
-            config.read(INI_LOC)
-            CUno2canvasno[config["course_info"]["course_name"]] = int(
-                config["course_info"]["canvas_no"])
-
-    config = configparser.ConfigParser()
-
-    config.read(INI_LOC)
     INI_LOC = INI_DIR + "/" + args.course + SEMESTER + ".ini"
+    config = configparser.ConfigParser()
+    config.read(INI_LOC)
+
+    configs = read_configs()
+    CUno2canvasno = configs["CUno2canvasno"]
+    Canvasno2mainpage = configs["Canvasno2mainpage"]
+    CUno2Classtime = configs["CUno2Classtime"]
 
     course = canvas.get_course(CUno2canvasno[args.course])
 
     # Map CU course names to Canvas course names
 
-    Course2Classtime = {args.course: config["course_info"]["end_time"]}
-
     course_no = config["course_info"]["canvas_no"]
 
-    names2ids = {}
-    for coursename, courseno in CUno2canvasno.items():
-        names2ids[coursename] = get_student_names2_ids(
-            CUno2canvasno[coursename])
+    names2ids = get_names2ids(CUno2canvasno)
 
     dates_for_course = get_dates_for_course(INI_LOC)
 
-    dates2weeks = get_dates2weeks(dates_for_course)
+    # suspected dead code ... 9/2/21
+    # dates2weeks = get_dates2weeks(dates_for_course)
 
     course = canvas.get_course(CUno2canvasno[args.course])
 
@@ -811,11 +834,17 @@ if __name__ == "__main__":
 
     if args.visible:  # this will run for all course
         # TODO refactor for cron
-        day = get_day(args)
+        day = get_day(args.date, args.tomorrow)
+        show_before_date(course=course,
+                         main_page=Canvasno2mainpage[course_no],
+                         in_date=day)
+
+    if args.all_visible:
         for course_no in CUno2canvasno.values():
-            course = canvas.get_course(CUno2canvasno[args.course])
+            course = canvas.get_course(course_no)
             show_before_date(course=course,
-                             in_date=day)
+                             main_page=Canvasno2mainpage[course_no],
+                             in_date=day)        
 
     # mostly used for 3402
     if args.participation and args.assignment_id is not None:
@@ -862,7 +891,7 @@ if __name__ == "__main__":
                             'published': args.publish,
                             'time_limit': 5,
                             "points_possible": args.points,
-                            "due_at": args.due + "T" + Course2Classtime[args.course]})
+                            "due_at": args.due + "T" + CUno2Classtime[args.course]})
         print("[*] created quiz for {}".format(args.course))
         os._exit(0)
 
