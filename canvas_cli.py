@@ -1,3 +1,4 @@
+
 #! /opt/anaconda3/bin/python
 # replace shebang w/ your local Python version
 
@@ -97,6 +98,7 @@ def get_weeks2dates(dates_for_course):
 
     return weeks2dates
 
+
 '''
 suspected dead code 9/2/21
 def get_dates2weeks(dates_for_course):
@@ -108,6 +110,7 @@ def get_dates2weeks(dates_for_course):
 
     return dates2weeks
 '''
+
 
 def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_no_cu=2301):
     '''
@@ -451,8 +454,6 @@ def show_before_date(course, main_page, in_date='20210315'):
         return hidden
 
     canvas_page = course.get_page(main_page)
-    print("[*] updating {} to make visible before {}".format(args.course,
-                                                             day))
 
     html = canvas_page.body
     soup = BeautifulSoup(html, features="html.parser")
@@ -465,7 +466,7 @@ def show_before_date(course, main_page, in_date='20210315'):
 
     html = str(soup)
 
-    print("[*] Updating {} page to show before {}".format(args.course, in_date))
+    print("[*] Updating {} page to show before {}".format(main_page, in_date))
 
     canvas_page.edit(wiki_page={"body": html})
 
@@ -659,11 +660,14 @@ def read_configs():
     CUno2canvasno = {}
     Canvasno2mainpage = {}
     CUno2Classtime = {}
+    CUno2_dates_for_course = {}
 
-    with open("semester.txt", "r") as inf:
+    with open(INI_DIR + "/" + "semester.txt", "r") as inf:
         for course in inf:
+
             course = course.replace("\n", "")
             INI_LOC = INI_DIR + "/" + course + SEMESTER + ".ini"
+            dates_for_course = get_dates_for_course(INI_LOC)
             assert os.path.isfile(
                 INI_LOC), "Config file not found. Do you have the wrong semester?"
             config = configparser.ConfigParser()
@@ -677,6 +681,7 @@ def read_configs():
 
     return {"CUno2canvasno": CUno2canvasno,
             "CUno2Classtime": CUno2Classtime,
+            "CUno2datesforcourse": CUno2_dates_for_course,
             "Canvasno2mainpage": Canvasno2mainpage}
 
 
@@ -774,31 +779,16 @@ if __name__ == "__main__":
 
     SEMESTER = "F2021"
 
-    INI_LOC = INI_DIR + "/" + args.course + SEMESTER + ".ini"
-    config = configparser.ConfigParser()
-    config.read(INI_LOC)
-
     configs = read_configs()
     CUno2canvasno = configs["CUno2canvasno"]
     Canvasno2mainpage = configs["Canvasno2mainpage"]
     CUno2Classtime = configs["CUno2Classtime"]
 
-    course = canvas.get_course(CUno2canvasno[args.course])
-
-    # Map CU course names to Canvas course names
-
-    course_no = config["course_info"]["canvas_no"]
-
     names2ids = get_names2ids(CUno2canvasno)
 
-    dates_for_course = get_dates_for_course(INI_LOC)
-
-    # suspected dead code ... 9/2/21
-    # dates2weeks = get_dates2weeks(dates_for_course)
-
-    course = canvas.get_course(CUno2canvasno[args.course])
-
     if args.cron:
+        course = canvas.get_course(CUno2canvasno[args.course])
+
         grade_in_class_assignments(course)
         # TODO visible also
 
@@ -836,16 +826,19 @@ if __name__ == "__main__":
         # TODO refactor for cron
         day = get_day(args.date, args.tomorrow)
         canvas_no = CUno2canvasno[args.course]
+        course = canvas.get_course(CUno2canvasno[args.course])
+
         show_before_date(course=course,
                          main_page=Canvasno2mainpage[canvas_no],
                          in_date=day)
 
     if args.all_visible:
+        day = get_day(args.date, args.tomorrow)
         for course_no in CUno2canvasno.values():
             course = canvas.get_course(course_no)
             show_before_date(course=course,
                              main_page=Canvasno2mainpage[course_no],
-                             in_date=day)        
+                             in_date=day)
 
     # mostly used for 3402
     if args.participation and args.assignment_id is not None:
@@ -901,6 +894,7 @@ if __name__ == "__main__":
         # TODO auto link w/ HTML in Canvas
         # TODO put in the in-class assignment group. There is code for
         # that if you follow args.cron
+        course = canvas.get_course(CUno2canvasno[args.course])
 
         if args.due is None:
 
