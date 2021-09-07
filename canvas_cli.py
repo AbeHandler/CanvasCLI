@@ -150,31 +150,6 @@ def makeHTMLforSemester(ini_loc="2301S2021.ini", course_no_canvas=70073, course_
     lecture_page.edit(wiki_page={"body": out})
 
 
-'''
-def init_local(course, ini_loc, semester="S2020"):
-    local_dir = '/Users/abramhandler/everything/teaching'
-    primary = local_dir + '/{}{}'.format(course, semester)
-
-    dates_for_course = get_dates_for_course(ini_loc=ini_loc)
-    weeks2dates = get_weeks2dates(dates_for_course)
-
-    if not os.path.isdir(primary):
-        os.mkdir(primary)
-
-    # find out how many weeks in course
-    weeks = list(weeks2dates.keys())
-    weeks.sort()
-
-    for i in weeks:
-        str_ = local_dir + '/{}{}/week{}'.format(course, semester, i)
-        if not os.path.isdir(str_):
-            # TODO: this failed mkdir /Users/abramhandler/everything/teaching/3402S2021/
-            os.mkdir(str_)
-            for folder in FOLDERS:
-                os.mkdir(str_ + "/" + folder)
-'''
-
-
 def get_api():
 
     # Canvas API URL
@@ -774,7 +749,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.course is None and not args.all_visible:  # don't need to specify a course if args are visible
-        print("[*] You must specify a course using the --course flag or an alias")
+        print("[*] You must specify a course using the --course flag, unless you are doing all_visible")
         os._exit(0)
 
     SEMESTER = "F2021"
@@ -936,7 +911,6 @@ if __name__ == "__main__":
         init_course_files(CUno2canvasno[args.course])
 
         #print("- Init local files")
-        #init_local(course=args.course, semester=SEMESTER, ini_loc=INI_LOC)
         print("- Init HTML")
         makeHTMLforSemester(ini_loc=INI_LOC,
                             course_no_canvas=CUno2canvasno[args.course],
