@@ -457,6 +457,8 @@ def comment_and_grade_participation(assignment_id, student, course):
     assignment = course.get_assignment(assignment=assignment_id)
     submission = assignment.get_submission(student.id)  # student id
 
+    print(assignment.name)
+
     if submission.submitted_at is None:
         print('- No submission yet for {}'.format(student))
         submission.edit(
@@ -748,7 +750,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.course is None and not args.all_visible:  # don't need to specify a course if args are visible
+    if args.course is None and not args.all_visible and not args.cron:  # don't need to specify a course if args are visible
         print("[*] You must specify a course using the --course flag, unless you are doing all_visible")
         os._exit(0)
 
@@ -762,9 +764,10 @@ if __name__ == "__main__":
     names2ids = get_names2ids(CUno2canvasno)
 
     if args.cron:
-        course = canvas.get_course(CUno2canvasno[args.course])
-
-        grade_in_class_assignments(course)
+        for course in ["2301"]: #CUno2canvasno:
+            print("[*] checking {}".format(course))
+            course = canvas.get_course(CUno2canvasno[course])
+            grade_in_class_assignments(course)
         # TODO visible also
 
     if args.attendance:
