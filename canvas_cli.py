@@ -457,8 +457,6 @@ def comment_and_grade_participation(assignment_id, student, course):
     assignment = course.get_assignment(assignment=assignment_id)
     submission = assignment.get_submission(student.id)  # student id
 
-    print(assignment.name)
-
     if submission.submitted_at is None:
         print('- No submission yet for {}'.format(student))
         submission.edit(
@@ -574,9 +572,12 @@ def grade_in_class_assignments(course):
     '''Grade ungraded in-class assignments (for participation)'''
     for assignment_id in get_ungraded_in_class_assignments_for_course(course):
         assignment = course.get_assignment(assignment_id)
-        for student in assignment.get_gradeable_students():
-            comment_and_grade_participation(
-                assignment.id, student, course=course)
+        gradable_students = assignment.get_gradeable_students()
+        if len(gradable_students) > 0:
+            print(assignment.name)
+            for student in gradable_students:
+                comment_and_grade_participation(
+                    assignment.id, student, course=course)
 
 
 def deduct_for_missing_reviews(course, assignment_id):
@@ -668,6 +669,17 @@ def get_names2ids(CUno2canvasno):
         names2ids[coursename] = get_student_names2_ids(
             CUno2canvasno[coursename])
     return names2ids
+
+
+def run_all_visible(args, configs):
+    CUno2canvasno = configs["CUno2canvasno"]
+    Canvasno2mainpage = configs["Canvasno2mainpage"]
+    day = get_day(args.date, args.tomorrow)
+    for course_no in CUno2canvasno.values():
+        course = canvas.get_course(course_no)
+        show_before_date(course=course,
+                         main_page=Canvasno2mainpage[course_no],
+                         in_date=day)
 
 
 if __name__ == "__main__":
@@ -764,11 +776,15 @@ if __name__ == "__main__":
     names2ids = get_names2ids(CUno2canvasno)
 
     if args.cron:
+        print("[*] Setting visible")
+        run_all_visible(args, configs)
+
+        print("[*] Running autograde")
         for course in ["2301"]: #CUno2canvasno:
             print("[*] checking {}".format(course))
             course = canvas.get_course(CUno2canvasno[course])
             grade_in_class_assignments(course)
-        # TODO visible also
+        
 
     if args.attendance:
         # first run $py attendance.py
@@ -800,8 +816,7 @@ if __name__ == "__main__":
 
         os._exit(0)
 
-    if args.visible:  # this will run for all course
-        # TODO refactor for cron
+    if args.visible:
         day = get_day(args.date, args.tomorrow)
         canvas_no = CUno2canvasno[args.course]
         course = canvas.get_course(CUno2canvasno[args.course])
@@ -811,12 +826,7 @@ if __name__ == "__main__":
                          in_date=day)
 
     if args.all_visible:
-        day = get_day(args.date, args.tomorrow)
-        for course_no in CUno2canvasno.values():
-            course = canvas.get_course(course_no)
-            show_before_date(course=course,
-                             main_page=Canvasno2mainpage[course_no],
-                             in_date=day)
+        run_all_visible(args, configs)
 
     # mostly used for 3402
     if args.participation and args.assignment_id is not None:
