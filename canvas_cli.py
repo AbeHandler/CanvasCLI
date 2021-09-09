@@ -44,6 +44,7 @@ from collections import defaultdict
 from bs4 import BeautifulSoup
 import pandas as pd
 
+from canvasapi.paginated_list import PaginatedList
 from canvasapi.exceptions import CanvasException
 
 STANDARDDATE = "%Y%m%d"
@@ -441,7 +442,7 @@ def show_before_date(course, main_page, in_date='20210315'):
 
     html = str(soup)
 
-    print("[*] Updating {} page to show before {}".format(main_page, in_date))
+    print("\t - Updating {} page to show before {}".format(main_page, in_date))
 
     canvas_page.edit(wiki_page={"body": html})
 
@@ -458,11 +459,11 @@ def comment_and_grade_participation(assignment_id, student, course):
     submission = assignment.get_submission(student.id)  # student id
 
     if submission.submitted_at is None:
-        print('- No submission yet for {}'.format(student))
+        print('\t - No submission yet for {}'.format(student))
         submission.edit(
             submission={'posted_grade': 0, 'comment': "no submission"})
     else:
-        print("- Setting {} score to full".format(student))
+        print("\t - Setting {} score to full".format(student))
         submission.edit(
             submission={'posted_grade': assignment.points_possible})
 
@@ -573,8 +574,13 @@ def grade_in_class_assignments(course):
     for assignment_id in get_ungraded_in_class_assignments_for_course(course):
         assignment = course.get_assignment(assignment_id)
         gradable_students = assignment.get_gradeable_students()
-        if len(gradable_students) > 0:
-            print(assignment.name)
+        if type(gradable_students) == PaginatedList:
+            grade = True 
+        else:
+            if len(gradable_students) > 0:
+                grade = True
+        if grade is True:
+            print("\t Scoring {}".format(assignment.name))
             for student in gradable_students:
                 comment_and_grade_participation(
                     assignment.id, student, course=course)
@@ -780,7 +786,7 @@ if __name__ == "__main__":
         run_all_visible(args, configs)
 
         print("[*] Running autograde")
-        for course in ["2301"]: #CUno2canvasno:
+        for course in CUno2canvasno:
             print("[*] checking {}".format(course))
             course = canvas.get_course(CUno2canvasno[course])
             grade_in_class_assignments(course)
