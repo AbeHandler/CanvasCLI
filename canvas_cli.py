@@ -1,4 +1,3 @@
-
 #! /opt/anaconda3/bin/python
 # replace shebang w/ your local Python version
 
@@ -177,14 +176,16 @@ def create_in_class_assignment(courseNo, due, name=None, points=3, published=Fal
 
     description = "Use this link to turn in your in-class work. You will be graded based on participation. You are NOT expected to work on this outside of class."
 
+    group_id = get_in_class_assignment_group(course)
+
     course.create_assignment({
         'name': name,
         'published': published,
         'due_at': due.strftime('%Y-%m-%d') + "T23:59:00",
         "points_possible": points,
         "description": description,
+        "assignment_group_id": group_id.id,
         "submission_types": ["online_upload", "online_text_entry"],
-        "assignment_group_id": str(group_id),
     })
 
     print("   - Added assignment to {}".format(course.name))
@@ -575,7 +576,7 @@ def grade_in_class_assignments(course):
         assignment = course.get_assignment(assignment_id)
         gradable_students = assignment.get_gradeable_students()
         if type(gradable_students) == PaginatedList:
-            grade = True 
+            grade = True
         else:
             if len(gradable_students) > 0:
                 grade = True
@@ -687,6 +688,24 @@ def run_all_visible(args, configs):
                          main_page=Canvasno2mainpage[course_no],
                          in_date=day)
 
+def get_due_from_args(args):
+    if args.due is None:
+
+        if args.tomorrow is False:
+            print("[*] No due date, assuming it's for today")
+            return date.today().strftime('%Y%m%d')
+        else:
+            print("[*] Assignment is for tomorrow")
+            return (date.today() + timedelta(days=1)
+                        ).strftime('%Y%m%d')
+    elif args.due is not None:
+        try:
+            if args.due is not None:
+                return datetime.strptime(args.due, '%Y%m%d')
+        except ValueError:
+            print(
+                "[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
+
 
 if __name__ == "__main__":
 
@@ -768,7 +787,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.course is None and not args.all_visible and not args.cron:  # don't need to specify a course if args are visible
+    # don't need to specify a course if args are visible
+    if args.course is None and not args.all_visible and not args.cron:
         print("[*] You must specify a course using the --course flag, unless you are doing all_visible")
         os._exit(0)
 
@@ -790,7 +810,6 @@ if __name__ == "__main__":
             print("[*] checking {}".format(course))
             course = canvas.get_course(CUno2canvasno[course])
             grade_in_class_assignments(course)
-        
 
     if args.attendance:
         # first run $py attendance.py
@@ -890,25 +909,12 @@ if __name__ == "__main__":
         # that if you follow args.cron
         course = canvas.get_course(CUno2canvasno[args.course])
 
-        if args.due is None:
+        due = get_due_from_args(args)
 
-            if args.tomorrow is False:
-                print("[*] No due date, assuming it's for today")
-                args.due = date.today().strftime('%Y%m%d')
-            else:
-                print("[*] Assignment is for tomorrow")
-                args.due = (date.today() + timedelta(days=1)
-                            ).strftime('%Y%m%d')
-        elif args.due is not None:
-            try:
-                if args.due is not None:
-                    datetime.strptime(args.due, '%Y%m%d')
-            except ValueError:
-                print(
-                    "[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
-
-        create_in_class_assignment(
-            courseNo=args.course, due=args.due, name=args.name, points=args.points)
+        create_in_class_assignment(courseNo=args.course,
+                                   due=due,
+                                   name=args.name,
+                                   points=args.points)
         os._exit(0)
 
     if(args.init):
