@@ -160,14 +160,25 @@ def get_api():
     # Initialize a new Canvas object
     return Canvas(API_URL, API_KEY)
 
-def link_url_for_in_class_assignment(assignment, course):
+def link_url_for_in_class_assignment(assignment, course, main_page, due):
 
     assignment_id = assignment.id
     course_id = course.id
     template = "https://canvas.colorado.edu/courses/{}/assignments/{}"
     assignment_url = template.format(course_id, assignment_id)
+
+    canvas_page = course.get_page(main_page)
+    html = canvas_page.body
+    soup = BeautifulSoup(html, features="html.parser")
+
+    #data-date="20210924"
+
+    results = soup.findAll("li", {"data-date" : due, 
+                                  "data-bullet":"in-class-assignment"})
+
+    print(results)
     print("TODODODO")
-    print(assignment_url)
+    # print(soup)
 
 
 def create_in_class_assignment(courseNo, due, name=None, points=3, published=False, group_id=166877):
@@ -928,8 +939,12 @@ if __name__ == "__main__":
                                                 name=args.name,
                                                 points=args.points)
 
-        
-        link_url_for_in_class_assignment(assignment=assignment, course=course)
+        canvas_no =CUno2canvasno[args.course]
+        main_page = Canvasno2mainpage[canvas_no]
+        link_url_for_in_class_assignment(assignment=assignment,
+                                         main_page=main_page,
+                                         due=due,
+                                         course=course)
 
         os._exit(0)
 
