@@ -160,6 +160,15 @@ def get_api():
     # Initialize a new Canvas object
     return Canvas(API_URL, API_KEY)
 
+def link_url_for_in_class_assignment(assignment, course):
+
+    assignment_id = assignment.id
+    course_id = course.id
+    template = "https://canvas.colorado.edu/courses/{}/assignments/{}"
+    assignment_url = template.format(course_id, assignment_id)
+    print("TODODODO")
+    print(assignment_url)
+
 
 def create_in_class_assignment(courseNo, due, name=None, points=3, published=False, group_id=166877):
 
@@ -178,7 +187,7 @@ def create_in_class_assignment(courseNo, due, name=None, points=3, published=Fal
 
     group_id = get_in_class_assignment_group(course)
 
-    course.create_assignment({
+    new_assignment = course.create_assignment({
         'name': name,
         'published': published,
         'due_at': due.strftime('%Y-%m-%d') + "T23:59:00",
@@ -189,6 +198,9 @@ def create_in_class_assignment(courseNo, due, name=None, points=3, published=Fal
     })
 
     print("   - Added assignment to {}".format(course.name))
+    print("   - {} ".format(name))
+
+    return new_assignment
 
 
 def init_course_files(course_number):
@@ -911,10 +923,14 @@ if __name__ == "__main__":
 
         due = get_due_from_args(args)
 
-        create_in_class_assignment(courseNo=args.course,
-                                   due=due,
-                                   name=args.name,
-                                   points=args.points)
+        assignment = create_in_class_assignment(courseNo=args.course,
+                                                due=due,
+                                                name=args.name,
+                                                points=args.points)
+
+        
+        link_url_for_in_class_assignment(assignment=assignment, course=course)
+
         os._exit(0)
 
     if(args.init):
