@@ -828,7 +828,7 @@ if __name__ == "__main__":
         print("[*] Setting visible")
         run_all_visible(args, configs)
 
-        print("[*] Running autograde")
+        print("[*] Running participation points")
         for course in CUno2canvasno:
             print("[*] checking {}".format(course))
             course = canvas.get_course(CUno2canvasno[course])
