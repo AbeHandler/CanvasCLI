@@ -1,3 +1,7 @@
+'''
+find ~/Downloads/*py | parallel "python test_runner.py {}"
+'''
+
 import unittest
 import os
 import sys
