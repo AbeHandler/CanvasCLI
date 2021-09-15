@@ -5,26 +5,34 @@ find ~/Downloads/*py | parallel "python test_runner.py {}"
 import unittest
 import os
 import sys
+import json
 
-dirname = os.path.dirname(sys.argv[1])
 
-outfile = sys.argv[2]
+if __name__ == "__main__":
 
-sys.path.append(dirname)
+    dirname = os.path.dirname(sys.argv[1])
 
-fn = sys.argv[1].replace(".py", "")
+    outfile = sys.argv[2]
 
-basename = os.path.basename(fn)
+    sys.path.append(dirname)
 
-mod = __import__(basename)
+    fn = sys.argv[1].replace(".py", "")
 
-tf = mod.TestFunction()
-suite = unittest.TestSuite()
-method_list = [method for method in dir(
-    mod.TestFunction) if method.startswith('test')]
-for method in method_list:
-    suite.addTest(mod.TestFunction(method))
+    basename = os.path.basename(fn)
 
-runner = unittest.TextTestRunner()
-results = runner.run(suite)
-results.failures
+    try:
+        mod = __import__(basename)
+        tf = mod.TestFunction()
+        suite = unittest.TestSuite()
+        method_list = [method for method in dir(mod.TestFunction) if method.startswith('test')]
+        for method in method_list:
+            suite.addTest(mod.TestFunction(method))
+        runner = unittest.TextTestRunner()
+        results = runner.run(suite)
+        success = results.wasSuccessful()
+    except SyntaxError:
+        success = False
+
+    with open(outfile, "a") as of:
+        ou = {"fn": fn, "wasSuccessful": success}
+        of.write(json.dumps(ou) + "\n")
