@@ -1,7 +1,15 @@
 import unittest
+import os
 import sys
 
+dirname = os.path.dirname(sys.argv[1])
+
+print(dirname)
+
+sys.path.append(dirname)
+
 fn = sys.argv[1].replace(".py", "")
+
 
 mod = __import__(fn)
 
