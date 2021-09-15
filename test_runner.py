@@ -10,8 +10,11 @@ sys.path.append(dirname)
 
 fn = sys.argv[1].replace(".py", "")
 
+fn = "/Users/abramhandler/Downloads/tealevan_334630_37010314_hw1_part2"
 
-mod = __import__(fn)
+basename = os.path.basename(fn)
+
+mod = __import__(basename)
 
 tf = mod.TestFunction()
 suite = unittest.TestSuite()
