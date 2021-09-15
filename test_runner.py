@@ -8,7 +8,7 @@ import sys
 
 dirname = os.path.dirname(sys.argv[1])
 
-print(dirname)
+outfile = sys.argv[2]
 
 sys.path.append(dirname)
 
