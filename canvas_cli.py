@@ -40,7 +40,7 @@ from datetime import datetime
 from datetime import date
 from datetime import timedelta
 from collections import defaultdict
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import pandas as pd
 
 from canvasapi.paginated_list import PaginatedList
@@ -176,9 +176,16 @@ def link_url_for_in_class_assignment(assignment, course, main_page, due):
     results = soup.findAll("li", {"data-date" : due, 
                                   "data-bullet":"in-class-assignment"})
 
-    print(results)
-    print("TODODODO")
-    # print(soup)
+    assert len(results) == 1
+
+    for a in results:
+        a.string = ""
+        p = soup.new_tag('a', href=assignment_url)
+        p.string = "in-class assignment"
+        a.append(p) 
+
+    html = str(soup)
+    canvas_page.edit(wiki_page={"body": html})
 
 
 def create_in_class_assignment(courseNo, due, name=None, points=3, published=False, group_id=166877):
