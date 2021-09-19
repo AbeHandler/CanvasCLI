@@ -718,7 +718,7 @@ def run_all_visible(args, configs):
                          main_page=Canvasno2mainpage[course_no],
                          in_date=day)
 
-def get_due_from_args(args):
+def get_due_from_args(args) -> str:
     if args.due is None:
 
         if args.tomorrow is False:
@@ -731,7 +731,7 @@ def get_due_from_args(args):
     elif args.due is not None:
         try:
             if args.due is not None:
-                return datetime.strptime(args.due, '%Y%m%d')
+                return datetime.strptime(args.due, '%Y%m%d').strftime('%Y%m%d')
         except ValueError:
             print(
                 "[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
@@ -940,6 +940,7 @@ if __name__ == "__main__":
         course = canvas.get_course(CUno2canvasno[args.course])
 
         due = get_due_from_args(args)
+        assert type(due) == str
 
         assignment = create_in_class_assignment(courseNo=args.course,
                                                 due=due,
