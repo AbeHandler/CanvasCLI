@@ -934,9 +934,6 @@ if __name__ == "__main__":
 
     if(args.assignment):
 
-        # TODO auto link w/ HTML in Canvas
-        # TODO put in the in-class assignment group. There is code for
-        # that if you follow args.cron
         course = canvas.get_course(CUno2canvasno[args.course])
 
         due = get_due_from_args(args)
@@ -945,6 +942,7 @@ if __name__ == "__main__":
         assignment = create_in_class_assignment(courseNo=args.course,
                                                 due=due,
                                                 name=args.name,
+                                                published=True,
                                                 points=args.points)
 
         canvas_no =CUno2canvasno[args.course]
