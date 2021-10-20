@@ -659,13 +659,17 @@ def init_groups(course, config):
         course.create_assignment_group(name=name, group_weight=weight)
 
 
-def get_day(args_date, tomorrow):
+def get_day(args_date, tomorrow, day_after_tomorrow):
     '''
     A helper method for --visible
     '''
     day = date.today()
+    assert (tomorrow and day_after_tomorrow) == False
+
     if tomorrow:
         day += timedelta(days=1)
+    elif day_after_tomorrow:
+        day += timedelta(days=2)
     elif args_date != "None":
         day = datetime.strptime(args_date, '%Y%m%d')
     return day.strftime("%Y%m%d")
@@ -807,6 +811,9 @@ if __name__ == "__main__":
     parser.add_argument('-t', '-tomorrow', '--tomorrow', action='store_true',
                         help='syncs a directory to canvas', dest='tomorrow', default=False)
 
+    parser.add_argument('-tt', action='store_true',
+                        help='syncs a directory to canvas', dest='day_after_tomorrow', default=False)
+
     parser.add_argument('-w', '-week', '--week', dest='week', type=int)
 
     parser.add_argument('-v', '-visible', '--visible', dest='visible',
@@ -872,7 +879,7 @@ if __name__ == "__main__":
         os._exit(0)
 
     if args.visible:
-        day = get_day(args.date, args.tomorrow)
+        day = get_day(args.date, args.tomorrow, args.day_after_tomorrow)
         canvas_no = CUno2canvasno[args.course]
         course = canvas.get_course(CUno2canvasno[args.course])
 
