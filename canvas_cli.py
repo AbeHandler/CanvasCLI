@@ -659,7 +659,7 @@ def init_groups(course, config):
         course.create_assignment_group(name=name, group_weight=weight)
 
 
-def get_day(args_date, tomorrow, day_after_tomorrow):
+def get_day(args_date, tomorrow, day_after_tomorrow=False):
     '''
     A helper method for --visible
     '''
@@ -675,7 +675,7 @@ def get_day(args_date, tomorrow, day_after_tomorrow):
     return day.strftime("%Y%m%d")
 
 
-def read_configs():
+def read_configs(INI_DIR, SEMESTER):
     CUno2canvasno = {}
     Canvasno2mainpage = {}
     CUno2Classtime = {}
@@ -739,6 +739,28 @@ def get_due_from_args(args) -> str:
         except ValueError:
             print(
                 "[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment.")
+
+def get_tomorrow():
+    day = date.today()
+    day += timedelta(days=1)
+    return day.strftime('%Y%m%d')
+
+def create_quiz(due, tomorrow, course, publish=False, points=3):
+    if due is None and tomorrow is None:
+        print("[*] You must set a due date")
+        os._exit(0)
+    if due is None and tomorrow is not None:
+        due = get_tomorrow()
+    course = canvas.get_course(CUno2canvasno[course])
+    due = datetime.strptime(args.due, '%Y%m%d')
+    name = due.strftime("%b %d") + " quiz"
+    course.create_quiz({'title': name,
+                        'published': published,
+                        'time_limit': 5,
+                        "points_possible": points,
+                        "due_at": due + "T" + CUno2Classtime[course]})
+    print("[*] created quiz for {}".format(course))
+    os._exit(0)
 
 
 if __name__ == "__main__":
@@ -831,7 +853,7 @@ if __name__ == "__main__":
 
     SEMESTER = "F2021"
 
-    configs = read_configs()
+    configs = read_configs(INI_DIR, SEMESTER)
     CUno2canvasno = configs["CUno2canvasno"]
     Canvasno2mainpage = configs["Canvasno2mainpage"]
     CUno2Classtime = configs["CUno2Classtime"]
@@ -918,26 +940,11 @@ if __name__ == "__main__":
         os._exit(0)
 
     if(args.quiz):
-        if args.due is None and args.tomorrow is None:
-            print("[*] You must set a due date")
-            os._exit(0)
-        if args.due is None and args.tomorrow is not None:
-            day = date.today()
-            day += timedelta(days=1)
-            args.due = day.strftime('%Y%m%d')
-        course = canvas.get_course(CUno2canvasno[args.course])
-        due = datetime.strptime(args.due, '%Y%m%d')
-        if args.name is None:
-            name = due.strftime("%b %d") + " quiz"
-        else:
-            name = args.name
-        course.create_quiz({'title': name,
-                            'published': args.publish,
-                            'time_limit': 5,
-                            "points_possible": args.points,
-                            "due_at": args.due + "T" + CUno2Classtime[args.course]})
-        print("[*] created quiz for {}".format(args.course))
-        os._exit(0)
+        create_quiz(due=args.due, 
+                    tomorrow=args.tomorrow,
+                    course=args.course,
+                    publish=args.publish,
+                    points=args.points)
 
     if(args.assignment):
 
