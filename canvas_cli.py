@@ -754,9 +754,12 @@ def create_quiz(due, tomorrow, course, publish=False, points=3):
     classtime = CUno2Classtime[course]
     course = canvas.get_course(CUno2canvasno[course])
     title = datetime.strptime(due, '%Y%m%d').strftime("%b. %d") + " Quiz"
+
     course.create_quiz({'title': title,
                         'published': publish,
                         'time_limit': 5,
+                        "allowed_attempts": 2,
+                        "scoring_policy": "keep_average",
                         "points_possible": points,
                         "due_at": due + "T" + classtime})
     print("[*] created quiz for {}".format(course))
