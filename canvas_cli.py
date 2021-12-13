@@ -751,14 +751,14 @@ def create_quiz(due, tomorrow, course, publish=False, points=3):
         os._exit(0)
     if due is None and tomorrow is not None:
         due = get_tomorrow()
+    classtime = CUno2Classtime[course]
     course = canvas.get_course(CUno2canvasno[course])
-    due = datetime.strptime(args.due, '%Y%m%d')
-    name = due.strftime("%b %d") + " quiz"
-    course.create_quiz({'title': name,
-                        'published': published,
+    title = datetime.strptime(due, '%Y%m%d').strftime("%b. %d") + " Quiz"
+    course.create_quiz({'title': title,
+                        'published': publish,
                         'time_limit': 5,
                         "points_possible": points,
-                        "due_at": due + "T" + CUno2Classtime[course]})
+                        "due_at": due + "T" + classtime})
     print("[*] created quiz for {}".format(course))
     os._exit(0)
 
@@ -940,6 +940,7 @@ if __name__ == "__main__":
         os._exit(0)
 
     if(args.quiz):
+
         create_quiz(due=args.due, 
                     tomorrow=args.tomorrow,
                     course=args.course,
