@@ -221,19 +221,6 @@ def create_in_class_assignment(courseNo, due, name=None, points=3, published=Fal
     return new_assignment
 
 
-def init_course_files(course_number):
-    # See https://github.com/ucfopen/canvasapi/issues/415
-
-    course = canvas.get_course(course_number)
-
-    # Create a folder in canvas
-    for week in range(1, 17):
-        print("[*] Init folders week {}".format(week))
-        parent = "/week{}/".format(week)
-        for folder in FOLDERS:
-            course.create_folder(name=folder, parent_folder_path=parent)
-
-
 def get_student_names2_ids(course_no):
     '''
     courseno = a canvas course number
@@ -681,9 +668,9 @@ def read_configs(INI_DIR, SEMESTER):
     CUno2Classtime = {}
     CUno2_dates_for_course = {}
 
-    with open(INI_DIR + "/" + "semester.txt", "r") as inf:
-        for course in inf:
+    with open(INI_DIR + "/" + SEMESTER + ".txt", "r") as inf:
 
+        for course in inf:
             course = course.replace("\n", "")
             INI_LOC = INI_DIR + "/" + course + SEMESTER + ".ini"
             dates_for_course = get_dates_for_course(INI_LOC)
@@ -763,6 +750,25 @@ def create_quiz(due, tomorrow, course, publish=False, points=3):
                         "points_possible": points,
                         "due_at": due + "T" + classtime})
     print("[*] created quiz for {}".format(course))
+    os._exit(0)
+
+
+def init_courses(CUno2canvasno, course, config, INI_LOC):
+    print("- Init a course Canvas")
+
+    # create the front page and set it as home on Canvas
+    course = canvas.get_course(CUno2canvasno[course])
+    course.create_page(wiki_page={"title": course,
+                                  "published": True,
+                                  "front_page": True,
+                                  "body": "Welcome!"})
+    course.update(course={"default_view": "wiki"})
+
+    print("- Init HTML")
+    makeHTMLforSemester(ini_loc=INI_LOC,
+                        course_no_canvas=CUno2canvasno[course],
+                        course_no_cu=course)
+    init_groups(course=course, config=config)
     os._exit(0)
 
 
@@ -854,7 +860,7 @@ if __name__ == "__main__":
         print("[*] You must specify a course using the --course flag, unless you are doing all_visible")
         os._exit(0)
 
-    SEMESTER = "F2021"
+    SEMESTER = "S2022"
 
     configs = read_configs(INI_DIR, SEMESTER)
     CUno2canvasno = configs["CUno2canvasno"]
@@ -974,29 +980,10 @@ if __name__ == "__main__":
 
     if(args.init):
         '''
-        Initialize course locally and on canvas
-        Assumes ~/everything/teaching/courseno[S|F]year, e.g. 2301S2021
+        Initialize a single course
         '''
-        print("- Init a course Canvas")
-
-        # create the front page and set it as home on Canvas
-        course = canvas.get_course(CUno2canvasno[args.course])
-        course.create_page(wiki_page={"title": args.course,
-                                      "published": True,
-                                      "front_page": True,
-                                      "body": "Welcome!"})
-        course.update(course={"default_view": "wiki"})
-
-        print("- Init files on Canvas")
-        init_course_files(CUno2canvasno[args.course])
-
-        #print("- Init local files")
-        print("- Init HTML")
-        makeHTMLforSemester(ini_loc=INI_LOC,
-                            course_no_canvas=CUno2canvasno[args.course],
-                            course_no_cu=args.course)
-        init_groups(course=course, config=config)
-        os._exit(0)
+        ini_loc = INI_DIR + "/" + args.course + SEMESTER + ".ini"
+        init_courses(CUno2canvasno, args.course, configs, ini_loc)
 
     if(args.peer_review):
         if args.assignment_id is None:
