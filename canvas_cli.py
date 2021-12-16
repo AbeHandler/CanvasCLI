@@ -447,6 +447,7 @@ def show_before_date(course, main_page, in_date='20210315'):
                 return False
         return hidden
 
+    print(main_page)
     canvas_page = course.get_page(main_page)
 
     html = canvas_page.body
@@ -642,7 +643,7 @@ def init_groups(course, config):
     names = groups["groups"].split(",")
     weights = groups["weights"].split(",")
     assert len(names) == len(weights)
-    assert sum(weights) == 100
+    assert sum([int(i) for i in weights]) == 100
     for name, weight in zip(names, weights):
         course.create_assignment_group(name=name, group_weight=weight)
 
