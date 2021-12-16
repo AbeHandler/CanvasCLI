@@ -642,6 +642,7 @@ def init_groups(course, config):
     names = groups["groups"].split(",")
     weights = groups["weights"].split(",")
     assert len(names) == len(weights)
+    assert sum(weights) == 100
     for name, weight in zip(names, weights):
         course.create_assignment_group(name=name, group_weight=weight)
 
@@ -753,11 +754,11 @@ def create_quiz(due, tomorrow, course, publish=False, points=3):
     os._exit(0)
 
 
-def init_courses(CUno2canvasno, course, config, INI_LOC):
+def init_course(CUno2canvasno, course_no, config, ini_loc):
     print("- Init a course Canvas")
 
     # create the front page and set it as home on Canvas
-    course = canvas.get_course(CUno2canvasno[course])
+    course = canvas.get_course(CUno2canvasno[course_no])
     course.create_page(wiki_page={"title": course,
                                   "published": True,
                                   "front_page": True,
@@ -765,9 +766,15 @@ def init_courses(CUno2canvasno, course, config, INI_LOC):
     course.update(course={"default_view": "wiki"})
 
     print("- Init HTML")
-    makeHTMLforSemester(ini_loc=INI_LOC,
-                        course_no_canvas=CUno2canvasno[course],
+
+    makeHTMLforSemester(ini_loc=ini_loc,
+                        course_no_canvas=CUno2canvasno[course_no],
                         course_no_cu=course)
+
+    config = configparser.ConfigParser()
+
+    print("- Init groups")
+    config.read(ini_loc)
     init_groups(course=course, config=config)
     os._exit(0)
 
@@ -983,7 +990,8 @@ if __name__ == "__main__":
         Initialize a single course
         '''
         ini_loc = INI_DIR + "/" + args.course + SEMESTER + ".ini"
-        init_courses(CUno2canvasno, args.course, configs, ini_loc)
+        init_course(CUno2canvasno, course_no=args.course, 
+                    config=configs, ini_loc=ini_loc)
 
     if(args.peer_review):
         if args.assignment_id is None:
