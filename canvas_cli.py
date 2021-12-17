@@ -447,7 +447,6 @@ def show_before_date(course, main_page, in_date='20210315'):
                 return False
         return hidden
 
-    print(main_page)
     canvas_page = course.get_page(main_page)
 
     html = canvas_page.body
@@ -760,7 +759,7 @@ def init_course(CUno2canvasno, course_no, config, ini_loc):
 
     # create the front page and set it as home on Canvas
     course = canvas.get_course(CUno2canvasno[course_no])
-    course.create_page(wiki_page={"title": course,
+    course.create_page(wiki_page={"title": course_no,
                                   "published": True,
                                   "front_page": True,
                                   "body": "Welcome!"})
@@ -770,7 +769,7 @@ def init_course(CUno2canvasno, course_no, config, ini_loc):
 
     makeHTMLforSemester(ini_loc=ini_loc,
                         course_no_canvas=CUno2canvasno[course_no],
-                        course_no_cu=course)
+                        course_no_cu=course_no)
 
     config = configparser.ConfigParser()
 
