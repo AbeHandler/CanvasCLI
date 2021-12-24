@@ -233,6 +233,28 @@ def get_student_names2_ids(course_no):
         out[student.name] = student.id
     return out
 
+def init_assignments(course, start_date="20220116"):
+    '''
+    Init weekly assignments for a course
+    '''
+    now = datetime.strptime(start_date, "%Y%m%d")
+    for week in range(1, 17):
+        title = "Week {} ".format(str(week).zfill(2)) + "Assignments"
+        time_limit = 10
+        due_at = now.strftime('%Y-%m-%d') + "T11:20:00"
+        unlock_at = now.strftime('%Y-%m-%d') + "T11:00:00"
+        points_possible = 10
+        
+        course.create_assignment({
+            'name': title,
+            'published': False,
+            'due_at': now.strftime('%Y-%m-%d') + "T23:59:00",
+            "points_possible": 5,
+            "description": title,
+            "assignment_group_id": "216448",
+            "submission_types": ["online_upload", "online_text_entry"],
+        })
+        now = now + timedelta(days=7)
 
 def init_quizzes(course):
     '''
