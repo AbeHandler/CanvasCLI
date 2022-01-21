@@ -192,7 +192,7 @@ def create_in_class_assignment(courseNo, due, name=None, points=3, published=Fal
 
     # to find assignment groups ids do: https://canvas.colorado.edu/api/v1/courses/70073/assignment_groups
 
-    course = canvas.get_course(CUno2canvasno[courseNo])
+    course = canvas.get_course(CUnum2canvasnum[courseNo])
 
     due = datetime.strptime(due, '%Y%m%d')
 
@@ -280,7 +280,7 @@ def init_quizzes(course):
 
 def set_extra_time_on_quizzes(course, names, names2ids_course, extra_minutes=10):
     '''
-    course = canvas.get_course(CUno2canvasno["3401"])
+    course = canvas.get_course(CUnum2canvasnum["3401"])
     names = [o.replace('\n', "") for o in open("accomodations3401.txt")]
     names2ids_course = names2ids["3401"]
 
@@ -298,11 +298,11 @@ def set_extra_time_on_quizzes(course, names, names2ids_course, extra_minutes=10)
                 [{'user_id': id_, 'extra_time': extra_minutes}])
 
 
-def export_all(CUno2canvasno):
+def export_all(CUnum2canvasnum):
     '''This will backup all courses on Canvas'''
-    for course in CUno2canvasno:
+    for course in CUnum2canvasnum:
         print("[*] Exporting {} from Canvas".format(course))
-        course = canvas.get_course(CUno2canvasno[course])
+        course = canvas.get_course(CUnum2canvasnum[course])
         course.export_content(export_type="common_cartridge")
 
 
@@ -623,6 +623,7 @@ def grade_in_class_assignments(course):
         else:
             if len(gradable_students) > 0:
                 grade = True
+
         if grade is True:
             print("\t Scoring {}".format(assignment.name))
             for student in gradable_students:
@@ -663,7 +664,7 @@ def deduct_for_missing_reviews(course, assignment_id):
 
 def init_groups(course, config):
 
-    course = canvas.get_course(CUno2canvasno[args.course])
+    course = canvas.get_course(CUnum2canvasnum[args.course])
     groups = config["assignment_configs"]
     names = groups["groups"].split(",")
     weights = groups["weights"].split(",")
@@ -690,7 +691,7 @@ def get_day(args_date, tomorrow, day_after_tomorrow=False):
 
 
 def read_configs(INI_DIR, SEMESTER):
-    CUno2canvasno = {}
+    CUnum2canvasnum = {}
     Canvasno2mainpage = {}
     CUno2Classtime = {}
     CUno2_dates_for_course = {}
@@ -705,36 +706,40 @@ def read_configs(INI_DIR, SEMESTER):
                 INI_LOC), "Config file not found. Do you have the wrong semester?"
             config = configparser.ConfigParser()
             config.read(INI_LOC)
-            CUno2canvasno[config["course_info"]["course_name"]] = int(
+            CUnum2canvasnum[config["course_info"]["course_name"]] = int(
                 config["course_info"]["canvas_no"])
             Canvasno2mainpage[int(config["course_info"]["canvas_no"]
                                   )] = config["course_info"]["main_page"]
 
             CUno2Classtime[course] = config["course_info"]["end_time"]
 
-    return {"CUno2canvasno": CUno2canvasno,
+    return {"CUnum2canvasnum": CUnum2canvasnum,
             "CUno2Classtime": CUno2Classtime,
             "CUno2datesforcourse": CUno2_dates_for_course,
             "Canvasno2mainpage": Canvasno2mainpage}
 
 
-def get_names2ids(CUno2canvasno):
+def get_names2ids(CUnum2canvasnum):
     names2ids = {}
-    for coursename, courseno in CUno2canvasno.items():
+    for coursename, courseno in CUnum2canvasnum.items():
         names2ids[coursename] = get_student_names2_ids(
-            CUno2canvasno[coursename])
+            CUnum2canvasnum[coursename])
     return names2ids
 
 
-def run_all_visible(args, configs):
-    CUno2canvasno = configs["CUno2canvasno"]
+def make_course_visible(args, configs, course_no):
+    CUnum2canvasnum = configs["CUnum2canvasnum"]
     Canvasno2mainpage = configs["Canvasno2mainpage"]
+    canvas_num = CUnum2canvasnum[course_no]
     day = get_day(args.date, args.tomorrow)
-    for course_no in CUno2canvasno.values():
-        course = canvas.get_course(course_no)
-        show_before_date(course=course,
-                         main_page=Canvasno2mainpage[course_no],
-                         in_date=day)
+    canvas_course = canvas.get_course(CUnum2canvasnum[course_no])
+    show_before_date(course=canvas_course,
+                     main_page=Canvasno2mainpage[canvas_num],
+                     in_date=day)
+
+def run_all_visible(args, configs):
+    for course_no in CUnum2canvasnum.values():
+         make_course_visible(args, configs, course_no)    
 
 def get_due_from_args(args) -> str:
     if args.due is None:
@@ -766,7 +771,7 @@ def create_quiz(due, tomorrow, course, publish=False, points=3):
     if due is None and tomorrow is not None:
         due = get_tomorrow()
     classtime = CUno2Classtime[course]
-    course = canvas.get_course(CUno2canvasno[course])
+    course = canvas.get_course(CUnum2canvasnum[course])
     title = datetime.strptime(due, '%Y%m%d').strftime("%b. %d") + " Quiz"
 
     course.create_quiz({'title': title,
@@ -780,11 +785,11 @@ def create_quiz(due, tomorrow, course, publish=False, points=3):
     os._exit(0)
 
 
-def init_course(CUno2canvasno, course_no, config, ini_loc):
+def init_course(CUnum2canvasnum, course_no, config, ini_loc):
     print("- Init a course Canvas")
 
     # create the front page and set it as home on Canvas
-    course = canvas.get_course(CUno2canvasno[course_no])
+    course = canvas.get_course(CUnum2canvasnum[course_no])
     course.create_page(wiki_page={"title": course_no,
                                   "published": True,
                                   "front_page": True,
@@ -794,7 +799,7 @@ def init_course(CUno2canvasno, course_no, config, ini_loc):
     print("- Init HTML")
 
     makeHTMLforSemester(ini_loc=ini_loc,
-                        course_no_canvas=CUno2canvasno[course_no],
+                        course_no_canvas=CUnum2canvasnum[course_no],
                         course_no_cu=course_no)
 
     config = configparser.ConfigParser()
@@ -891,7 +896,7 @@ if __name__ == "__main__":
     SEMESTER = "S2022"
 
     configs = read_configs(INI_DIR, SEMESTER)
-    CUno2canvasno = configs["CUno2canvasno"]
+    CUnum2canvasnum = configs["CUnum2canvasnum"]
     Canvasno2mainpage = configs["Canvasno2mainpage"]
     CUno2Classtime = configs["CUno2Classtime"]
 
@@ -900,26 +905,37 @@ if __name__ == "__main__":
         print("[*] You must specify a course using the --course flag, unless you are doing all_visible")
         os._exit(0)
 
-    names2ids = get_names2ids(CUno2canvasno)
-
     if args.course == "4700":
         print("[*] checking capstone")
-        course = canvas.get_course(CUno2canvasno["4700"])
+        course = canvas.get_course(CUnum2canvasnum["4700"])
         grade_in_class_assignments(course)
 
-    if args.cron:
+    if args.cron and args.course is not None:
+
+        print("[*] Setting visible")
+        make_course_visible(args, configs, args.course)
+
+        print("[*] Running participation points")
+
+        print("[*] checking {}".format(args.course))
+        course = canvas.get_course(CUnum2canvasnum[args.course])
+        grade_in_class_assignments(course)
+
+    if args.cron and args.course is None:
+        print("**** Warning: running cron on all courses ****")
+
         print("[*] Setting visible")
         run_all_visible(args, configs)
 
         print("[*] Running participation points")
-        for course in CUno2canvasno:
+        for course in CUnum2canvasnum:
             print("[*] checking {}".format(course))
-            course = canvas.get_course(CUno2canvasno[course])
+            course = canvas.get_course(CUnum2canvasnum[course])
             grade_in_class_assignments(course)
 
     if args.attendance:
         # first run $py attendance.py
-        course = canvas.get_course(CUno2canvasno[args.course])
+        course = canvas.get_course(CUnum2canvasnum[args.course])
         roll_call_attendance_no = config["course_info"]["roll_call_attendance_no"]
 
         # read in excused absences
@@ -949,8 +965,8 @@ if __name__ == "__main__":
 
     if args.visible:
         day = get_day(args.date, args.tomorrow, args.day_after_tomorrow)
-        canvas_no = CUno2canvasno[args.course]
-        course = canvas.get_course(CUno2canvasno[args.course])
+        canvas_no = CUnum2canvasnum[args.course]
+        course = canvas.get_course(CUnum2canvasnum[args.course])
 
         show_before_date(course=course,
                          main_page=Canvasno2mainpage[canvas_no],
@@ -961,7 +977,7 @@ if __name__ == "__main__":
 
     # mostly used for 3402
     if args.participation and args.assignment_id is not None:
-        course = canvas.get_course(CUno2canvasno[args.course])
+        course = canvas.get_course(CUnum2canvasnum[args.course])
         for student in assignment.get_gradeable_students():
             comment_and_grade_participation(
                 args.assignment_id, student, course)
@@ -969,13 +985,14 @@ if __name__ == "__main__":
 
     if args.zeros and args.assignment_id is not None:
         # py canvas_cli.py -c 2301 -zeros --assignmentid 871212
-        course = canvas.get_course(CUno2canvasno[args.course])
+        course = canvas.get_course(CUnum2canvasnum[args.course])
         for student in get_no_submissions(course, args.assignment_id):
             comment_and_grade_no_submission(args.assignment_id, student)
         os._exit(0)
 
     if(args.set_extra_time_on_quizzes):
-        course = canvas.get_course(CUno2canvasno[args.course])
+        names2ids = get_names2ids(CUnum2canvasnum)
+        course = canvas.get_course(CUnum2canvasnum[args.course])
         names = [o.replace('\n', "") for o in open(
             "accomodations{}.txt".format(args.course))]
         names2ids_course = names2ids[args.course]
@@ -983,7 +1000,7 @@ if __name__ == "__main__":
         os._exit(0)
 
     if(args.export):
-        export_all(CUno2canvasno)
+        export_all(CUnum2canvasnum)
         os._exit(0)
 
     if(args.quiz):
@@ -996,7 +1013,7 @@ if __name__ == "__main__":
 
     if(args.assignment):
 
-        course = canvas.get_course(CUno2canvasno[args.course])
+        course = canvas.get_course(CUnum2canvasnum[args.course])
 
         due = get_due_from_args(args)
         assert type(due) == str
@@ -1007,7 +1024,7 @@ if __name__ == "__main__":
                                                 published=True,
                                                 points=args.points)
 
-        canvas_no =CUno2canvasno[args.course]
+        canvas_no =CUnum2canvasnum[args.course]
         main_page = Canvasno2mainpage[canvas_no]
         link_url_for_in_class_assignment(assignment=assignment,
                                          main_page=main_page,
@@ -1021,13 +1038,13 @@ if __name__ == "__main__":
         Initialize a single course
         '''
         ini_loc = INI_DIR + "/" + args.course + SEMESTER + ".ini"
-        init_course(CUno2canvasno, course_no=args.course, 
+        init_course(CUnum2canvasnum, course_no=args.course, 
                     config=configs, ini_loc=ini_loc)
 
     if(args.peer_review):
         if args.assignment_id is None:
             print("[*] You must enter an assignment_id")
         else:
-            course = canvas.get_course(CUno2canvasno[args.course])
+            course = canvas.get_course(CUnum2canvasnum[args.course])
             assign_grades_if_peer_review_exists(course, args.assignment_id)
             deduct_for_missing_reviews(course, args.assignment_id)
