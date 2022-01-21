@@ -576,10 +576,14 @@ def find_missing_peer_reviews(course, assignment_id):
 
 def get_in_class_assignment_group(course):
     '''Get the in-class assignment group for the course'''
+    id_ = None
     for i in course.get_assignment_groups():
         if "In-class assignments" in str(i):
             id_ = i.id
 
+    if id_ is None:
+        print("Can't find a group called 'In-class assignments'.")
+        import os; os._exit(0)
     return course.get_assignment_group(id_)
 
 
@@ -823,7 +827,7 @@ if __name__ == "__main__":
     parser.add_argument('-attendance', '--attendance', dest='attendance',
                         default=False, action='store_true', help='Take attendance')
 
-    parser.add_argument('--assignment_id', dest="assignment_id",
+    parser.add_argument('-assignment_id', '--assignment_id', dest="assignment_id",
                         help='Assignment ID for no submission')
 
     parser.add_argument('-c', '-course', '--course',
@@ -884,11 +888,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # don't need to specify a course if args are visible
-    if args.course is None and not args.all_visible and not args.cron:
-        print("[*] You must specify a course using the --course flag, unless you are doing all_visible")
-        os._exit(0)
-
     SEMESTER = "S2022"
 
     configs = read_configs(INI_DIR, SEMESTER)
@@ -896,7 +895,17 @@ if __name__ == "__main__":
     Canvasno2mainpage = configs["Canvasno2mainpage"]
     CUno2Classtime = configs["CUno2Classtime"]
 
+    # don't need to specify a course if args are visible
+    if args.course is None and not args.all_visible and not args.cron:
+        print("[*] You must specify a course using the --course flag, unless you are doing all_visible")
+        os._exit(0)
+
     names2ids = get_names2ids(CUno2canvasno)
+
+    if args.course == "4700":
+        print("[*] checking capstone")
+        course = canvas.get_course(CUno2canvasno["4700"])
+        grade_in_class_assignments(course)
 
     if args.cron:
         print("[*] Setting visible")
@@ -961,8 +970,8 @@ if __name__ == "__main__":
     if args.zeros and args.assignment_id is not None:
         # py canvas_cli.py -c 2301 -zeros --assignmentid 871212
         course = canvas.get_course(CUno2canvasno[args.course])
-        for student in get_no_submissions(course, args.assignmentid):
-            comment_and_grade_no_submission(args.assignmentid, student)
+        for student in get_no_submissions(course, args.assignment_id):
+            comment_and_grade_no_submission(args.assignment_id, student)
         os._exit(0)
 
     if(args.set_extra_time_on_quizzes):
