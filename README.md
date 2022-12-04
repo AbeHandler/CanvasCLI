@@ -2,8 +2,10 @@ A canvas CLI. Use the `-c` flag to run a command for a particular course (using 
 
 #### Setup 
 
-1. You will need to set up a Canvas access token, and save the access token in an environment variable called CANVAS_TOKEN
-2. You will need an .ini file for your course. There are a few ini files in this repo that you can copy and modify.
+1. `pip install canvasapi`
+    - https://github.com/ucfopen/canvasapi
+2. You will need to set up a Canvas access token, and save the access token in an environment variable called CANVAS_TOKEN
+3. You will need an .ini file for your course. There are a few ini files in this repo that you can copy and modify.
     - The ini file should be called `<courseno><S|F><year>.ini`. For instance, the ini file for the spring version of the class 2301 in 2021 is 2301S2021.ini.
 
 #### Make tomorrow's class visible on Canvas 
