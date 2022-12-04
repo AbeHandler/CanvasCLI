@@ -28,6 +28,10 @@ class Config(object):
         self.weeks = config["course_info"]["weeks"]
         self.main_page = config["course_info"]["main_page"]
         self.days_of_week = config["course_info"]["days_of_week"].split(",")
+        groups = config['assignment_configs']['groups'].split(",")
+        weights = config['assignment_configs']['weights'].split(",")
+        self.group2weight = {k: v for k, v in zip(groups, weights)}
+
 
 
 if __name__ == "__main__":

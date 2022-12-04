@@ -33,88 +33,14 @@ import argparse
 import glob
 import os
 from collections import defaultdict
-
-
+from datetime import datetime
+from datetime import timedelta
+from datetime import date
 import pandas as pd
 from bs4 import BeautifulSoup, Tag
 
 from canvasapi.exceptions import CanvasException
 from canvasapi.paginated_list import PaginatedList
-from jinja2 import Template
-
-
-def get_weeks2dates(dates_for_course):
-
-    weeks2dates = defaultdict(list)
-
-    for d in dates_for_course:
-        weeks2dates[d["week"]].append(d["date"])
-
-    return weeks2dates
-
-
-"""
-suspected dead code 9/2/21
-def get_dates2weeks(dates_for_course):
-
-    dates2weeks = {}
-
-    for d in dates_for_course:
-        dates2weeks[d['date'].strftime(STANDARDDATE)] = d["week"]
-
-    return dates2weeks
-"""
-
-
-def makeHTMLforSemester(
-    ini_loc="2301S2021.ini", course_no_canvas=70073, course_no_cu=2301
-):
-    """
-    print out HTML for a whole course to copy/paste into Canvas Pages
-
-    py canvas_cli.py -html -ini "2301S2021.ini" | pbcopy
-    """
-
-    dates_for_course = get_dates_for_course(ini_loc=ini_loc)
-
-    weeks2dates = get_weeks2dates(dates_for_course)
-
-    weeks = list(weeks2dates.keys())
-
-    template = Template(
-        """<h3 data-date="{{week_start_date}}" style='display:none'> Week {{ week }}</h3>{% for row in dates %}\n<h4 data-date="{{row.strftime("%Y%m%d")}}" style='display:none'>{{row.strftime("%a %b %d")}}</h4>\n<ul data-date="{{row.strftime("%Y%m%d")}}" style='display:none'>\n{% for item in items %}<li style='display:none' data-date="{{row.strftime("%Y%m%d")}}" data-bullet="{{item | replace(" ", "-") }}">{{item}}</li>\n{% endfor %}</ul>{% endfor %}\n
-                        """
-    )
-    weeks.sort(reverse=True)
-
-    out = ""
-
-    for week in weeks:
-        dates = weeks2dates[week]
-        dates.sort(reverse=True)
-        dates = [d for d in dates]
-        bullets = [
-            "in-class code",
-            "whiteboards",
-            "recording",
-            "in-class assignment",
-            "quiz",
-        ]
-
-        week_start_date = dates[-1].strftime(STANDARDDATE)
-        out = out + template.render(
-            week=week,
-            dates=dates,
-            items=bullets,
-            week_start_date=week_start_date,
-        )
-
-    course = canvas.get_course(course_no_canvas)
-
-    lecture_page = course.get_page(course_no_cu)
-
-    print("[*] Setting up {} page".format(course_no_cu))
-    lecture_page.edit(wiki_page={"body": out})
 
 
 def link_url_for_in_class_assignment(assignment, course, main_page, due):
@@ -678,17 +604,6 @@ def deduct_for_missing_reviews(course, assignment_id):
             pass
 
 
-def init_groups(course, config):
-
-    course = canvas.get_course(CUnum2canvasnum[args.course])
-    groups = config["assignment_configs"]
-    names = groups["groups"].split(",")
-    weights = groups["weights"].split(",")
-    assert len(names) == len(weights)
-    assert sum([int(i) for i in weights]) == 100
-    for name, weight in zip(names, weights):
-        course.create_assignment_group(name=name, group_weight=weight)
-
 
 def get_day(args_date, tomorrow, day_after_tomorrow=False):
     """
@@ -783,35 +698,7 @@ def create_quiz(due, tomorrow, course, publish=False, points=3):
     os._exit(0)
 
 
-def init_course(CUnum2canvasnum, course_no, config, ini_loc):
-    print("- Init a course Canvas")
 
-    # create the front page and set it as home on Canvas
-    course = canvas.get_course(CUnum2canvasnum[course_no])
-    course.create_page(
-        wiki_page={
-            "title": course_no,
-            "published": True,
-            "front_page": True,
-            "body": "Welcome!",
-        }
-    )
-    course.update(course={"default_view": "wiki"})
-
-    print("- Init HTML")
-
-    makeHTMLforSemester(
-        ini_loc=ini_loc,
-        course_no_canvas=CUnum2canvasnum[course_no],
-        course_no_cu=course_no,
-    )
-
-    config = configparser.ConfigParser()
-
-    print("- Init groups")
-    config.read(ini_loc)
-    init_groups(course=course, config=config)
-    os._exit(0)
 
 
 if __name__ == "__main__":

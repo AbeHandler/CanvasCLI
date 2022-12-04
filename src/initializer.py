@@ -36,7 +36,15 @@ class Initializer(object):
         )
         self.course.update(course={"default_view": "wiki"})
 
-    def _build_html(self):
+
+
+    def init_groups(self):
+
+        for name, weight in self.config.group2weight.items():
+            self.course.create_assignment_group(name=name, group_weight=weight)
+
+
+    def _build_html(self) -> str:
 
         dates_for_course = get_dates_for_course(self.config)
 
@@ -72,6 +80,8 @@ class Initializer(object):
                 week_start_date=week_start_date,
             )
 
+        return out
+
 
 if __name__ == "__main__":
 
@@ -81,4 +91,5 @@ if __name__ == "__main__":
     init = Initializer(config=config, api=api)
     init.init_wiki_page()
     init.makeHTMLforSemester()
+    init.init_groups()
 
