@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup, Tag
 
 from canvasapi.exceptions import CanvasException
 from canvasapi.paginated_list import PaginatedList
-
+fr
 
 def link_url_for_in_class_assignment(assignment, course, main_page, due):
 
@@ -604,7 +604,6 @@ def deduct_for_missing_reviews(course, assignment_id):
             pass
 
 
-
 def get_day(args_date, tomorrow, day_after_tomorrow=False):
     """
     A helper method for --visible
@@ -698,25 +697,30 @@ def create_quiz(due, tomorrow, course, publish=False, points=3):
     os._exit(0)
 
 
-
-
-
 if __name__ == "__main__":
 
-    # TODO this is a global variable. Fix.
-    canvas = get_api()
-
-    INI_DIR = "/Users/abramhandler/CanvasCLI"
-
-    FOLDERS = [
-        "assignment_files",
-        "in-class-code",
-        "other_files",
-        "quiz_files",
-        "whiteboards",
-    ]
-
     parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-init",
+        "--init",
+        dest="init",
+        default=False,
+        action="store_true",
+        help="Use this flag to init the course files on Canvas",
+    )
+
+    args = parser.parse_args()
+    if args.init:
+        path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
+        config = Config(path)
+        api = get_api()
+        initializer = Initializer(config=config, api=api)
+
+    import os
+
+    os._exit(0)
+    # rest is old code and suspect
 
     # TODO alphabetize
     parser.add_argument(
@@ -800,15 +804,6 @@ if __name__ == "__main__":
         help="print HTML for semester",
         dest="html",
         default=False,
-    )
-
-    parser.add_argument(
-        "-init",
-        "--init",
-        dest="init",
-        default=False,
-        action="store_true",
-        help="Use this flag to init the course files on Canvas",
     )
 
     parser.add_argument(
@@ -900,8 +895,6 @@ if __name__ == "__main__":
         dest="zeros",
         default=False,
     )
-
-    args = parser.parse_args()
 
     SEMESTER = "S2023"
 

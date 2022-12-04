@@ -44,6 +44,11 @@ class Initializer(object):
             self.course.create_assignment_group(name=name, group_weight=weight)
 
 
+    def init(self):
+        self.init_wiki_page()
+        self.makeHTMLforSemester()
+        self.init_groups()
+
     def _build_html(self) -> str:
 
         dates_for_course = get_dates_for_course(self.config)
@@ -88,8 +93,6 @@ if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
     config = Config(path)
     api = get_api()
-    init = Initializer(config=config, api=api)
-    init.init_wiki_page()
-    init.makeHTMLforSemester()
-    init.init_groups()
+    initializer = Initializer(config=config, api=api)
+    initializer.init()
 
