@@ -37,7 +37,7 @@ from collections import defaultdict
 
 import pandas as pd
 from bs4 import BeautifulSoup, Tag
-from canvasapi import Canvas
+
 from canvasapi.exceptions import CanvasException
 from canvasapi.paginated_list import PaginatedList
 from jinja2 import Template
@@ -115,17 +115,6 @@ def makeHTMLforSemester(
 
     print("[*] Setting up {} page".format(course_no_cu))
     lecture_page.edit(wiki_page={"body": out})
-
-
-def get_api():
-
-    # Canvas API URL
-    API_URL = "https://canvas.colorado.edu"
-    # Canvas API key
-    API_KEY = os.environ["CANVAS_TOKEN"]
-
-    # Initialize a new Canvas object
-    return Canvas(API_URL, API_KEY)
 
 
 def link_url_for_in_class_assignment(assignment, course, main_page, due):

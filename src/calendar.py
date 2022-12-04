@@ -6,6 +6,10 @@ from datetime import timedelta
 from copy import copy
 from typing import List
 from typing import Dict
+from collections import defaultdict
+
+
+STANDARDDATE = "%Y%m%d"
 
 # class syntax
 class Week(Enum):
@@ -16,6 +20,17 @@ class Week(Enum):
     FRI = 4
     SAT = 5
     SUN = 6
+
+
+def get_weeks2dates(dates_for_course):
+
+    weeks2dates = defaultdict(list)
+
+    for d in dates_for_course:
+        weeks2dates[d["week"]].append(d["date"])
+
+    return weeks2dates
+
 
 def get_dates_for_course(config: Config) -> List[Dict]:
     """

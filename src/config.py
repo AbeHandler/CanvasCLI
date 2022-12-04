@@ -23,7 +23,6 @@ class Config(object):
         self.end_date = self._str2date(config["dates"]["end_date"])
         self.canvas_no = config["course_info"]["canvas_no"]
         self.course_name = config["course_info"]["course_name"]
-        self.course_name = config["course_info"]["course_name"]
         self.start_time = config["course_info"]["start_time"]
         self.end_time = config["course_info"]["end_time"]
         self.weeks = config["course_info"]["weeks"]
