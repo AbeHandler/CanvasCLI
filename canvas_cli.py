@@ -41,7 +41,7 @@ from bs4 import BeautifulSoup, Tag
 
 from canvasapi.exceptions import CanvasException
 from canvasapi.paginated_list import PaginatedList
-fr
+
 
 def link_url_for_in_class_assignment(assignment, course, main_page, due):
 

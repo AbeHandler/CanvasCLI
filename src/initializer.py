@@ -1,4 +1,6 @@
-
+'''
+Handles initialization for a course
+'''
 from pathlib import Path
 from src.config import Config
 from src.api import get_api
