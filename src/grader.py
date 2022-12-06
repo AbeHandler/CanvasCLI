@@ -12,7 +12,7 @@ class Grader(object):
 
     def download_all_submissions_for_assigment(self,
                                                assignment_id: str = "1533042",
-                                               include_extension: str = ".py",
+                                               extension: str = ".py",
                                                download_base_directory: Path = Path("/tmp")
                                                ):
         '''
@@ -23,8 +23,7 @@ class Grader(object):
         local_download_location: Path = download_base_directory / assignment_id
         
         for submission in assignment.get_submissions():
-            for attachment in submission.attachments:
-                if attachment.filename.endswith(include_extension):
+            for attachment in self._attachments_with_extension(submission.attachments, extension):
                     
                     save_here = self._get_local_path(download_base_directory = download_base_directory,
                                                      assignment_id = str(assignment_id),
@@ -33,6 +32,9 @@ class Grader(object):
                     attachment.download(save_here.as_posix())
                     print(f"[*] Downloaded {save_here.as_posix()}")
         
+    def _attachments_with_extension(self, attachments, extension):
+        return [attachment for attachment in attachments if attachment.filename.endswith(extension)]
+
     def _get_local_directory(self,
                              download_base_directory: Path,
                              assignment_id: str,
@@ -55,4 +57,4 @@ if __name__ == "__main__":
     config = Config(Path("/Users/abe/CanvasCLI/3220S2023.ini"))
     course = api.get_course(config.canvas_no)
     grader = Grader(course)
-    grader.download_all_submissions_for_assigment(include_extension="png")
+    grader.download_all_submissions_for_assigment(extension="png")
