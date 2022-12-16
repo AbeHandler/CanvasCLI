@@ -8,9 +8,10 @@ class Course(object):
     def __init__(self, config: Config, api: Canvas):
         self.config = config
         self.course = api.get_course(config.canvas_no)
+        self.course_name = config.course_name
 
 
-    def export():
+    def export(self):
         """This will create a course backup on Canvas"""
         self.course.export_content(export_type="common_cartridge")
 

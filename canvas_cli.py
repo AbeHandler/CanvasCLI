@@ -141,45 +141,6 @@ def comment_and_grade_no_submission(assignment_id, student):
 
 
 
-def show_before_date(course, main_page, in_date="20210315"):
-    """update a page to show elements w/ data-date before some input date"""
-
-    def isb4Eq(input_date):
-        """
-        Returns a function, f: date -> bool
-        that is true if its input is less than or equal to input_date
-        Used for a lambda in bs4
-        """
-        input_date = datetime.strptime(input_date, "%Y%m%d")
-
-        def hidden(t):
-            if "data-date" not in t.attrs:
-                return False
-            if datetime.strptime(t.attrs["data-date"], "%Y%m%d") <= input_date:
-                return True
-            else:
-                return False
-
-        return hidden
-
-    canvas_page = course.get_page(main_page)
-
-    html = canvas_page.body
-    soup = BeautifulSoup(html, features="html.parser")
-
-    for header in soup.findAll(isb4Eq(in_date)):
-        if header.name == "li":
-            header["style"] = "display:list-item"
-        else:
-            header["style"] = "display:block"
-
-    html = str(soup)
-
-    print("\t - Updating {} page to show before {}".format(main_page, in_date))
-
-    canvas_page.edit(wiki_page={"body": html})
-
-
 def comment_and_grade_participation(assignment_id, student, course):
     """
     Give 0 + comment "no submission" to student on assignment
@@ -298,10 +259,6 @@ def make_course_visible(args, configs, course_no):
         in_date=day,
     )
 
-
-def run_all_visible(args, configs):
-    for course_no in CUnum2canvasnum.values():
-        make_course_visible(args, configs, course_no)
 
 
 def get_due_from_args(args) -> str:
