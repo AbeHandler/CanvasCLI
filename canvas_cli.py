@@ -36,7 +36,6 @@ from collections import defaultdict
 from datetime import datetime
 from datetime import timedelta
 from datetime import date
-import pandas as pd
 from bs4 import BeautifulSoup, Tag
 
 from canvasapi.exceptions import CanvasException
