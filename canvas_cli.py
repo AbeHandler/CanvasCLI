@@ -280,13 +280,6 @@ def get_due_from_args(args) -> str:
             )
 
 
-def get_tomorrow():
-    day = date.today()
-    day += timedelta(days=1)
-    return day.strftime("%Y%m%d")
-
-
-
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()

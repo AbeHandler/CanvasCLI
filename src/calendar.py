@@ -1,3 +1,7 @@
+'''
+Handles logic for reasoning about dates, which is very common
+'''
+
 from enum import Enum
 from pathlib import Path
 from src.config import Config
@@ -20,6 +24,12 @@ class Week(Enum):
     FRI = 4
     SAT = 5
     SUN = 6
+
+
+def get_tomorrow():
+    day = date.today()
+    day += timedelta(days=1)
+    return day.strftime("%Y%m%d")
 
 
 def get_weeks2dates(dates_for_course):

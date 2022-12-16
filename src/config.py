@@ -1,3 +1,6 @@
+'''
+An object to store the configurations for a course, which are loaded from an ini
+'''
 from pathlib import Path
 import configparser
 from datetime import datetime
