@@ -622,14 +622,3 @@ if __name__ == "__main__":
 
         os._exit(0)
 
-    if args.init:
-        """
-        Initialize a single course
-        """
-        ini_loc = INI_DIR + "/" + args.course + SEMESTER + ".ini"
-        init_course(
-            CUnum2canvasnum,
-            course_no=args.course,
-            config=configs,
-            ini_loc=ini_loc,
-        )
