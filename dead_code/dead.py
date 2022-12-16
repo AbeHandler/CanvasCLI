@@ -1,9 +1,43 @@
+
+
+def get_lecture_page_body(lecture_page):
+    """
+    Take the page of recorded lectures and add to it
+    """
+
+    str_ = lecture_page.body
+    body_start = str_.index("<ul>")
+    body_end = str_.index("\r\n\r\n")
+
+    return str_[body_start:body_end]
+
 def get_week_folder(course_no, week_no):
     '''Get the folder for a given week'''
     course = canvas.get_course(CUno2canvasno[args.course])
     for f in course.get_folders():
         if f.name == "week{}".format(args.week):
             return f
+
+def make_link(
+    title="D19-5414.pdf",
+    link_text="in-class code",
+    href="https://canvas.colorado.edu/courses/62535/files/27550350/preview",
+):
+    """make a link to a file that can be pasted into Canvas"""
+    css_class = "instructure_file_link instructure_scribd_file"
+    endpoint = "/".join(href.split("/")[0:-1])
+
+    # needs to be 1 line?
+    t = Template(
+        """<a class="{{css_class}}" title="{{title}}" href="{{href}}" target="_blank"  rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>"""
+    )
+    return t.render(
+        css_class=css_class,
+        link_text=link_text,
+        title=title,
+        href=href,
+        endpoint=endpoint,
+    )
 
 
 def get_folder_for_week(week, course, folder_kind='whiteboards'):

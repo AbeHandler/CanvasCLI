@@ -10,6 +10,10 @@ class Course(object):
         self.course = api.get_course(config.canvas_no)
 
 
+    def export():
+        """This will create a course backup on Canvas"""
+        self.course.export_content(export_type="common_cartridge")
+
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
     config = Config(path)

@@ -122,210 +122,6 @@ def get_student_names2_ids(course_no):
     return out
 
 
-def init_assignments(course, start_date="20220116"):
-    """
-    Init weekly assignments for a course
-    """
-    now = datetime.strptime(start_date, "%Y%m%d")
-    for week in range(1, 17):
-        title = "Week {} ".format(str(week).zfill(2)) + "Assignments"
-        time_limit = 10
-        due_at = now.strftime("%Y-%m-%d") + "T11:20:00"
-        unlock_at = now.strftime("%Y-%m-%d") + "T11:00:00"
-        points_possible = 10
-
-        course.create_assignment(
-            {
-                "name": title,
-                "published": False,
-                "due_at": now.strftime("%Y-%m-%d") + "T23:59:00",
-                "points_possible": 5,
-                "description": title,
-                "assignment_group_id": "216448",
-                "submission_types": ["online_upload", "online_text_entry"],
-            }
-        )
-        now = now + timedelta(days=7)
-
-
-def init_quizzes(course):
-    """
-    Initialize weekly quizzes for a course
-
-    The day of the week will be determined by the initial value of the now variable
-    """
-    now = datetime(2020, 9, 11)
-    for week in range(1, 17):
-        title = "Week {} ".format(str(week).zfill(2)) + "Quiz"
-        time_limit = 10
-        due_at = now.strftime("%Y-%m-%d") + "T11:20:00"
-        unlock_at = now.strftime("%Y-%m-%d") + "T11:00:00"
-        points_possible = 10
-        now = now + timedelta(days=7)
-        course.create_quiz(
-            {
-                "title": title,
-                "published": False,
-                "time_limit": time_limit,
-                "points_possible": points_possible,
-                "unlock_at": unlock_at,
-                "due_at": due_at,
-            }
-        )
-
-
-def set_extra_time_on_quizzes(
-    course, names, names2ids_course, extra_minutes=10
-):
-    """
-    course = canvas.get_course(CUnum2canvasnum["3401"])
-    names = [o.replace('\n', "") for o in open("accomodations3401.txt")]
-    names2ids_course = names2ids["3401"]
-
-    To see this in the Canvas UI click "Moderate this quiz"
-    https://community.canvaslms.com/t5/Instructor-Guide/Once-I-publish-a-quiz-how-can-I-give-my-students-extra-attempts/ta-p/1242
-    $ canvas -set_extra_time_on_quizzes -c 3401
-    """
-    ids = [names2ids_course[i] for i in names]
-
-    for quiz in course.get_quizzes():
-        print("[*] Setting accomodation for {}".format(quiz.title))
-        for id_ in ids:
-            print("-", id_)
-            quiz.set_extensions([{"user_id": id_, "extra_time": extra_minutes}])
-
-
-def export_all(CUnum2canvasnum):
-    """This will backup all courses on Canvas"""
-    for course in CUnum2canvasnum:
-        print("[*] Exporting {} from Canvas".format(course))
-        course = canvas.get_course(CUnum2canvasnum[course])
-        course.export_content(export_type="common_cartridge")
-
-
-def get_lecture_page_body(lecture_page):
-    """
-    Take the page of recorded lectures and add to it
-    """
-
-    str_ = lecture_page.body
-    body_start = str_.index("<ul>")
-    body_end = str_.index("\r\n\r\n")
-
-    return str_[body_start:body_end]
-
-
-def get_no_submissions(course, assignment):
-    """Get students who did not submit"""
-    assignment = course.get_assignment(assignment)
-    non_submitting_students = []
-    for student in assignment.get_gradeable_students():
-        id_ = student.id
-        submission = assignment.get_submission(id_)
-        if submission.submitted_at is None:
-            non_submitting_students.append(student)
-    return non_submitting_students
-
-
-def update_roll_call(
-    course,
-    roll_call_attendance_no,
-    canvas_student_name,
-    canvas_student_id,
-    excused,
-):
-    """
-    - Canvas has a built in roll call attendance feature
-    - Each student automatically is submitted to roll call attendance
-    - Write their history to your_attendance.csv and upload to justify attendance
-    """
-
-    # print(canvas_student_name)
-    attendance_csv = get_student_attendance(canvas_student_name)
-    assignment = course.get_assignment(assignment=roll_call_attendance_no)
-    submission = assignment.get_submission(canvas_student_id)  # student id
-
-    # 5 free excused absences
-    score = (sum(attendance_csv["present"]) + excused[canvas_student_id]) / len(
-        attendance_csv["present"]
-    )
-
-    score = 1.0 if score > 1.0 else score
-
-    print(canvas_student_name, score * 100)
-
-    submission.edit(
-        submission={"posted_grade": int(score * 100)}, comment={"present"}
-    )
-
-    """
-    Not used
-    attendance_csv.to_csv("your_attendance.csv", index=False)
-    try:
-        submission.edit(submission={'posted_grade': int(score * 100)}, comment={'present'})
-        # write student's attendance history to a csv called history.csv
-        submission.upload_comment("your_attendance.csv") # reference
-    except CanvasException:
-        print("error on {}".format(canvas_student_name))
-    """
-
-
-def get_student_attendance(name, folder="3402"):
-    """
-    Input: a CU email
-    Output: a dataframe saying when they were present or not
-    Assumes you run py atttendence.py to fill folder (e.g. 3402)
-
-    Matches based on last name lower case. If that is not unique matches on first 3 of first
-    This is sufficient for 3402
-    """
-    name = name.replace("'", "")
-
-    # print(name)
-
-    all_ = pd.concat(pd.read_csv(fn) for fn in glob.glob(folder + "/pro*"))
-
-    # import ipdb;ipdb.set_trace()
-
-    all_["last"] = all_["name"].apply(
-        lambda x: x.split()[-1].lower().replace("'", "")
-    )
-    all_["first3"] = all_["name"].apply(lambda x: x.split()[0].lower()[0:3])
-
-    all_["date"] = all_["date"].apply(lambda x: str(x))
-
-    dates = pd.DataFrame(all_["date"].unique())
-    dates.columns = ["date"]
-
-    dates["date"] = dates["date"].apply(
-        lambda x: datetime.strptime(str(x), "%Y%m%d")
-    )
-
-    dates.sort_values(by="date", inplace=True)
-
-    dates["date"] = dates["date"].apply(
-        lambda x: datetime.strftime(x, "%Y%m%d")
-    )
-
-    # get student values
-    stu = all_[all_["last"] == name.split()[-1].lower()]
-
-    # merge on all dates
-    stu = pd.merge(dates, stu, how="outer", on=["date"])
-
-    stu = stu.fillna(0)
-
-    unique_names = [j for j in stu.name.unique().tolist() if type(j) == str]
-    if len(unique_names) > 1:
-
-        # additional matching on first 3 chars of first name
-        stu = stu[stu["first3"] == name.split()[0].lower()[0:3]]
-
-    stu = stu[["date", "present", "name"]]
-    stu["name"] = name
-
-    return stu
-
 
 def comment_and_grade_no_submission(assignment_id, student):
     """
@@ -344,27 +140,6 @@ def comment_and_grade_no_submission(assignment_id, student):
         comment={"text_comment": "no submission"},
     )
 
-
-def make_link(
-    title="D19-5414.pdf",
-    link_text="in-class code",
-    href="https://canvas.colorado.edu/courses/62535/files/27550350/preview",
-):
-    """make a link to a file that can be pasted into Canvas"""
-    css_class = "instructure_file_link instructure_scribd_file"
-    endpoint = "/".join(href.split("/")[0:-1])
-
-    # needs to be 1 line?
-    t = Template(
-        """<a class="{{css_class}}" title="{{title}}" href="{{href}}" target="_blank"  rel="noopener" data-api-endpoint="{{endpoint}}" data-api-returntype="File">{{link_text}}</a>"""
-    )
-    return t.render(
-        css_class=css_class,
-        link_text=link_text,
-        title=title,
-        href=href,
-        endpoint=endpoint,
-    )
 
 
 def show_before_date(course, main_page, in_date="20210315"):
@@ -427,84 +202,6 @@ def comment_and_grade_participation(assignment_id, student, course):
         submission.edit(submission={"posted_grade": assignment.points_possible})
 
 
-def get_peer_reviews(course, assignment_id):
-    """
-    Get the peer review scores for an assignment_id for a course
-
-    thanks to Brian Keegan for this code
-
-    """
-
-    _assignment = course.get_assignment(assignment_id)
-
-    # Get peer reviews
-    _pr_l = [
-        {
-            "submitter_user_id": _pr.user_id,
-            "assessor_user_id": _pr.assessor_id,
-            "asset_id": _pr.asset_id,
-            "state": _pr.workflow_state,
-        }
-        for _pr in _assignment.get_peer_reviews()
-    ]
-
-    # Get peer review assessments
-    _assignment_rubric = _assignment.rubric_settings["id"]
-    _ra_l = [
-        {
-            "asset_id": _a["artifact_id"],
-            "assessor_user_id": _a["assessor_id"],
-            "score": _a["score"],
-        }
-        for _a in course.get_rubric(
-            _assignment_rubric, include="peer_assessments", style="full"
-        ).assessments
-    ]
-
-    # Combine
-    _assignment_pr_assessment_df = pd.merge(
-        left=pd.DataFrame(_pr_l),
-        right=pd.DataFrame(_ra_l),
-        left_on=["assessor_user_id", "asset_id"],
-        right_on=["assessor_user_id", "asset_id"],
-        how="outer",
-    )
-
-    return _assignment_pr_assessment_df
-
-
-def assign_grades_if_peer_review_exists(course, assignment_id):
-    """
-    Assign a student's grade based on peer review, if it exists
-
-    thanks to Brian Keegan for this code
-    """
-    _assignment = course.get_assignment(assignment_id)
-    _assignment_pr_assessment_df = get_peer_reviews(course, assignment_id)
-    for r in _assignment_pr_assessment_df.to_dict("records"):
-        if r["state"] == "completed":
-            _assignment.get_submission(r["submitter_user_id"]).edit(
-                submission={"posted_grade": r["score"]},
-                comment={"text_comment": "Peer review grade"},
-            )
-        else:
-            print("[*] Warning no review {}".format(r))
-
-
-def find_missing_peer_reviews(course, assignment_id):
-    """
-    Assign a student's grade based on peer review, if it exists
-
-    thanks to Brian Keegan for this code
-    """
-    _assignment_pr_assessment_df = get_peer_reviews(course, assignment_id)
-    out = []
-    for r in _assignment_pr_assessment_df.to_dict("records"):
-        if r["state"] != "completed":
-            out.append(r)
-    return out
-
-
 def get_in_class_assignment_group(course):
     """Get the in-class assignment group for the course"""
     id_ = None
@@ -563,45 +260,6 @@ def grade_in_class_assignments(course):
                 comment_and_grade_participation(
                     assignment.id, student, course=course
                 )
-
-
-def deduct_for_missing_reviews(course, assignment_id):
-    """
-    Assign a student's grade based on peer review, if it exists
-
-    thanks to Brian Keegan for this code
-    """
-
-    missing = find_missing_peer_reviews(course, assignment_id)
-
-    _assignment = course.get_assignment(assignment_id)
-
-    # Deduct points from submissions missing peer reviews
-    for r in missing:
-        try:
-            _current_score = _assignment.get_submission(
-                r["assessor_user_id"]
-            ).score
-            _penalty = round(_assignment.points_possible * 0.1)
-            _penalty_score = _current_score - _penalty
-            if _penalty_score < 0:
-                _penalty_score = 0
-
-            _assignment.get_submission(r["assessor_user_id"]).edit(
-                submission={"posted_grade": _penalty_score},
-                comment={
-                    "text_comment": "Incomplete peer review, grade dropped by 10%"
-                },
-            )
-            print("[*] deducted", r)
-        except TypeError:
-            print(r, _assignment.get_submission(r["assessor_user_id"]))
-            print(
-                "Assessor {0}'s assignment has not been submitted/graded".format(
-                    r["assessor_user_id"]
-                )
-            )
-            pass
 
 
 def get_day(args_date, tomorrow, day_after_tomorrow=False):
@@ -671,30 +329,6 @@ def get_tomorrow():
     day += timedelta(days=1)
     return day.strftime("%Y%m%d")
 
-
-def create_quiz(due, tomorrow, course, publish=False, points=3):
-    if due is None and tomorrow is None:
-        print("[*] You must set a due date")
-        os._exit(0)
-    if due is None and tomorrow is not None:
-        due = get_tomorrow()
-    classtime = CUno2Classtime[course]
-    course = canvas.get_course(CUnum2canvasnum[course])
-    title = datetime.strptime(due, "%Y%m%d").strftime("%b. %d") + " Quiz"
-
-    course.create_quiz(
-        {
-            "title": title,
-            "published": publish,
-            "time_limit": 5,
-            "allowed_attempts": 2,
-            "scoring_policy": "keep_average",
-            "points_possible": points,
-            "due_at": due + "T" + classtime,
-        }
-    )
-    print("[*] created quiz for {}".format(course))
-    os._exit(0)
 
 
 if __name__ == "__main__":
@@ -831,14 +465,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--peer_review",
-        dest="peer_review",
-        default=False,
-        action="store_true",
-        help="Use this flag to run peer reviews",
-    )
-
-    parser.add_argument(
         "-q",
         "-quiz",
         "--quiz",
@@ -910,11 +536,6 @@ if __name__ == "__main__":
         )
         os._exit(0)
 
-    if args.course == "4700":
-        print("[*] checking capstone")
-        course = canvas.get_course(CUnum2canvasnum["4700"])
-        grade_in_class_assignments(course)
-
     if args.cron and args.course is not None:
 
         print("[*] Setting visible")
@@ -926,50 +547,6 @@ if __name__ == "__main__":
         course = canvas.get_course(CUnum2canvasnum[args.course])
         grade_in_class_assignments(course)
 
-    if args.cron and args.course is None:
-        print("**** Warning: running cron on all courses ****")
-
-        print("[*] Setting visible")
-        run_all_visible(args, configs)
-
-        print("[*] Running participation points")
-        for course in CUnum2canvasnum:
-            print("[*] checking {}".format(course))
-            course = canvas.get_course(CUnum2canvasnum[course])
-            grade_in_class_assignments(course)
-
-    if args.attendance:
-        # first run $py attendance.py
-        course = canvas.get_course(CUnum2canvasnum[args.course])
-        roll_call_attendance_no = config["course_info"][
-            "roll_call_attendance_no"
-        ]
-
-        # read in excused absences
-        excused = config["attendance_info"]["excused"]
-        excused = defaultdict(lambda: int(config["attendance_info"]["excused"]))
-
-        for alt in config["attendance_info"].keys():
-            if alt[0:7] == "student":
-                student_no = int(alt.split("_")[1])
-                excused[student_no] = int(config["attendance_info"][alt])
-
-        canvasID2email = {}
-
-        for u in course.get_users(enrollment_type=["student"]):
-            canvasID2email[u.id] = u.email
-            try:
-                update_roll_call(
-                    course=course,
-                    roll_call_attendance_no=roll_call_attendance_no,
-                    canvas_student_name=u.name,
-                    canvas_student_id=u.id,
-                    excused=excused,
-                )
-            except AttributeError:
-                print("-", "error on student ", u)
-
-        os._exit(0)
 
     if args.visible:
         day = get_day(args.date, args.tomorrow, args.day_after_tomorrow)
@@ -1056,11 +633,3 @@ if __name__ == "__main__":
             config=configs,
             ini_loc=ini_loc,
         )
-
-    if args.peer_review:
-        if args.assignment_id is None:
-            print("[*] You must enter an assignment_id")
-        else:
-            course = canvas.get_course(CUnum2canvasnum[args.course])
-            assign_grades_if_peer_review_exists(course, args.assignment_id)
-            deduct_for_missing_reviews(course, args.assignment_id)
