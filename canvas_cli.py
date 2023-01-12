@@ -235,7 +235,7 @@ def get_day(args_date, tomorrow, day_after_tomorrow=False):
         day += timedelta(days=2)
     elif args_date != "None":
         day = datetime.strptime(args_date, "%Y%m%d")
-    return day.strftime("%Y%m%d")
+    return day.strftime("%Y%m%d")s
 
 
 def get_names2ids(CUnum2canvasnum):
