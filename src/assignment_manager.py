@@ -47,7 +47,7 @@ class AssignmentManager(object):
             )
 
 
-    def init_assignments(self, first_due: datetime = None):
+    def init_assignments(self, first_due: datetime = None, points_possible: int = 10):
         """
         Init weekly assignments for a course
         """
@@ -59,23 +59,20 @@ class AssignmentManager(object):
             title = "Week {} ".format(str(week).zfill(2)) + "Assignment"
             due_at = date_counter.strftime("%Y-%m-%d") + "T11:20:00"
             unlock_at = (date_counter - timedelta(days=7)).strftime("%Y-%m-%d") + "T11:00:00"
-            points_possible = 10
 
-            '''
-            course.create_assignment(
+            self.course.create_assignment(
                 {
                     "name": title,
                     "published": False,
-                    "due_at": now.strftime("%Y-%m-%d") + "T23:59:00",
+                    "due_at": date_counter.strftime("%Y-%m-%d") + "T23:59:00",
                     "points_possible": 5,
                     "description": title,
                     "assignment_group_id": "216448",
                     "submission_types": ["online_upload", "online_text_entry"],
                 }
             )
-            '''
             date_counter = date_counter + timedelta(days=7)
-            print(date_counter, title)
+
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
