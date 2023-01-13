@@ -51,10 +51,13 @@ class AssignmentManager(object):
         """
         Init weekly assignments for a course
         """
+
+
         if first_due is None:
             date_counter = self.config.start_date
         else:
             date_counter = first_due
+
         for week in range(1, 17):
             title = "Week {} ".format(str(week).zfill(2)) + "Assignment"
             due_at = date_counter.strftime("%Y-%m-%d") + "T11:20:00"
@@ -67,8 +70,8 @@ class AssignmentManager(object):
                     "due_at": date_counter.strftime("%Y-%m-%d") + "T23:59:00",
                     "points_possible": 5,
                     "description": title,
-                    "assignment_group_id": "216448",
-                    "submission_types": ["online_upload", "online_text_entry"],
+                    "assignment_group_id": self.assignment_group,
+                    "submission_types": ["online_upload"],
                 }
             )
             date_counter = date_counter + timedelta(days=7)
@@ -84,4 +87,5 @@ if __name__ == "__main__":
 
     now = datetime.now()
     manager = AssignmentManager(config, api, "263527")
-    manager.init_assignments(manager.config.start_date + timedelta(days=7))
+    start_date = datetime(2023, 1, 23)
+    manager.init_assignments(first_due = start_date)
