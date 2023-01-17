@@ -126,71 +126,6 @@ def get_student_names2_ids(course_no):
     return out
 
 
-
-def comment_and_grade_no_submission(assignment_id, student):
-    """
-    Give 0 + comment "no submission" to student on assignment
-
-    e.g.
-    for student in get_no_submissions(course, assignment):
-        comment_and_grade_no_submission(assignment_id=880992, student_id=student)
-    """
-    assignment = course.get_assignment(assignment=assignment_id)
-    submission = assignment.get_submission(student.id)  # student id
-    # print("- Setting {} score to zero".format(student))
-
-    submission.edit(
-        submission={"posted_grade": 0},
-        comment={"text_comment": "no submission"},
-    )
-
-
-
-def comment_and_grade_participation(assignment_id, student, course):
-    """
-    Give 0 + comment "no submission" to student on assignment
-
-    e.g.
-    for student in get_no_submissions(course, assignment):
-        comment_and_grade_no_submission(assignment_id=880992, student_id=student)
-    """
-    assignment = course.get_assignment(assignment=assignment_id)
-    submission = assignment.get_submission(student.id)  # student id
-
-    if submission.submitted_at is None:
-        print("\t - No submission yet for {}".format(student))
-        submission.edit(
-            submission={"posted_grade": 0, "comment": "no submission"}
-        )
-    else:
-        print("\t - Setting {} score to full".format(student))
-        submission.edit(submission={"posted_grade": assignment.points_possible})
-
-
-def get_in_class_assignment_group(course):
-    """Get the in-class assignment group for the course"""
-    id_ = None
-    for i in course.get_assignment_groups():
-        if "In-class assignments" in str(i):
-            id_ = i.id
-
-    if id_ is None:
-        print("Can't find a group called 'In-class assignments'.")
-        import os
-
-        os._exit(0)
-    return course.get_assignment_group(id_)
-
-
-def get_in_class_assignments_for_course(course):
-    """return the in-class assignments for a course"""
-    gp = get_in_class_assignment_group(course)
-    assignments = []
-    for assignment in course.get_assignments_for_group(gp.id):
-        assignments.append(assignment)
-    return assignments
-
-
 def get_ungraded_in_class_assignments_for_course(course):
     """
     Return the in-class assignments for a course if no grades have
@@ -227,9 +162,6 @@ def grade_in_class_assignments(course):
                 )
 
 
-
-
-
 def get_names2ids(CUnum2canvasnum):
     names2ids = {}
     for coursename, courseno in CUnum2canvasnum.items():
@@ -237,19 +169,6 @@ def get_names2ids(CUnum2canvasnum):
             CUnum2canvasnum[coursename]
         )
     return names2ids
-
-
-def make_course_visible(args, configs, course_no):
-    CUnum2canvasnum = configs["CUnum2canvasnum"]
-    Canvasno2mainpage = configs["Canvasno2mainpage"]
-    canvas_num = CUnum2canvasnum[course_no]
-    day = get_day(args.date, args.tomorrow)
-    canvas_course = canvas.get_course(CUnum2canvasnum[course_no])
-    show_before_date(
-        course=canvas_course,
-        main_page=Canvasno2mainpage[canvas_num],
-        in_date=day,
-    )
 
 
 
