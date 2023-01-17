@@ -23,9 +23,12 @@ class Course(object):
         for i in self.course.get_assignment_groups():
             print(i)
 
+    def get_assignment_groups(self):
+        return {i.name: i.id for i in self.course.get_assignment_groups()}
+
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
     config = Config(path)
     api = get_api()
     initializer = Course(config=config, api=api)
-    initializer.print_assignment_groups()
+    groups = initializer.get_assignment_groups()

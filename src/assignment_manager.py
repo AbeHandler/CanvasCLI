@@ -7,14 +7,17 @@ from pathlib import Path
 from src.api import get_api
 from datetime import timedelta
 from src.course import Course
+from datetime import datetime
 
 class AssignmentManager(object):
 
-    def __init__(self, config: Config, api: Canvas, assignment_group: str):
-        ### to get assigmnent group see print_assignment_groups
+    def __init__(self,
+                 config: Config, 
+                 api: Canvas, 
+                 assignment_groups: dict):
         self.config = config
         self.course = api.get_course(config.canvas_no)
-        self.assignment_group = assignment_group # e.g. 216448
+        self.assignment_groups = assignment_groups
 
     def get_no_submissions(assignment) -> List:
         """
@@ -32,7 +35,13 @@ class AssignmentManager(object):
         return non_submitting_students
 
 
-    def create_assignment(self, duedate: datetime, title: str):
+    def create_assignment(self,
+                          duedate: datetime,
+                          group: str,
+                          title: str = None):
+
+        if title is None:
+            title = group + " " + duedate.strftime("%b %d")
 
         self.course.create_assignment(
                 {
@@ -41,7 +50,7 @@ class AssignmentManager(object):
                     "due_at": duedate.strftime("%Y-%m-%d") + "T23:59:00",
                     "points_possible": 10,
                     "description": title,
-                    "assignment_group_id": self.assignment_group,
+                    "assignment_group_id": self.assignment_groups[group],
                     "submission_types": ["online_upload", "online_text_entry"],
                 }
             )
@@ -82,10 +91,11 @@ if __name__ == "__main__":
     config = Config(path)
     api = get_api()
     course = Course(config=config, api=api)
+    groups = course.get_assignment_groups()
 
-    from datetime import datetime
+    manager = AssignmentManager(config, api, groups)
 
-    now = datetime.now()
-    manager = AssignmentManager(config, api, "263527")
-    start_date = datetime(2023, 1, 23)
-    manager.init_assignments(first_due = start_date)
+    manager.create_assignment(datetime(2023, 1, 17), group = "Interview grading")
+
+    #start_date = datetime(2023, 1, 23)
+    #manager.init_assignments(first_due = start_date)
