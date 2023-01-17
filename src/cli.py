@@ -32,11 +32,16 @@ and aliasing it as "canvas"
 import argparse
 import glob
 import os
+from src.api import get_api
+from src.parser import get_args
+from src.parser import get_day
+from src.config import Config
+from pathlib import Path
+from src.course import Course
+from src.front_page import FrontPage
 from collections import defaultdict
 from datetime import datetime
-from datetime import timedelta
 from datetime import date
-from bs4 import BeautifulSoup, Tag
 
 from canvasapi.exceptions import CanvasException
 from canvasapi.paginated_list import PaginatedList
@@ -222,20 +227,7 @@ def grade_in_class_assignments(course):
                 )
 
 
-def get_day(args_date, tomorrow, day_after_tomorrow=False):
-    """
-    A helper method for --visible
-    """
-    day = date.today()
-    assert (tomorrow and day_after_tomorrow) == False
 
-    if tomorrow:
-        day += timedelta(days=1)
-    elif day_after_tomorrow:
-        day += timedelta(days=2)
-    elif args_date != "None":
-        day = datetime.strptime(args_date, "%Y%m%d")
-    return day.strftime("%Y%m%d")s
 
 
 def get_names2ids(CUnum2canvasnum):
@@ -282,196 +274,33 @@ def get_due_from_args(args) -> str:
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
+    args = get_args()
 
-    parser.add_argument(
-        "-init",
-        "--init",
-        dest="init",
-        default=False,
-        action="store_true",
-        help="Use this flag to init the course files on Canvas",
-    )
+    PATH_TO_INI = "/Users/abe/CanvasCLI/3220S2023.ini"
 
-    args = parser.parse_args()
+    config = Config(Path(PATH_TO_INI))
+
+    api = get_api()
+
     if args.init:
-        path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
-        config = Config(path)
-        api = get_api()
         initializer = Initializer(config=config, api=api)
 
-    import os
+    if args.visible:
+        course = Course(config=config, api=api)
+        fp = FrontPage(course)
+        day = get_day(args)
+        fp.show_before_date(day)
 
     os._exit(0)
-    # rest is old code and suspect
 
-    # TODO alphabetize
-    parser.add_argument(
-        "-a",
-        "-assignment",
-        "--assignment",
-        dest="assignment",
-        default=False,
-        action="store_true",
-        help="Use this flag to create an assignment",
-    )
+    # the rest is old code and suspect
 
-    parser.add_argument(
-        "-all_visible",
-        "--all_visible",
-        dest="all_visible",
-        default=False,
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "-attendance",
-        "--attendance",
-        dest="attendance",
-        default=False,
-        action="store_true",
-        help="Take attendance",
-    )
-
-    parser.add_argument(
-        "-assignment_id",
-        "--assignment_id",
-        dest="assignment_id",
-        help="Assignment ID for no submission",
-    )
-
-    parser.add_argument(
-        "-c",
-        "-course",
-        "--course",
-        default=None,
-        help="INFO course number, e.g. 4604",
-    )
-
-    parser.add_argument(
-        "-cron",
-        "--cron",
-        action="store_true",
-        help="run maintence jobs",
-        dest="cron",
-        default=False,
-    )
-
-    parser.add_argument(
-        "-d",
-        "-due",
-        "--due",
-        help="pass a date in YYYYMMDD for the due date, e.g. 20200824",
-    )
-
-    parser.add_argument(
-        "-date",
-        dest="date",
-        default="None",
-        help="pass a date in YYYYMMDD for the date, e.g. 20200824",
-    )
-
-    parser.add_argument(
-        "-e",
-        "-export",
-        "--export",
-        dest="export",
-        help="Export all",
-        default=False,
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "-html",
-        action="store_true",
-        help="print HTML for semester",
-        dest="html",
-        default=False,
-    )
-
-    parser.add_argument(
-        "-n", "-name", "--name", help="the name of the quiz or assignment"
-    )
-
-    parser.add_argument(
-        "-p", "-points", "--points", dest="points", default=3, type=int
-    )
-
-    parser.add_argument(
-        "--participation",
-        action="store_true",
-        help="assigns full points to students who submitted",
-        dest="participation",
-        default=False,
-    )
-
-    parser.add_argument(
-        "--publish",
-        dest="publish",
-        default=False,
-        action="store_true",
-        help="Use this flag to immediately publish the assignment",
-    )
-
-    parser.add_argument(
-        "-q",
-        "-quiz",
-        "--quiz",
-        dest="quiz",
-        default=False,
-        action="store_true",
-        help="Use this flag to create a quiz",
-    )
-
-    parser.add_argument(
-        "-set_extra_time_on_quizzes",
-        dest="set_extra_time_on_quizzes",
-        default=False,
-        action="store_true",
-        help="Use this flag to set extra time on all quizzes for students w/ accomodations",
-    )
-
-    parser.add_argument(
-        "-t",
-        "-tomorrow",
-        "--tomorrow",
-        action="store_true",
-        help="syncs a directory to canvas",
-        dest="tomorrow",
-        default=False,
-    )
-
-    parser.add_argument(
-        "-tt",
-        action="store_true",
-        help="syncs a directory to canvas",
-        dest="day_after_tomorrow",
-        default=False,
-    )
-
-    parser.add_argument("-w", "-week", "--week", dest="week", type=int)
-
-    parser.add_argument(
-        "-v",
-        "-visible",
-        "--visible",
-        dest="visible",
-        default=False,
-        action="store_true",
-        help="Make html visible",
-    )
-
-    parser.add_argument(
-        "-z",
-        "-zeros",
-        "--zeros",
-        action="store_true",
-        help="assigns zeros to students who have not submitted",
-        dest="zeros",
-        default=False,
-    )
 
     SEMESTER = "S2023"
+
+
+    import os; os._exit(0)
+
 
     configs = read_configs(INI_DIR, SEMESTER)
     CUnum2canvasnum = configs["CUnum2canvasnum"]
@@ -496,15 +325,6 @@ if __name__ == "__main__":
         course = canvas.get_course(CUnum2canvasnum[args.course])
         grade_in_class_assignments(course)
 
-
-    if args.visible:
-        day = get_day(args.date, args.tomorrow, args.day_after_tomorrow)
-        canvas_no = CUnum2canvasnum[args.course]
-        course = canvas.get_course(CUnum2canvasnum[args.course])
-
-        show_before_date(
-            course=course, main_page=Canvasno2mainpage[canvas_no], in_date=day
-        )
 
     if args.all_visible:
         run_all_visible(args, configs)

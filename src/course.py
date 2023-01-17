@@ -11,6 +11,10 @@ class Course(object):
         self.course_name = config.course_name
 
 
+    def get_front_page(self):
+        '''The main page always has the course_name'''
+        return self.course.get_page(self.course_name)
+
     def export(self):
         """This will create a course backup on Canvas"""
         self.course.export_content(export_type="common_cartridge")

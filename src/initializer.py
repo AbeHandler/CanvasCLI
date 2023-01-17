@@ -101,13 +101,7 @@ class Initializer(object):
             dates = weeks2dates[week]
             dates.sort(reverse=True)
             dates = [d for d in dates]
-            bullets = [
-                "in-class code",
-                "whiteboards",
-                "recording",
-                "in-class assignment",
-                "quiz",
-            ]
+            bullets = config.daily_bullets
 
             week_start_date = dates[-1].strftime(STANDARDDATE)
             out = out + template.render(

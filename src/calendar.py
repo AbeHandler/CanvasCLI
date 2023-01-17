@@ -55,7 +55,7 @@ def get_dates_for_course(config: Config) -> List[Dict]:
 
     dates_for_course = []
 
-    week = 0
+    week = 1 # weeks start at 1, b/c it is for people (and is displayed in HTML)
 
     days_of_week = [Week[i].value for i in config.days_of_week]
 

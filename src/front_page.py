@@ -6,6 +6,9 @@ from canvasapi.canvas import Canvas
 from pathlib import Path
 from src.api import get_api
 from src.course import Course
+from bs4 import BeautifulSoup, Tag
+from datetime import datetime
+from datetime import date
 
 class FrontPage(object):
 
@@ -13,7 +16,7 @@ class FrontPage(object):
     def __init__(self, course):
         self.course = course
 
-    def _isb4(input_date):
+    def _isb4(self, input_date):
         """
         Returns a function, f: date -> bool
         that is true if its input is less than or equal to input_date
@@ -31,10 +34,10 @@ class FrontPage(object):
 
         return hidden
 
-    def show_before_date(threshold="20210315"):
+    def show_before_date(self, threshold: str="20210315"):
         """update a page to show elements w/ data-date before some input date"""
 
-        canvas_page = self.course.get_page(course.course_name)
+        canvas_page = self.course.get_front_page()
 
         html = canvas_page.body
         soup = BeautifulSoup(html, features="html.parser")
@@ -47,7 +50,7 @@ class FrontPage(object):
 
         html = str(soup)
 
-        print("\t - Updating {} page to show before {}".format(main_page, in_date))
+        print("- Updating {} page to show before {}".format(self.course.course_name, threshold))
 
         canvas_page.edit(wiki_page={"body": html})
 
