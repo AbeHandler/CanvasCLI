@@ -15,7 +15,10 @@ def get_api():
     # Canvas API URL
     api_url = "https://canvas.colorado.edu"
     # Canvas API key
-    api_key = os.environ["CANVAS_TOKEN"]
+    try:
+        api_key = os.environ["CANVAS_TOKEN"]
+    except KeyError:
+        raise ValueError("Expecting an enviroment variable called 'CANVAS_TOKEN'. See the README for more.")
 
     # Initialize a new Canvas object
     return Canvas(api_url, api_key)

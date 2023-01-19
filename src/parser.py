@@ -7,27 +7,33 @@ import datetime
 
 from datetime import timedelta
 from datetime import date
+from src.vars import DATE_FORMAT
 
 
-def get_day(args):
+def get_day(args) -> str:
+    '''
+    Returns a date in {today, tomorrow, dayaftertomorrow}
 
-    day = date.today()
+    In theory I guess you would want some other day line next 
+    Wednesday but I never end up doing that. Maybe 
+    another method like get_day_precise if args.date is not none
+    '''
 
     if args.tomorrow or args.day_after_tomorrow:
         assert args.date is None, "You can't specify a date if you use the -t or -tt flag"
-    else:
-        assert args.date != None, "You must specify a date if you don't use the -t or -tt flag"
 
+    if args.tomorrow and args.day_after_tomorrow:
+        raise ValueError("You can't use the -t and -tt flag together")
 
-    assert (args.tomorrow and args.day_after_tomorrow) == False, "You must either use the -t or -tt flag"
-
+    day = date.today()
     if args.tomorrow:
         day += timedelta(days=1)
     elif args.day_after_tomorrow:
         day += timedelta(days=2)
-    elif args.date != None:
-        day = args.date
-    return day.strftime("%Y%m%d")
+    else:
+        day = day # the default, just adding for clarity
+
+    return day.strftime(DATE_FORMAT)
 
 def get_args():
 
@@ -76,6 +82,15 @@ def get_args():
         help="Make html visible"
     )
 
+    parser.add_argument(
+        "-q",
+        "-quiz",
+        "--quiz",
+        dest="quiz",
+        default=False,
+        action="store_true",
+        help="Use to make a quiz"
+    )
 
     args = parser.parse_args()
 

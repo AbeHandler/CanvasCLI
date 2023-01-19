@@ -29,12 +29,15 @@ and aliasing it as "canvas"
 
 """
 
+
+
 import argparse
 import glob
 import os
 from src.api import get_api
 from src.parser import get_args
 from src.parser import get_day
+from src.quiz_manager import QuizManager
 from src.config import Config
 from pathlib import Path
 from src.course import Course
@@ -190,6 +193,20 @@ def get_due_from_args(args) -> str:
                 "[*] The argument inClass needs to match the format YYYYMMDD. Won't make assignment."
             )
 
+def get_course_from_ini(path_to_ini: str = "/Users/abe/CanvasCLI/3220S2023.ini"):
+    '''
+    A convenience function which creates a course object
+    from an ini file
+    '''
+    path = Path(path_to_ini)
+    config = Config(path)
+    api = get_api()
+
+    course = Course(config=config,
+                    api=api)
+
+    return course
+
 
 if __name__ == "__main__":
 
@@ -197,20 +214,26 @@ if __name__ == "__main__":
 
     PATH_TO_INI = "/Users/abe/CanvasCLI/3220S2023.ini"
 
-    config = Config(Path(PATH_TO_INI))
+    course = get_course_from_ini(PATH_TO_INI)
 
-    api = get_api()
+    print(args)
 
     if args.init:
         initializer = Initializer(config=config, api=api)
+        os._exit(0)
 
     if args.visible:
-        course = Course(config=config, api=api)
         fp = FrontPage(course)
         day = get_day(args)
         fp.show_before_date(day)
+        os._exit(0)
 
-    os._exit(0)
+    if args.quiz:
+        quiz_group = course.get_assignment_group("Quizzes")
+        due = get_day(args)
+        manager = QuizManager(quiz_group, course)
+        manager.create(due)
+        os._exit(0)
 
     # the rest is old code and suspect
 
@@ -220,11 +243,6 @@ if __name__ == "__main__":
 
     import os; os._exit(0)
 
-
-    configs = read_configs(INI_DIR, SEMESTER)
-    CUnum2canvasnum = configs["CUnum2canvasnum"]
-    Canvasno2mainpage = configs["Canvasno2mainpage"]
-    CUno2Classtime = configs["CUno2Classtime"]
 
     # don't need to specify a course if args are visible
     if args.course is None and not args.all_visible and not args.cron:
@@ -277,15 +295,7 @@ if __name__ == "__main__":
         export_all(CUnum2canvasnum)
         os._exit(0)
 
-    if args.quiz:
 
-        create_quiz(
-            due=args.due,
-            tomorrow=args.tomorrow,
-            course=args.course,
-            publish=args.publish,
-            points=args.points,
-        )
 
     if args.assignment:
 

@@ -13,8 +13,6 @@ from typing import Dict
 from collections import defaultdict
 
 
-STANDARDDATE = "%Y%m%d"
-
 # class syntax
 class Week(Enum):
     MON = 0

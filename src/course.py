@@ -9,7 +9,7 @@ class Course(object):
         self.config = config
         self.course = api.get_course(config.canvas_no)
         self.course_name = config.course_name
-
+        self.assigment_groups = {i.name: i.id for i in self.course.get_assignment_groups()}
 
     def get_front_page(self):
         '''The main page always has the course_name'''
@@ -23,8 +23,9 @@ class Course(object):
         for i in self.course.get_assignment_groups():
             print(i)
 
-    def get_assignment_groups(self):
-        return {i.name: i.id for i in self.course.get_assignment_groups()}
+    def get_assignment_group(self, group: str):
+        return self.assigment_groups[group]
+
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")

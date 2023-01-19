@@ -9,33 +9,38 @@ from src.api import get_api
 from datetime import timedelta
 from src.course import Course
 from datetime import datetime
+from src.vars import DATE_FORMAT
 
 class QuizManager(object):
+    '''
+    Manages quizzes for a given group
+    If you want to manage quizzes for a different group
+    Make a new quiz manager
+    '''
 
     def __init__(self,
-                 config: Config, 
                  quiz_group: str,
                  course: Course):
-        self.config = config
         self.course = course
         self.quiz_group = quiz_group
 
     def create(self, due: datetime, publish=False, points=3):
 
-        title = due.strftime("%b. %d") + " Quiz"
+        title = datetime.strptime(due, DATE_FORMAT).strftime("%b. %d") + " Quiz"
 
         self.course.course.create_quiz(
             {
                 "title": title,
                 "published": publish,
                 "time_limit": 5,
-                "allowed_attempts": 2,
+                "allowed_attempts": 1,
                 "scoring_policy": "keep_average",
                 "assignment_group_id": self.quiz_group,
                 "points_possible": points,
-                "due_at": due.strftime("%Y-%m-%d") + "T" + self.config.end_time
+                "due_at": due + "T" + self.course.config.end_time
             }
         )
+        print(f"[*] Created {title}")
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
@@ -45,12 +50,10 @@ if __name__ == "__main__":
     course = Course(config=config,
                     api=api)
 
-    quiz_group = course.get_assignment_groups()["Quizzes"]
+    quiz_group = course.get_assignment_group("Quizzes")
     due = datetime(2023, 1, 17)
-    manager = QuizManager(config, quiz_group, course)
+    manager = QuizManager(quiz_group, course)
     manager.create(due)
-
-import os; os._exit(0)
 
 
 def set_extra_time_on_quizzes(
