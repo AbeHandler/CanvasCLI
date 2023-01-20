@@ -237,41 +237,7 @@ if __name__ == "__main__":
 
     # the rest is old code and suspect
 
-
-    SEMESTER = "S2023"
-
-
     import os; os._exit(0)
-
-
-    # don't need to specify a course if args are visible
-    if args.course is None and not args.all_visible and not args.cron:
-        print(
-            "[*] You must specify a course using the --course flag, unless you are doing all_visible"
-        )
-        os._exit(0)
-
-    if args.cron and args.course is not None:
-
-        print("[*] Setting visible")
-        make_course_visible(args, configs, args.course)
-
-        print("[*] Running participation points")
-
-        print("[*] checking {}".format(args.course))
-        course = canvas.get_course(CUnum2canvasnum[args.course])
-        grade_in_class_assignments(course)
-
-
-    if args.all_visible:
-        run_all_visible(args, configs)
-
-    # mostly used for 3402
-    if args.participation and args.assignment_id is not None:
-        course = canvas.get_course(CUnum2canvasnum[args.course])
-        for student in assignment.get_gradeable_students():
-            comment_and_grade_participation(args.assignment_id, student, course)
-        os._exit(0)
 
     if args.zeros and args.assignment_id is not None:
         # py canvas_cli.py -c 2301 -zeros --assignmentid 871212
@@ -294,8 +260,6 @@ if __name__ == "__main__":
     if args.export:
         export_all(CUnum2canvasnum)
         os._exit(0)
-
-
 
     if args.assignment:
 
