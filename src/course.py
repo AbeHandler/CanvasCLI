@@ -2,6 +2,7 @@ from src.config import Config
 from canvasapi.canvas import Canvas
 from pathlib import Path
 from src.api import get_api
+from src.student import Student
 from src.grades import LetterGrade
 from typing import List
 from canvasapi.assignment import Assignment
@@ -93,17 +94,18 @@ class Course(object):
         if not assignment_name in assignment_names:
             raise ValueError(f"There is no {assignment_name} in group {assignment_group}")
 
-    def get_student_names2_ids(self):
-        out = {}
+    def get_students(self):
+        '''Create a list of students in the course'''
+        students = []
         for student in self.course.get_recent_students():
-            out[student.name] = student.id
-        return out
-
-    def get_student_ids_2_names(self):
-        out = {}
-        for student in self.course.get_recent_students():
-            out[student.name] = student.id
-        return {v: k for k, v in out.items()}
+            name = student.name
+            canvas_id = student.id
+            cu_id = student.login_id
+            student = Student(name=name,
+                              canvas_id=canvas_id,
+                              cu_id=cu_id)
+            students.append(student)
+        return students
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")

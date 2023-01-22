@@ -9,6 +9,9 @@ from datetime import timedelta
 from src.course import Course
 from datetime import datetime
 from tqdm import tqdm as tqdm
+from typing import List
+from src.student import Student
+from tqdm import tqdm as tqdm
 
 class Assignment(object):
 
@@ -17,8 +20,18 @@ class Assignment(object):
         self.assignment = course.course.get_assignment(assignment_id)
         self.full_credit = self.assignment.points_possible
 
-    def get_submissions(self):
-        return [j for j in self.assignment.get_submissions()]
+    def get_submissions(self, students: List[Student]):
+        submissions = [j for j in self.assignment.get_submissions()]
+        
+        self._validate_get_submissions(students)
+        for submission in submissions:
+
+            student = [student for student in students if student.canvas_id == submission.user_id]
+            if len(student) == 1:
+                submission.student = student[0]
+            else:
+                submission.student = None
+        return submissions
 
     def grade_based_on_participation(self):
         '''
@@ -40,6 +53,41 @@ class Assignment(object):
                     comment={"text_comment": "Full credit"},
                 )
         print(f"[*] Graded {len(submissions)} based on participation")
+
+
+    def _validate_get_submissions(self, students):
+        for student in students:
+            assert type(student) == Student, str(student)
+
+
+    def download_submissions(self,
+                             students: List[Student],
+                             expected_suffix: str = ".ipynb",
+                             cannonical_file_name: str = "one.ipynb",
+                             download_location: Path = "/tmp/one"):
+        '''
+        - Download submissions that have the expected_suffix to download_location
+        - Skip attachments that do not have the expected_suffix, and print alert
+        - Download each file using the cannonical_file_name
+        '''
+        p = Path(download_location)
+        p.mkdir(parents=True, exist_ok=True)
+        submissions = self.get_submissions(students)
+        total_downloaded = 0
+        for submission in tqdm(submissions):
+            attachments = submission.attachments
+            attachments.sort(key = lambda x: x.updated_at_date, reverse=True)
+            if len(attachments) > 0:
+                latest = attachments[0]
+                download_to = p / submission.student.cu_id
+                download_to.mkdir(parents=True, exist_ok=True)
+                if Path(latest.filename).suffix == expected_suffix:
+                    latest.download((download_to / cannonical_file_name).as_posix())
+                    total_downloaded += 1
+                else:
+                    print(f"[*] not sure about student {submission.student.name}, skipping")
+        print(f"[*] Downloaded {total_downloaded}")      
+            
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
