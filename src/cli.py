@@ -116,18 +116,6 @@ def create_in_class_assignment(
     return new_assignment
 
 
-def get_student_names2_ids(course_no):
-    """
-    courseno = a canvas course number
-    Returns a dictionary of names 2 student ids for this course
-    note that maps student names to *canvas* student IDs
-    """
-    out = {}
-    course = canvas.get_course(course_no)
-    for student in course.get_recent_students():
-        out[student.name] = student.id
-    return out
-
 
 def get_ungraded_in_class_assignments_for_course(course):
     """
