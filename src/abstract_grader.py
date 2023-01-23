@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from src.assignment import Assigment
+from src.assignment import Assignment
 from src.student import Student
+from src.grade import Grade
  
-class Grader(ABC):
+class AbstractGrader(ABC):
  
     @abstractmethod
     def grade(self, student, assignment) -> Grade:
