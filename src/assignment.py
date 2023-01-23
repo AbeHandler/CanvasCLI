@@ -63,8 +63,9 @@ class Assignment(object):
     def download_submissions(self,
                              students: List[Student],
                              expected_suffix: str = ".ipynb",
+                             assignment_name: str = "one",
                              cannonical_file_name: str = "one.ipynb",
-                             download_location: Path = "/tmp/one"):
+                             download_location: Path = "/Users/abe/everything/teaching/S2023/3220/3220"):
         '''
         - Download submissions that have the expected_suffix to download_location
         - Skip attachments that do not have the expected_suffix, and print alert
@@ -79,7 +80,7 @@ class Assignment(object):
             attachments.sort(key = lambda x: x.updated_at_date, reverse=True)
             if len(attachments) > 0:
                 latest = attachments[0]
-                download_to = p / submission.student.cu_id
+                download_to = p / submission.student.cu_id / assignment_name
                 download_to.mkdir(parents=True, exist_ok=True)
                 if Path(latest.filename).suffix == expected_suffix:
                     latest.download((download_to / cannonical_file_name).as_posix())

@@ -223,6 +223,9 @@ if __name__ == "__main__":
         manager.create(due)
         os._exit(0)
 
+    if args.export:
+        course.export()
+
     # the rest is old code and suspect
 
     import os; os._exit(0)
@@ -243,10 +246,6 @@ if __name__ == "__main__":
         ]
         names2ids_course = names2ids[args.course]
         set_extra_time_on_quizzes(course, names, names2ids_course)
-        os._exit(0)
-
-    if args.export:
-        export_all(CUnum2canvasnum)
         os._exit(0)
 
     if args.assignment:
