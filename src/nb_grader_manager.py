@@ -29,7 +29,6 @@ class NBGraderManager():
     def run(self):
         self._run_nb_grader()
         self._run_py_files()
-        # TODO return list of grades
 
     def _run_nb_grader(self):
         cd = "cd " + Path(self.path_to_autograde_script).parents[0].as_posix()
