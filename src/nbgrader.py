@@ -17,18 +17,19 @@ class NBGrader(AbstractGrader):
         self.assignment_name = assignment_name
         self.path_to_autograded = path_to_autograded
 
- 
-    # overriding abstract method
-    def grade(self):
+    def run_nb_grader():
         cd = "cd " + Path(self.path_to_autograde_script).parents[0].as_posix()
         cmd = f"{cd} && sh {self.path_to_autograde_script.as_posix()} {self.assignment_name}"
         os.system(cmd)
-
+ 
+    # overriding abstract method
+    def grade(self):
+        self.run_nb_grader()
+        self.run_py_files()
 
     def get_autograded_files(self,
                              assignment_name: str,
                              path_to_autograded: Path) -> List[str]:
-
         out = []
         for p in path_to_autograded.rglob("*.py"):
             if assignment_name in p.as_posix():
@@ -49,6 +50,5 @@ class NBGrader(AbstractGrader):
 
 if __name__ == '__main__':
     nb_grader = NBGrader()
-    #nb_grader.grade()
-    nb_grader.run_py_files()
+    nb_grader.grade()
 
