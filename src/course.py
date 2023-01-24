@@ -3,7 +3,7 @@ from canvasapi.canvas import Canvas
 from pathlib import Path
 from src.api import get_api
 from src.student import Student
-from src.grades import LetterGrade
+from src.grade_enum import LetterGrade
 from typing import List
 from canvasapi.assignment import Assignment
 
