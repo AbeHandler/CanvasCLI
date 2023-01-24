@@ -1,4 +1,4 @@
-
+import sys
 from typing import List
 from src.config import Config
 from datetime import datetime
@@ -6,32 +6,35 @@ from canvasapi.canvas import Canvas
 from pathlib import Path
 from src.api import get_api
 from datetime import timedelta
-from src.course import Course
 from datetime import datetime
 from tqdm import tqdm as tqdm
 from typing import List
 from src.student import Student
+from src.submission import Submission
 from tqdm import tqdm as tqdm
 
 class Assignment(object):
 
 
     def __init__(self, course, assignment_id):
-        self.assignment = course.course.get_assignment(assignment_id)
+        self.assignment = course.get_assignment(assignment_id)
         self.full_credit = self.assignment.points_possible
 
-    def get_submissions(self, students: List[Student]):
+    def get_submissions(self, students: List[Student]) -> List[Submission]:
         submissions = [j for j in self.assignment.get_submissions()]
         
+        out = []
         self._validate_get_submissions(students)
         for submission in submissions:
-
             student = [student for student in students if student.canvas_id == submission.user_id]
             if len(student) == 1:
-                submission.student = student[0]
+                student = student[0]
+                out.append(Submission(student=student,
+                                      submission=submission))
             else:
-                submission.student = None
-        return submissions
+                sys.stderr.write(f"[*] Error on {submission}")
+        return out
+
 
     def grade_based_on_participation(self):
         '''
@@ -42,13 +45,13 @@ class Assignment(object):
         submissions = self.get_submissions()
 
         for submission in tqdm(submissions):
-            if submission.missing:
-                submission.edit(
+            if submission.submission.missing:
+                submission.submission.edit(
                     submission={"posted_grade": 0},
                     comment={"text_comment": "no submission"},
                 )
             else:
-                submission.edit(
+                submission.submission.edit(
                     submission={"posted_grade": self.full_credit},
                     comment={"text_comment": "Full credit"},
                 )

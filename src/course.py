@@ -5,7 +5,8 @@ from src.api import get_api
 from src.student import Student
 from src.grade_enum import LetterGrade
 from typing import List
-from canvasapi.assignment import Assignment
+
+from src.assignment import Assignment
 
 class Course(object):
 
@@ -32,7 +33,11 @@ class Course(object):
 
     def get_assignments_in_group(self, assignment_group: str) -> List[Assignment]:
         group_id = self.get_assignment_group(assignment_group)
-        return [j for j in self.course.get_assignments_for_group(group_id)]
+        out = []
+        for j in self.course.get_assignments_for_group(group_id):
+            assignment = Assignment(course=self.course, assignment_id=j.id)
+            out.append(assignment)
+        return out
 
     def lookup_assignment_id(self, assignment_group: str, assignment_name: str) -> int:
         """Get the ID of an assignment by group/assignment name
