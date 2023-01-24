@@ -6,6 +6,7 @@ from canvasapi.canvas import Canvas
 from pathlib import Path
 from src.api import get_api
 from src.course import Course
+from src.vars import DATE_FORMAT
 from bs4 import BeautifulSoup, Tag
 from datetime import datetime
 from datetime import date
@@ -22,7 +23,7 @@ class FrontPage(object):
         that is true if its input is less than or equal to input_date
         Used for a lambda in bs4
         """
-        input_date = datetime.strptime(input_date, "%Y%m%d")
+        input_date = datetime.strptime(input_date, DATE_FORMAT)
 
         def hidden(t):
             if "data-date" not in t.attrs:

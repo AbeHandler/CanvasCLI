@@ -38,6 +38,9 @@ def get_day(args) -> str:
 def get_args():
 
     parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(help='sub-command help')
+
+    parser.add_argument("assignment", action="store_true", default=False)
 
     parser.add_argument(
         "-date",
@@ -45,6 +48,8 @@ def get_args():
         default=None,
         help="pass a date in YYYYMMDD for the date, e.g. 20200824",
     )
+
+    parser.add_argument("export", action="store_true", default=False)
 
     parser.add_argument(
         "-init",
@@ -91,6 +96,14 @@ def get_args():
         action="store_true",
         help="Use to make a quiz"
     )
+
+    parser_a = subparsers.add_parser('assignment', help='a help')
+    parser_a.add_argument("-download", action="store_true", default=False)
+    parser_a.add_argument("-canvas_name", '-cn')
+    parser_a.add_argument("-nb_grader_name", '-nbn')
+    parser_a.add_argument("-g", '-group', "--group", default="Exercises")
+    parser_a.add_argument("-autograde", action="store_true", default=False)
+
 
     args = parser.parse_args()
 

@@ -43,7 +43,8 @@ from src.front_page import FrontPage
 from collections import defaultdict
 from datetime import datetime
 from datetime import date
-
+from src.nb_grader_manager import NBGraderManager
+from src.assignment import Assignment
 from canvasapi.exceptions import CanvasException
 from canvasapi.paginated_list import PaginatedList
 
@@ -159,3 +160,25 @@ if __name__ == "__main__":
 
     if args.export:
         course.export()
+
+    if args.assignment:
+        id_ = course.lookup_assignment_id(args.group, args.canvas_name)
+        assignment = Assignment(course=course, assignment_id=id_)
+        students = course.get_students()
+
+        if args.download:
+            assignment.download_submissions(students, 
+                                            download_location=course.config.submitted_location,
+                                            assignment_name=args.nb_grader_name)
+        if args.autograde:
+            nb_grader = NBGraderManager(course.config)
+            nb_grader.run()
+        os._exit(0)
+
+    if args.export:
+        id_ = course.lookup_assignment_id("Exercises", 'Week 01 Assignment')
+        assignment = Assignment(course=course, assignment_id=id_)
+        students = course.get_students()
+        assignment.download_submissions(students, 
+                                        download_location='',
+                                        assignment_name="one")

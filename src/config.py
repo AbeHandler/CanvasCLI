@@ -32,6 +32,9 @@ class Config(object):
         self.main_page = config["course_info"]["main_page"]
         self.days_of_week = config["course_info"]["days_of_week"].split(",")
         self.daily_bullets = config["course_info"]["daily_bullets"].split(",")
+        self.submitted_location = Path(config["course_info"]["submitted_location"])
+        self.path_to_autograded = Path(config["course_info"]["path_to_autograded"])
+        self.path_to_autograde_script = Path(config["course_info"]["path_to_autograde_script"])
         groups = config['assignment_configs']['groups'].split(",")
         weights = config['assignment_configs']['weights'].split(",")
         self.group2weight = {k: v for k, v in zip(groups, weights)}

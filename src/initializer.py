@@ -39,37 +39,6 @@ class Initializer(object):
         self.course.update(course={"default_view": "wiki"})
 
 
-    '''
-    This code was ported over from canvas_cli.py but does not work yet
-
-
-
-    def init_quizzes(course):
-        """
-        Initialize weekly quizzes for a course
-
-        The day of the week will be determined by the initial value of the now variable
-        """
-        now = datetime(2020, 9, 11)
-        for week in range(1, 17):
-            title = "Week {} ".format(str(week).zfill(2)) + "Quiz"
-            time_limit = 10
-            due_at = now.strftime("%Y-%m-%d") + "T11:20:00"
-            unlock_at = now.strftime("%Y-%m-%d") + "T11:00:00"
-            points_possible = 10
-            now = now + timedelta(days=7)
-            course.create_quiz(
-                {
-                    "title": title,
-                    "published": False,
-                    "time_limit": time_limit,
-                    "points_possible": points_possible,
-                    "unlock_at": unlock_at,
-                    "due_at": due_at,
-                }
-            )
-    '''
-
     def init_groups(self):
 
         for name, weight in self.config.group2weight.items():
@@ -90,7 +59,7 @@ class Initializer(object):
         weeks = list(weeks2dates.keys())
 
         template = Template(
-            """<h3 data-date="{{week_start_date}}" style='display:none'> Week {{ week }}</h3>{% for row in dates %}\n<h4 data-date="{{row.strftime("%Y%m%d")}}" style='display:none'>{{row.strftime("%a %b %d")}}</h4>\n<ul data-date="{{row.strftime("%Y%m%d")}}" style='display:none'>\n{% for item in items %}<li style='display:none' data-date="{{row.strftime("%Y%m%d")}}" data-bullet="{{item | replace(" ", "-") }}">{{item}}</li>\n{% endfor %}</ul>{% endfor %}\n
+            """<h3 data-date="{{week_start_date}}" style='display:none'> Week {{ week }}</h3>{% for row in dates %}\n<h4 data-date="{{row.strftime("%Y-%m-%d")}}" style='display:none'>{{row.strftime("%a %b %d")}}</h4>\n<ul data-date="{{row.strftime("%Y-%m-%d")}}" style='display:none'>\n{% for item in items %}<li style='display:none' data-date="{{row.strftime("%Y-%m-%d")}}" data-bullet="{{item | replace(" ", "-") }}">{{item}}</li>\n{% endfor %}</ul>{% endfor %}\n
                             """
         )
         weeks.sort(reverse=True)
