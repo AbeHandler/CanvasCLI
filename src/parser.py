@@ -40,7 +40,6 @@ def get_args():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(help='sub-command help')
 
-    parser.add_argument("assignment", action="store_true", default=False)
 
     parser.add_argument(
         "-date",
@@ -49,7 +48,9 @@ def get_args():
         help="pass a date in YYYYMMDD for the date, e.g. 20200824",
     )
 
-    parser.add_argument("export", action="store_true", default=False)
+    parser.add_argument("-export", 
+                         action="store_true",
+                         default=False)
 
     parser.add_argument(
         "-init",
