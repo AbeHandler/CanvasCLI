@@ -16,7 +16,7 @@ class Assignment(object):
 
 
     def __init__(self, course, assignment_id):
-        self.assignment = course.get_assignment(assignment_id)
+        self.assignment = course.get_assignment_by_id(assignment_id)
         self.full_credit = self.assignment.points_possible
 
     def get_submissions(self, students: List[Student]):
@@ -34,29 +34,6 @@ class Assignment(object):
             else:
                 sys.stderr.write(f"[*] Error on {submission}")
         return out
-
-
-    def grade_based_on_participation(self):
-        '''
-        - Assign full credit to everyone who submitted
-        - Assign zeros to students who did not submit
-        '''
-
-        submissions = self.get_submissions()
-
-        for submission in tqdm(submissions):
-            if submission.missing:
-                submission.submission.edit(
-                    submission={"posted_grade": 0},
-                    comment={"text_comment": "no submission"},
-                )
-            else:
-                submission.edit(
-                    submission={"posted_grade": self.full_credit},
-                    comment={"text_comment": "Full credit"},
-                )
-        print(f"[*] Graded {len(submissions)} based on participation")
-
 
     def _validate_get_submissions(self, students):
         for student in students:
@@ -97,8 +74,7 @@ if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
     config = Config(path)
     api = get_api()
+    from src.course import Course
     course = Course(config=config, api=api)
     assignment = Assignment(course=course,
-                            assignment_id=1607592)
-
-    assignment.grade_based_on_participation()
+                            assignment_id=1611615)

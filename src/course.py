@@ -27,6 +27,9 @@ class Course(object):
         """This will create a course backup on Canvas"""
         self.course.export_content(export_type="common_cartridge")
 
+    def get_assignment_by_id(self, assignment_id: int):
+        return self.course.get_assignment(assignment_id)
+
     def get_assignment_group(self, assignment_group: str):
         self._validate_assignment_group(assignment_group)
         return self.assigment_groups[assignment_group]
