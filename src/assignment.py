@@ -10,7 +10,6 @@ from datetime import datetime
 from tqdm import tqdm as tqdm
 from typing import List
 from src.student import Student
-from src.submission import Submission
 from tqdm import tqdm as tqdm
 
 class Assignment(object):
@@ -20,17 +19,18 @@ class Assignment(object):
         self.assignment = course.get_assignment(assignment_id)
         self.full_credit = self.assignment.points_possible
 
-    def get_submissions(self, students: List[Student]) -> List[Submission]:
+    def get_submissions(self, students: List[Student]):
         submissions = [j for j in self.assignment.get_submissions()]
         
         out = []
         self._validate_get_submissions(students)
         for submission in submissions:
+
             student = [student for student in students if student.canvas_id == submission.user_id]
             if len(student) == 1:
                 student = student[0]
-                out.append(Submission(student=student,
-                                      submission=submission))
+                submission.student = student
+                out.append(submission)
             else:
                 sys.stderr.write(f"[*] Error on {submission}")
         return out
@@ -45,13 +45,13 @@ class Assignment(object):
         submissions = self.get_submissions()
 
         for submission in tqdm(submissions):
-            if submission.submission.missing:
+            if submission.missing:
                 submission.submission.edit(
                     submission={"posted_grade": 0},
                     comment={"text_comment": "no submission"},
                 )
             else:
-                submission.submission.edit(
+                submission.edit(
                     submission={"posted_grade": self.full_credit},
                     comment={"text_comment": "Full credit"},
                 )
