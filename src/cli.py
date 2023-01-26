@@ -49,72 +49,6 @@ from canvasapi.exceptions import CanvasException
 from canvasapi.paginated_list import PaginatedList
 
 
-def link_url_for_in_class_assignment(assignment, course, main_page, due):
-
-    assignment_id = assignment.id
-    course_id = course.id
-    template = "https://canvas.colorado.edu/courses/{}/assignments/{}"
-    assignment_url = template.format(course_id, assignment_id)
-
-    canvas_page = course.get_page(main_page)
-    html = canvas_page.body
-    soup = BeautifulSoup(html, features="html.parser")
-
-    # data-date="20210924"
-
-    results = soup.findAll(
-        "li", {"data-date": due, "data-bullet": "in-class-assignment"}
-    )
-
-    assert len(results) == 1
-
-    for a in results:
-        a.string = ""
-        p = soup.new_tag("a", href=assignment_url)
-        p.string = "in-class assignment"
-        a.append(p)
-
-    html = str(soup)
-    canvas_page.edit(wiki_page={"body": html})
-
-
-def create_in_class_assignment(
-    courseNo, due, name=None, points=3, published=False, group_id=166877
-):
-
-    # to find assignment groups ids do: https://canvas.colorado.edu/api/v1/courses/70073/assignment_groups
-
-    course = canvas.get_course(CUnum2canvasnum[courseNo])
-
-    due = datetime.strptime(due, "%Y%m%d")
-
-    print("[*] Creating in-class assignment {} for {}".format(courseNo, due))
-
-    if name is None:
-        name = due.strftime("%b %d") + " : in-class"
-
-    description = "Use this link to turn in your in-class work. You will be graded based on participation. You are NOT expected to work on this outside of class."
-
-    group_id = get_in_class_assignment_group(course)
-
-    new_assignment = course.create_assignment(
-        {
-            "name": name,
-            "published": published,
-            "due_at": due.strftime("%Y-%m-%d") + "T23:59:00",
-            "points_possible": points,
-            "description": description,
-            "assignment_group_id": group_id.id,
-            "submission_types": ["online_upload", "online_text_entry"],
-        }
-    )
-
-    print("   - Added assignment to {}".format(course.name))
-    print("   - {} ".format(name))
-
-    return new_assignment
-
-
 
 def get_course_from_ini(path_to_ini: str = "/Users/abe/CanvasCLI/3220S2023.ini"):
     '''
@@ -140,6 +74,7 @@ if __name__ == "__main__":
     course = get_course_from_ini(PATH_TO_INI)
 
     print(args)
+    import os; os._exit(0)
 
     if args.init:
         initializer = Initializer(config=config, api=api)

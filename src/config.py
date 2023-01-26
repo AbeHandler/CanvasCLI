@@ -35,6 +35,8 @@ class Config(object):
         self.submitted_location = Path(config["course_info"]["submitted_location"])
         self.path_to_autograded = Path(config["course_info"]["path_to_autograded"])
         self.path_to_autograde_script = Path(config["course_info"]["path_to_autograde_script"])
+        self.front_page_date_tag_in_html = config["course_info"]["front_page_date_tag_in_html"]
+        self.data_bullet_tag_in_html = config['course_info']["data_bullet_tag_in_html"]
         groups = config['assignment_configs']['groups'].split(",")
         weights = config['assignment_configs']['weights'].split(",")
         self.group2weight = {k: v for k, v in zip(groups, weights)}

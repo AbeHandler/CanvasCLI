@@ -24,6 +24,24 @@ class Week(Enum):
     SUN = 6
 
 
+def isb4(self, input_date):
+    """
+    Returns a function, f: date -> bool
+    that is true if its input is less than or equal to input_date
+    Used for a lambda in bs4
+    """
+    input_date = datetime.strptime(input_date, DATE_FORMAT)
+
+    def hidden(t):
+        if "data-date" not in t.attrs:
+            return False
+        if datetime.strptime(t.attrs["data-date"], "%Y%m%d") <= input_date:
+            return True
+        else:
+            return False
+
+    return hidden
+
 def get_tomorrow():
     day = date.today()
     day += timedelta(days=1)
