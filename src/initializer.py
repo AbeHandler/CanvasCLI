@@ -1,4 +1,6 @@
-
+'''
+Handles initialization for a course
+'''
 from pathlib import Path
 from src.config import Config
 from src.api import get_api
@@ -37,7 +39,6 @@ class Initializer(object):
         self.course.update(course={"default_view": "wiki"})
 
 
-
     def init_groups(self):
 
         for name, weight in self.config.group2weight.items():
@@ -58,7 +59,7 @@ class Initializer(object):
         weeks = list(weeks2dates.keys())
 
         template = Template(
-            """<h3 data-date="{{week_start_date}}" style='display:none'> Week {{ week }}</h3>{% for row in dates %}\n<h4 data-date="{{row.strftime("%Y%m%d")}}" style='display:none'>{{row.strftime("%a %b %d")}}</h4>\n<ul data-date="{{row.strftime("%Y%m%d")}}" style='display:none'>\n{% for item in items %}<li style='display:none' data-date="{{row.strftime("%Y%m%d")}}" data-bullet="{{item | replace(" ", "-") }}">{{item}}</li>\n{% endfor %}</ul>{% endfor %}\n
+            """<h3 data-date="{{week_start_date}}" style='display:none'> Week {{ week }}</h3>{% for row in dates %}\n<h4 data-date="{{row.strftime("%Y-%m-%d")}}" style='display:none'>{{row.strftime("%a %b %d")}}</h4>\n<ul data-date="{{row.strftime("%Y-%m-%d")}}" style='display:none'>\n{% for item in items %}<li style='display:none' data-date="{{row.strftime("%Y-%m-%d")}}" data-bullet="{{item | replace(" ", "-") }}">{{item}}</li>\n{% endfor %}</ul>{% endfor %}\n
                             """
         )
         weeks.sort(reverse=True)
@@ -69,13 +70,7 @@ class Initializer(object):
             dates = weeks2dates[week]
             dates.sort(reverse=True)
             dates = [d for d in dates]
-            bullets = [
-                "in-class code",
-                "whiteboards",
-                "recording",
-                "in-class assignment",
-                "quiz",
-            ]
+            bullets = config.daily_bullets
 
             week_start_date = dates[-1].strftime(STANDARDDATE)
             out = out + template.render(

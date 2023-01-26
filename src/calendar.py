@@ -1,3 +1,7 @@
+'''
+Handles logic for reasoning about dates, which is very common
+'''
+
 from enum import Enum
 from pathlib import Path
 from src.config import Config
@@ -9,8 +13,6 @@ from typing import Dict
 from collections import defaultdict
 
 
-STANDARDDATE = "%Y%m%d"
-
 # class syntax
 class Week(Enum):
     MON = 0
@@ -20,6 +22,30 @@ class Week(Enum):
     FRI = 4
     SAT = 5
     SUN = 6
+
+
+def isb4(self, input_date):
+    """
+    Returns a function, f: date -> bool
+    that is true if its input is less than or equal to input_date
+    Used for a lambda in bs4
+    """
+    input_date = datetime.strptime(input_date, DATE_FORMAT)
+
+    def hidden(t):
+        if "data-date" not in t.attrs:
+            return False
+        if datetime.strptime(t.attrs["data-date"], "%Y%m%d") <= input_date:
+            return True
+        else:
+            return False
+
+    return hidden
+
+def get_tomorrow():
+    day = date.today()
+    day += timedelta(days=1)
+    return day.strftime("%Y%m%d")
 
 
 def get_weeks2dates(dates_for_course):
@@ -45,7 +71,7 @@ def get_dates_for_course(config: Config) -> List[Dict]:
 
     dates_for_course = []
 
-    week = 0
+    week = 1 # weeks start at 1, b/c it is for people (and is displayed in HTML)
 
     days_of_week = [Week[i].value for i in config.days_of_week]
 

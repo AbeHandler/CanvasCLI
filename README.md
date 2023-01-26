@@ -1,5 +1,10 @@
 A canvas CLI. Use the `-c` flag to run a command for a particular course (using the CU name)
 
+
+#### Download all assignment files and run autograder
+
+`python -m src.cli assignment -cn 'Week 01 Assignment' -download -nbn "one" -autograde`
+
 #### Setup 
 
 1. `pip install canvasapi`
