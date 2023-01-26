@@ -40,9 +40,9 @@ class FrontPage(object):
 
     def update_link(self, date, bullet_text, assignment_url):
 
-        a = self.get_data_bullet(date, bullet_text, url)
+        a = self.get_data_bullet(date, bullet_text)
         a.string = ""
-        p = soup.new_tag("a", href=assignment_url)
+        p = self.soup.new_tag("a", href=assignment_url)
         p.string = bullet_text
         a.append(p)
         html = str(self.soup)
@@ -71,4 +71,6 @@ if __name__ == "__main__":
     api = get_api()
     course = Course(config=config, api=api)
     fp = FrontPage(course)
-    print(fp.get_data_bullet(date="20230126", bullet_text="interview"))
+    fp.update_link(date="20230131",
+                   bullet_text="interview", 
+                   assignment_url="https://www.nytimes.com/")
