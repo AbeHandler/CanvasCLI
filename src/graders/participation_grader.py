@@ -39,11 +39,10 @@ class ParticipationGrader(object):
 
         for submission in tqdm(submissions):
             if submission.missing:
-                pass
-                #submission.submission.edit(
-                #    submission={"posted_grade": 0},
-                #    comment={"text_comment": "no submission"},
-                #)
+                grade = Grade(score=0, comments=["No submission"])
+                submission = GradedSubmission(student=submission.student,
+                                              submission=submission,
+                                              grade=grade)
             else:
                 grade = Grade(score=self.assignment.full_credit, comments=["Full credit"])
                 submission = GradedSubmission(student=submission.student,
@@ -61,7 +60,7 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
 
     assignment = Assignment(course=course,
-                            assignment_id=1619952)
+                            assignment_id=1620586)
 
     participation_grader = ParticipationGrader(course, assignment)
     participation_grader.grade_based_on_participation()
