@@ -104,7 +104,6 @@ if __name__ == "__main__":
         if args.autograde_assignment:
             nb_grader = NBGraderManager(course.config)
             nb_grader.run()
-        os._exit(0)
 
     if args.export:
         id_ = course.lookup_assignment_id("Exercises", 'Week 01 Assignment')

@@ -46,8 +46,8 @@ class Assignment(object):
                              students: List[Student],
                              expected_suffix: str = ".ipynb",
                              assignment_name: str = "one",
-                             cannonical_file_name: str = "one.ipynb",
-                             download_location: Path = "/Users/abe/everything/teaching/S2023/3220/3220"):
+                             download_location: Path = "/Users/abe/everything/teaching/S2023/3220/3220",
+                             cannonical_file_name = None):
         '''
         - Download submissions that have the expected_suffix to download_location
         - Skip attachments that do not have the expected_suffix, and print alert
@@ -55,9 +55,11 @@ class Assignment(object):
         '''
         p = Path(download_location)
         p.mkdir(parents=True, exist_ok=True)
-        sys.stderr.write(f"[*] Downloading to {p.as_posix()}")     
+        print(f"[*] Downloading to {p.as_posix()}")     
         submissions = self.get_submissions(students)
         total_downloaded = 0
+        if cannonical_file_name is None:
+            cannonical_file_name = f"{assignment_name}.ipynb"
         for submission in tqdm(submissions):
             attachments = submission.attachments
             attachments.sort(key = lambda x: x.updated_at_date, reverse=True)
@@ -70,7 +72,7 @@ class Assignment(object):
                     total_downloaded += 1
                 else:
                     print(f"[*] not sure about student {submission.student.name}, skipping")
-        sys.stderr.write(f"[*] Downloaded {total_downloaded}")      
+        print(f"[*] Downloaded {total_downloaded}")      
             
 
 if __name__ == "__main__":
