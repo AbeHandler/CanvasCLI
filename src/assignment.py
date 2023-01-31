@@ -16,8 +16,10 @@ class Assignment(object):
 
 
     def __init__(self, course, assignment_id):
-        self.assignment = course.get_assignment_by_id(assignment_id)
+        self.assignment = course.get_assignment(assignment_id)
         self.full_credit = self.assignment.points_possible
+        self.name = self.assignment.name
+        self.id = self.assignment.id # the canvas id
 
     def get_submissions(self, students: List[Student]):
         submissions = [j for j in self.assignment.get_submissions()]
@@ -53,6 +55,7 @@ class Assignment(object):
         '''
         p = Path(download_location)
         p.mkdir(parents=True, exist_ok=True)
+        sys.stderr.write(f"[*] Downloading to {p.as_posix()}")     
         submissions = self.get_submissions(students)
         total_downloaded = 0
         for submission in tqdm(submissions):
@@ -67,7 +70,7 @@ class Assignment(object):
                     total_downloaded += 1
                 else:
                     print(f"[*] not sure about student {submission.student.name}, skipping")
-        print(f"[*] Downloaded {total_downloaded}")      
+        sys.stderr.write(f"[*] Downloaded {total_downloaded}")      
             
 
 if __name__ == "__main__":

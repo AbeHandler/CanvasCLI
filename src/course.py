@@ -37,8 +37,11 @@ class Course(object):
     def get_assignments_in_group(self, assignment_group: str) -> List[Assignment]:
         group_id = self.get_assignment_group(assignment_group)
         out = []
-        for j in self.course.get_assignments_for_group(group_id):
-            assignment = Assignment(course=self.course, assignment_id=j.id)
+        canvas_assignments = [_ for _ in self.course.get_assignments_for_group(group_id)]
+        for canvas_assignment in canvas_assignments:
+            canvas_id = canvas_assignment.id
+            assignment = Assignment(course=self.course,
+                                    assignment_id=canvas_assignment.id)
             out.append(assignment)
         return out
 

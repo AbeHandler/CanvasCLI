@@ -93,16 +93,15 @@ if __name__ == "__main__":
     if args.export:
         course.export()
 
-    if args.assignment:
+    if args.download_assignment:
         id_ = course.lookup_assignment_id(args.group, args.canvas_name)
-        assignment = Assignment(course=course, assignment_id=id_)
+        assignment = Assignment(course=course.course, assignment_id=id_)
         students = course.get_students()
 
-        if args.download:
-            assignment.download_submissions(students, 
-                                            download_location=course.config.submitted_location,
-                                            assignment_name=args.nb_grader_name)
-        if args.autograde:
+        assignment.download_submissions(students, 
+                                        download_location=course.config.submitted_location,
+                                        assignment_name=args.nb_grader_name)
+        if args.autograde_assignment:
             nb_grader = NBGraderManager(course.config)
             nb_grader.run()
         os._exit(0)
