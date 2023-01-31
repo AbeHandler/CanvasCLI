@@ -1,3 +1,6 @@
+#### Make tomorrow's class visible on Canvas
+
+`python -m src.cli -v -t`
 
 #### Download all assignment files and run autograder
 
