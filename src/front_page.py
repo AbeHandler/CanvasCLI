@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup, Tag
 from datetime import datetime
 from datetime import date
 from src.calendar import isb4
+from src.vars import DATE_FORMAT
 
 class FrontPage(object):
     '''
@@ -52,17 +53,17 @@ class FrontPage(object):
     def show_before_date(self, threshold: str="20210315"):
         """update a page to show elements w/ data-date before some input date"""
 
-        for header in self.soup.findAll(self._isb4(threshold)):
+        for header in self.soup.findAll(isb4(threshold)):
             if header.name == "li":
                 header["style"] = "display:list-item"
             else:
                 header["style"] = "display:block"
 
-        html = str(soup)
+        html = str(self.soup)
 
         print("- Updating {} page to show before {}".format(self.course.course_name, threshold))
 
-        canvas_page.edit(wiki_page={"body": html})
+        self.canvas_page.edit(wiki_page={"body": html})
 
 
 if __name__ == "__main__":

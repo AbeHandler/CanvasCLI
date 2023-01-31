@@ -73,9 +73,6 @@ if __name__ == "__main__":
 
     course = get_course_from_ini(PATH_TO_INI)
 
-    print(args)
-    import os; os._exit(0)
-
     if args.init:
         initializer = Initializer(config=config, api=api)
         os._exit(0)

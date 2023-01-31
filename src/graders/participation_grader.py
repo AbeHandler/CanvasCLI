@@ -60,7 +60,7 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
 
     assignment = Assignment(course=course,
-                            assignment_id=1620586)
+                            assignment_id=1620589)
 
     participation_grader = ParticipationGrader(course, assignment)
     participation_grader.grade_based_on_participation()

@@ -11,6 +11,7 @@ from copy import copy
 from typing import List
 from typing import Dict
 from collections import defaultdict
+from src.vars import DATE_FORMAT
 
 
 # class syntax
@@ -24,7 +25,7 @@ class Week(Enum):
     SUN = 6
 
 
-def isb4(self, input_date):
+def isb4(input_date):
     """
     Returns a function, f: date -> bool
     that is true if its input is less than or equal to input_date

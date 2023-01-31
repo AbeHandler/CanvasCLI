@@ -77,4 +77,4 @@ if __name__ == "__main__":
     from src.course import Course
     course = Course(config=config, api=api)
     assignment = Assignment(course=course,
-                            assignment_id=1611615)
+                            assignment_id=1620589)
