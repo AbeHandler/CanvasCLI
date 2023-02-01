@@ -1,23 +1,23 @@
-
+'''
+Stuff for managing assignments that is the assignment itself
+'''
 from typing import List
 from src.config import Config
 from datetime import datetime
 from canvasapi.canvas import Canvas
 from pathlib import Path
 from src.api import get_api
+from src.course import Course
 from datetime import timedelta
 from src.course import Course
 from datetime import datetime
 
 class AssignmentManager(object):
 
-    def __init__(self,
-                 config: Config, 
-                 api: Canvas, 
-                 assignment_groups: dict):
-        self.config = config
-        self.course = api.get_course(config.canvas_no)
-        self.assignment_groups = assignment_groups
+    def __init__(self, course: Course):
+        self.course = course
+        self.config = course.config
+        self.assignment_groups = course.assigment_groups
 
     def get_no_submissions(assignment) -> List:
         """
@@ -43,7 +43,7 @@ class AssignmentManager(object):
         if title is None:
             title = group + " " + duedate.strftime("%b %d")
 
-        self.course.create_assignment(
+        self.course.course.create_assignment(
                 {
                     "name": title,
                     "published": False,
@@ -72,7 +72,7 @@ class AssignmentManager(object):
             due_at = date_counter.strftime("%Y-%m-%d") + "T11:20:00"
             unlock_at = (date_counter - timedelta(days=7)).strftime("%Y-%m-%d") + "T11:00:00"
 
-            self.course.create_assignment(
+            self.course.course.create_assignment(
                 {
                     "name": title,
                     "published": False,
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
     groups = course.get_assignment_groups()
 
-    manager = AssignmentManager(config, api, groups)
+    manager = AssignmentManager(course)
 
     manager.create_assignment(datetime(2023, 1, 17), group = "Interview grading")
 

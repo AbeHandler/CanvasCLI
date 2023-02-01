@@ -38,11 +38,14 @@ from src.parser import get_day
 from src.quiz_manager import QuizManager
 from src.config import Config
 from pathlib import Path
+from src.vars import DATE_FORMAT
+from src.assignment_manager import AssignmentManager
 from src.course import Course
 from src.front_page import FrontPage
 from collections import defaultdict
 from datetime import datetime
 from datetime import date
+from src.graders.participation_grader import ParticipationGrader
 from src.nb_grader_manager import NBGraderManager
 from src.assignment import Assignment
 from canvasapi.exceptions import CanvasException
@@ -73,6 +76,12 @@ if __name__ == "__main__":
 
     course = get_course_from_ini(PATH_TO_INI)
 
+    if args.command == "grade" and args.grade_participation:
+        assert args.assignment_id is not None, "You must supply an assignment id to grade participation"
+        assignment = Assignment(course=course, assignment_id=args.assignment_id)
+        grader = ParticipationGrader(assignment=assignment, course=course)
+        grader.grade_based_on_participation()
+
     if args.init:
         initializer = Initializer(config=config, api=api)
         os._exit(0)
@@ -93,7 +102,16 @@ if __name__ == "__main__":
     if args.export:
         course.export()
 
-    if args.download_assignment:
+    if args.command == "assignment" and args.participation_assignment:
+        manager = AssignmentManager(course)
+        day = get_day(args)
+
+        day = datetime.strptime(day, DATE_FORMAT)
+        manager.create_assignment(day, group = "In-class coding")
+        dt = day.strftime('"%B %d')
+        print(f"[*] Created assignment {dt}")
+
+    if args.command == "assignment" and args.download_assignment:
         id_ = course.lookup_assignment_id(args.group, args.canvas_name)
         assignment = Assignment(course=course.course, assignment_id=id_)
         students = course.get_students()
@@ -112,3 +130,6 @@ if __name__ == "__main__":
         assignment.download_submissions(students, 
                                         download_location='',
                                         assignment_name="one")
+
+    if args.curve:
+        print(course.get_average_grade())

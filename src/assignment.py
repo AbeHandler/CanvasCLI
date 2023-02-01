@@ -15,8 +15,8 @@ from tqdm import tqdm as tqdm
 class Assignment(object):
 
 
-    def __init__(self, course, assignment_id):
-        self.assignment = course.get_assignment(assignment_id)
+    def __init__(self, course, assignment_id: int):
+        self.assignment = course.course.get_assignment(assignment_id)
         self.full_credit = self.assignment.points_possible
         self.name = self.assignment.name
         self.id = self.assignment.id # the canvas id

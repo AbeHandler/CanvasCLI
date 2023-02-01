@@ -6,6 +6,10 @@
 
 `python -m src.cli assignment -cn 'Week 01 Assignment' -download -nbn "one" -autograde`
 
+#### Grade in-class assignment based on participation
+
+`python -m  src.cli grade -participation -assignment_id 1623528`  where 1623528 is Canvas assignment ID
+
 #### Setup 
 
 1. `pip install canvasapi`

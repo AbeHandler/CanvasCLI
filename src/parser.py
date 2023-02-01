@@ -35,11 +35,11 @@ def get_day(args) -> str:
 
     return day.strftime(DATE_FORMAT)
 
+
 def get_args():
 
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(help='sub-command help')
-
+    subparsers = parser.add_subparsers(help='sub-command help', dest='command')
 
     parser.add_argument(
         "-date",
@@ -98,12 +98,24 @@ def get_args():
         help="Use to make a quiz"
     )
 
+
+    parser.add_argument(
+        "-curve",default=False,action="store_true"
+    )
+
+    parser_a = subparsers.add_parser('grade', help='a help')
+    parser_a.add_argument("-participation", action="store_true", default=False, dest="grade_participation")
+    parser_a.add_argument("-assignment_id", dest="assignment_id", type=int)
+
+
+
     parser_a = subparsers.add_parser('assignment', help='a help')
     parser_a.add_argument("-download", action="store_true", default=False, dest="download_assignment", help="Download assignment files")
     parser_a.add_argument("-canvas_name", '-cn', help="Canvas name for assignment")
     parser_a.add_argument("-nb_grader_name", '-nbn', help="Name in nb_grader")
     parser_a.add_argument("-g", '-group', "--group", default="Exercises", help="Canvas group")
     parser_a.add_argument("-autograde", action="store_true", default=False, dest="autograde_assignment", help="Run the nb_grader autograder")
+    parser_a.add_argument("-participation",  action="store_true", default=False, dest="participation_assignment")
 
     args = parser.parse_args()
 
