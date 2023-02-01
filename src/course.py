@@ -78,7 +78,7 @@ class Course(object):
         oppoesed to grades on all assignments in class
         '''
         grades = []
-        enollments = course.course.get_enrollments()
+        enollments = self.course.get_enrollments()
         for ino, i in enumerate(enollments):
             try:
                 grade = i.grades["current_grade"]
