@@ -15,6 +15,7 @@ class Course(object):
         self.course = api.get_course(config.canvas_no)
         self.course_name = config.course_name
         self.assigment_groups = {i.name: i.id for i in self.course.get_assignment_groups()}
+        self.students = None
 
     def get_front_page(self):
         '''The main page always has the course_name'''
@@ -117,6 +118,11 @@ class Course(object):
                               cu_id=cu_id)
             students.append(student)
         return students
+
+    def lookup_student_by_cu_id(self, cu_id: str):
+        if self.students is None:
+            self.students = self.get_students()
+        return next(i for i in self.students if i.cu_id == cu_id)
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
