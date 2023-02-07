@@ -1,4 +1,5 @@
 import sys
+import shutil
 from typing import List
 from src.config import Config
 from datetime import datetime
@@ -14,8 +15,8 @@ from tqdm import tqdm as tqdm
 
 class Assignment(object):
 
-
     def __init__(self, course, assignment_id: int):
+        self._validate_init(course)
         self.assignment = course.course.get_assignment(assignment_id)
         self.full_credit = self.assignment.points_possible
         self.name = self.assignment.name
@@ -42,6 +43,15 @@ class Assignment(object):
             assert type(student) == Student, str(student)
 
 
+    def _get_data_files(self, download_location, assignment_name) -> List[Path]:
+        source_path = Path(download_location) / "source" / assignment_name
+        source_path = source_path.as_posix()
+        source_path = Path(source_path.replace("submitted/", ""))
+        csvs = [j for j in source_path.glob('*.csv')]
+        jsonls = [j for j in source_path.glob('*.jsonl')]
+        data_files = csvs + jsonls
+        return data_files
+
     def download_submissions(self,
                              students: List[Student],
                              expected_suffix: str = ".ipynb",
@@ -58,6 +68,10 @@ class Assignment(object):
         print(f"[*] Downloading to {p.as_posix()}")     
         submissions = self.get_submissions(students)
         total_downloaded = 0
+
+        # many assignments have data files attached. These need to get copied over
+        data_files = self._get_data_files(download_location, assignment_name)
+
         if cannonical_file_name is None:
             cannonical_file_name = f"{assignment_name}.ipynb"
         for submission in tqdm(submissions):
@@ -72,8 +86,16 @@ class Assignment(object):
                     total_downloaded += 1
                 else:
                     print(f"[*] not sure about student {submission.student.name}, skipping")
-        print(f"[*] Downloaded {total_downloaded}")      
-            
+                for data_file in data_files:
+                    copied_file = download_to / data_file.name
+                    print(data_file, copied_file)
+                    shutil.copy(data_file, copied_file) 
+        print(f"[*] Downloaded {total_downloaded} to {p.as_posix()}")
+
+    def _validate_init(self, course):
+        from canvasapi.course import Course
+        if type(course) == Course:
+            raise ValueError("Expected input of type src.course.Course not canvasapi.course.Course It's confusing.")
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")

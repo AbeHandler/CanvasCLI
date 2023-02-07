@@ -113,23 +113,17 @@ if __name__ == "__main__":
 
     if args.command == "assignment" and args.download_assignment:
         id_ = course.lookup_assignment_id(args.group, args.canvas_name)
-        assignment = Assignment(course=course.course, assignment_id=id_)
+        assignment = Assignment(course=course, assignment_id=id_)
         students = course.get_students()
+
 
         assignment.download_submissions(students, 
                                         download_location=course.config.submitted_location,
                                         assignment_name=args.nb_grader_name)
-        if args.autograde_assignment:
-            nb_grader = NBGraderManager(course.config)
-            nb_grader.run()
 
-    if args.export:
-        id_ = course.lookup_assignment_id("Exercises", 'Week 01 Assignment')
-        assignment = Assignment(course=course, assignment_id=id_)
-        students = course.get_students()
-        assignment.download_submissions(students, 
-                                        download_location='',
-                                        assignment_name="one")
+        if args.autograde_assignment:
+            nb_grader = NBGraderManager(course.config, args.nb_grader_name)
+            nb_grader.run()
 
     if args.curve:
         print(course.get_average_grade())

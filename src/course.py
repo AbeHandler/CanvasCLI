@@ -40,7 +40,7 @@ class Course(object):
         canvas_assignments = [_ for _ in self.course.get_assignments_for_group(group_id)]
         for canvas_assignment in canvas_assignments:
             canvas_id = canvas_assignment.id
-            assignment = Assignment(course=self.course,
+            assignment = Assignment(course=self,
                                     assignment_id=canvas_assignment.id)
             out.append(assignment)
         return out

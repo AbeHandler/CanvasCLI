@@ -6,13 +6,13 @@ import os
 import sys
 
 
-class NBGraderManager():
+class NBGraderManager(object):
     '''
     Python code to manage interactions with NBGrader
     '''
     def __init__(self, 
                  config: Config,
-                 nb_grader_assignment_name: str = "one"):
+                 nb_grader_assignment_name: str):
         '''
         Initializes the manager
 
