@@ -10,6 +10,14 @@
 
 `python -m  src.cli grade -participation -assignment_id 1623528`  where 1623528 is Canvas assignment ID
 
+#### Make an in-class participation assignment for tomorrow
+
+`python -m src.cli -t assignment -participation`
+
+#### Make a quiz for tomorrow
+
+`python -m src.cli -t -quiz`
+
 #### Setup 
 
 1. `pip install canvasapi`

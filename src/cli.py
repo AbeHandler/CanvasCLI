@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
         day = datetime.strptime(day, DATE_FORMAT)
         manager.create_assignment(day, group = "In-class coding")
-        dt = day.strftime('"%B %d')
+        dt = day.strftime('%B %d')
         print(f"[*] Created assignment {dt}")
 
     if args.command == "assignment" and args.download_assignment:
