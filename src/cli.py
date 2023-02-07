@@ -107,7 +107,7 @@ if __name__ == "__main__":
         day = get_day(args)
 
         day = datetime.strptime(day, DATE_FORMAT)
-        manager.create_assignment(day, group = "In-class coding")
+        manager.create_assignment(day, group = "In-class coding", points_possible = 1)
         dt = day.strftime('%B %d')
         print(f"[*] Created assignment {dt}")
 
