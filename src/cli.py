@@ -127,3 +127,10 @@ if __name__ == "__main__":
 
     if args.curve:
         print(course.get_average_grade())
+
+    if args.checkin:
+        avg = course.get_average_grade()
+        print("Average grade {:.2f}".format(avg))
+        assignments = course.get_ungraded_assignments_in_group("In-class coding")
+        for _ in assignments:
+            print(_)

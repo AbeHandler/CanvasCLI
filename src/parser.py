@@ -100,6 +100,15 @@ def get_args():
 
 
     parser.add_argument(
+        "-checkin",
+        "-c",
+        dest="checkin",
+        default=False,
+        action="store_true",
+        help="Do a check in for the class"
+    )
+
+    parser.add_argument(
         "-curve",default=False,action="store_true"
     )
 

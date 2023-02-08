@@ -5,7 +5,7 @@ from src.api import get_api
 from src.student import Student
 from src.grade_enum import LetterGrade
 from typing import List
-
+from datetime import date
 from src.assignment import Assignment
 
 class Course(object):
@@ -123,6 +123,13 @@ class Course(object):
         if self.students is None:
             self.students = self.get_students()
         return next(i for i in self.students if i.cu_id == cu_id)
+
+    def get_ungraded_assignments_in_group(self, days: int = 7, group: str = "In-class coding"):
+
+        assignments = self.get_assignments_in_group(group)
+        ungraded = [_ for _ in assignments if not _.graded_submissions_exist]
+        return ungraded
+        
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")

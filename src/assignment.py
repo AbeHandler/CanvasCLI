@@ -1,5 +1,7 @@
 import sys
 import shutil
+from datetime import datetime
+from datetime import timedelta
 from typing import List
 from src.config import Config
 from datetime import datetime
@@ -15,12 +17,21 @@ from tqdm import tqdm as tqdm
 
 class Assignment(object):
 
+
+    def __str__(self):
+        return f"{self.name}: {self.id}, due={self.due_at}"
+
     def __init__(self, course, assignment_id: int):
         self._validate_init(course)
         self.assignment = course.course.get_assignment(assignment_id)
+        self.name = self.assignment.name
         self.full_credit = self.assignment.points_possible
         self.name = self.assignment.name
         self.id = self.assignment.id # the canvas id
+
+        # the Z on the end means zero time zone aka utz, -7 to get Denver time
+        self.due_at = datetime.strptime(self.assignment.due_at, '%Y-%m-%dT%H:%M:%SZ') - timedelta(hours=7)
+        self.graded_submissions_exist = self.assignment.graded_submissions_exist
 
     def get_submissions(self, students: List[Student]):
         submissions = [j for j in self.assignment.get_submissions()]
