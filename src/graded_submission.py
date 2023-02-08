@@ -19,3 +19,6 @@ class GradedSubmission(object):
     def sync(self):
         self.submission.edit(submission={"posted_grade": self.grade.score},
                              comment={"text_comment": "\n".join(self.grade.comments)})
+
+    def add_attachment(self, filename: str):
+        self.submission.upload_comment(filename)
