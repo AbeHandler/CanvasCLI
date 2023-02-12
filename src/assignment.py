@@ -14,6 +14,7 @@ from tqdm import tqdm as tqdm
 from typing import List
 from src.student import Student
 from tqdm import tqdm as tqdm
+from canvasapi.exceptions import ResourceDoesNotExist
 
 class Assignment(object):
 
@@ -23,7 +24,10 @@ class Assignment(object):
 
     def __init__(self, course, assignment_id: int):
         self._validate_init(course)
-        self.assignment = course.course.get_assignment(assignment_id)
+        try:
+            self.assignment = course.course.get_assignment(assignment_id)
+        except ResourceDoesNotExist:
+            raise ValueError(f"There is no assignment with ID {assignment_id}. Did you maybe pass a student ID?")
         self.name = self.assignment.name
         self.full_credit = self.assignment.points_possible
         self.name = self.assignment.name
