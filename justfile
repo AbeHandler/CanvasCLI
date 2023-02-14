@@ -6,3 +6,6 @@ checkin:
 
 participation target:
   python -m  src.cli grade -participation -assignment_id {{target}}
+
+quiz target:
+  python -m src.cli {{target}} -quiz

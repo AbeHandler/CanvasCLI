@@ -35,6 +35,7 @@ class Assignment(object):
 
         # the Z on the end means zero time zone aka utz, -7 to get Denver time
         self.due_at = datetime.strptime(self.assignment.due_at, '%Y-%m-%dT%H:%M:%SZ') - timedelta(hours=7)
+
         self.graded_submissions_exist = self.assignment.graded_submissions_exist
 
     def get_submissions(self, students: List[Student]):
