@@ -9,3 +9,10 @@ participation target:
 
 quiz target:
   python -m src.cli {{target}} -quiz
+
+autograde canvas_name notebook_name:
+  python -m src.cli assignment -cn '{{canvas_name}}' -download -nbn '{{notebook_name}}' -autograde
+
+ta:
+  rsync -r /Users/abe/everything/teaching/S2023/3220/3220 /Users/abe/BAIM3220FeedbackReports -v --ignore-existing --include="*/" --include="*.html" --exclude="*" 
+  cd /Users/abe/CanvasCLI/3220reports
