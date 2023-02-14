@@ -54,11 +54,12 @@ class NBGrader(object):
     def grade_perfect_scores(self, assignment: str):
         perfects = self._get_perfect_scores(assignment)
         comments = ["Nice job", "Good work", "Great"]
-        shuffle(comments)
-        comment = comments[0]
+
         for perfect in tqdm(perfects, desc="Assigning perfect scores"):
             score = perfect["score"]
             cu_id = perfect['student_id']
+            shuffle(comments)
+            comment = comments[0]
             grade = Grade(score=score, comments=[comment])
             student = self.course.lookup_student_by_cu_id(cu_id)
             submission = self.assignment.assignment.get_submission(student.canvas_id)
@@ -66,6 +67,9 @@ class NBGrader(object):
                                           submission=submission,
                                           grade=grade)
             submission.sync()
+
+        nperfects = len(perfects)
+        print(f"[*] Graded {nperfects} perfects for assignment {assignment}")
  
     def grade_not_perfect_scores(self, assignment: str, min_score: int = 0):
         not_perfects = self._get_non_perfect_scores(assignment)

@@ -32,6 +32,7 @@ and aliasing it as "canvas"
 import argparse
 import glob
 import os
+from src.graders.nbgrader import NBGrader
 from src.api import get_api
 from src.parser import get_args
 from src.parser import get_day
@@ -101,6 +102,7 @@ if __name__ == "__main__":
 
     if args.export:
         course.export()
+        os._exit(0)
 
     if args.command == "assignment" and args.participation_assignment:
         manager = AssignmentManager(course)
@@ -110,8 +112,21 @@ if __name__ == "__main__":
         manager.create_assignment(day, group = "In-class coding", points_possible = 1)
         dt = day.strftime('%B %d')
         print(f"[*] Created assignment {dt}")
+        os._exit(0)
 
-    if args.command == "assignment" and args.download_assignment:
+    if args.command == "assignment" and args.assignment_sync:
+        
+        id_ = course.lookup_assignment_id(args.group, args.canvas_name)
+        grader = NBGrader(course=course,
+                          grades_location="/Users/abe/everything/teaching/S2023/3220/3220/grades.jsonl",
+                          assignment_id=id_,
+                          feedback_location="/Users/abe/everything/teaching/S2023/3220/3220/feedback")
+
+        if args.assignment_grade_perfects:
+            grader.grade_perfect_scores(assignment=args.nb_grader_name)
+            os._exit(0)
+
+    if args.command == "assignment" and args.assignment_autograde:
         id_ = course.lookup_assignment_id(args.group, args.canvas_name)
         assignment = Assignment(course=course, assignment_id=id_)
         students = course.get_students()
@@ -124,6 +139,8 @@ if __name__ == "__main__":
         if args.autograde_assignment:
             nb_grader = NBGraderManager(course.config, args.nb_grader_name)
             nb_grader.run()
+
+
 
     if args.curve:
         print(course.get_average_grade())

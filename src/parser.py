@@ -123,8 +123,12 @@ def get_args():
     parser_a.add_argument("-canvas_name", '-cn', help="Canvas name for assignment")
     parser_a.add_argument("-nb_grader_name", '-nbn', help="Name in nb_grader")
     parser_a.add_argument("-g", '-group', "--group", default="Exercises", help="Canvas group")
-    parser_a.add_argument("-autograde", action="store_true", default=False, dest="autograde_assignment", help="Run the nb_grader autograder")
+    parser_a.add_argument("-sync",  action="store_true", default=False, dest="assignment_sync", help="Assign grades on Canvas")
+    parser_a.add_argument("-autograde", action="store_true", default=False, dest="assignment_autograde", help="Run the nb_grader autograder")
     parser_a.add_argument("-participation",  action="store_true", default=False, dest="participation_assignment")
+    parser_a.add_argument('-perfects', action="store_true", default=False, dest="assignment_grade_perfects")
+
+
 
     args = parser.parse_args()
 
