@@ -130,7 +130,7 @@ class Course(object):
 
     def get_ungraded_assignments_in_group(self, days: int = 7, group: str = "In-class coding"):
 
-        assignments = self.get_assignments_in_group(group)
+        assignments = self.get_assignments_with_due_dates_in_group(group)
         ungraded = [_ for _ in assignments if not _.graded_submissions_exist]
         return ungraded
         

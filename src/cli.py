@@ -131,14 +131,13 @@ if __name__ == "__main__":
         assignment = Assignment(course=course, assignment_id=id_)
         students = course.get_students()
 
-
         assignment.download_submissions(students, 
                                         download_location=course.config.submitted_location,
                                         assignment_name=args.nb_grader_name)
 
-        if args.autograde_assignment:
-            nb_grader = NBGraderManager(course.config, args.nb_grader_name)
-            nb_grader.run()
+        nb_grader = NBGraderManager(course.config, args.nb_grader_name)
+        nb_grader.run()
+        os._exit(0)
 
 
 
