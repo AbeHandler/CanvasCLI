@@ -7,8 +7,8 @@ checkin:
 participation target:
   python -m  src.cli grade -participation -assignment_id {{target}}
 
-quiz target:
-  python -m src.cli {{target}} -quiz
+quiz day="":
+  python -m src.cli -q {{day}}
 
 autograde canvas_name notebook_name:
   python -m src.cli assignment -cn '{{canvas_name}}' -download -nbn '{{notebook_name}}' -autograde
