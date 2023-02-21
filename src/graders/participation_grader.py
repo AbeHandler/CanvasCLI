@@ -15,7 +15,7 @@ from tqdm import tqdm as tqdm
 from typing import List
 from src.student import Student
 from tqdm import tqdm as tqdm
-from src.graded_submission import GradedSubmission
+from src.submission import Submission
 
 class ParticipationGrader(object):
     '''

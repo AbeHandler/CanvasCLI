@@ -33,6 +33,7 @@ class NBGraderManager(object):
     def _run_nb_grader(self):
         cd = "cd " + Path(self.path_to_autograde_script).parents[0].as_posix()
         cmd = f"{cd} && sh {self.path_to_autograde_script.as_posix()} {self.nb_grader_assignment_name}"
+        print(cmd)
         os.system(cmd)
 
     def _get_autograded_files(self) -> List[str]:

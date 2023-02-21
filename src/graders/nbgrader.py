@@ -12,7 +12,7 @@ from src.api import get_api
 from src.assignment import Assignment
 from src.graders.nb_grader_feedback_file import Feedback
 from tqdm import tqdm as tqdm
-from src.graded_submission import GradedSubmission
+from src.submission import Submission
 import json
 
 class NBGrader(object):
@@ -63,14 +63,57 @@ class NBGrader(object):
             grade = Grade(score=score, comments=[comment])
             student = self.course.lookup_student_by_cu_id(cu_id)
             submission = self.assignment.assignment.get_submission(student.canvas_id)
-            submission = GradedSubmission(student=student,
-                                          submission=submission,
-                                          grade=grade)
+            submission = Submission(student=student,
+                                    submission=submission,
+                                    grade=grade)
             submission.sync()
 
         nperfects = len(perfects)
         print(f"[*] Graded {nperfects} perfects for assignment {assignment}")
  
+    def _upload_report(self, assignment: str, submission):
+        cu_id = submission['student_id']
+        feedback_path = Path(self.feedback_location / cu_id / assignment/ f"{assignment}.html")
+        
+        if feedback_path.is_file():
+            feedback = Feedback(feedback_path)
+            student = self.course.lookup_student_by_cu_id(cu_id)
+            submission = self.assignment.assignment.get_submission(student.canvas_id)
+            
+            submission = Submission(student=student,
+                                    submission=submission)
+            submission.add_attachment(feedback_path.as_posix())
+            print(f"[*] added {feedback_path.as_posix()}")
+        else:
+            print(f"[*] could not file {feedback_path.as_posix()}")
+
+
+    def upload_reports(self, assignment: str):
+        '''
+        assignment is the nbgrader name, e.g. "five" but not 194132
+        '''
+
+        submissions = self._get_grades_for_assignment(assignment)
+
+        assert len(submissions) > 0, f"No grades for assignment {assignment}. Did you forget to run ./export.sh?"
+
+        students = set([_['student_id'] for _ in submissions])
+
+        students = list(students)
+        students.sort()
+
+        for student in tqdm(students, desc="Adding reports"):
+            try:
+                submissions_for_one_student = [j for j in submissions if j["student_id"] == student]
+                assert len(submissions_for_one_student) == 1
+                submission = submissions_for_one_student[0]
+                assert submission["assignment"] == assignment
+                self._upload_report(assignment=assignment, submission=submission)
+            except ValueError:
+                print("Error parsing ...")
+                print(student)
+
+
     def grade_not_perfect_scores(self, assignment: str, min_score: int = 0):
         not_perfects = self._get_non_perfect_scores(assignment)
 
@@ -96,9 +139,9 @@ class NBGrader(object):
 
                 grade = Grade(score=score, comments=comments)
                 
-                submission = GradedSubmission(student=student,
-                                              submission=submission,
-                                              grade=grade)
+                submission = Submission(student=student,
+                                        submission=submission,
+                                        grade=grade)
 
                 submission.sync()
                 submission.add_attachment(feedback_path.as_posix())

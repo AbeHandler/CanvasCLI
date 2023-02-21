@@ -2,7 +2,7 @@ from canvasapi.submission import Submission as CanvasSubmission
 from src.grade import Grade
 from src.student import Student
 
-class GradedSubmission(object):
+class Submission(object):
     '''
     Not alll submissions are graded. Some are just submitted.
     '''

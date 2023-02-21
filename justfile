@@ -19,3 +19,6 @@ ta:
 
 perfects group_name notebook_name canvas_name:
   python -m src.cli assignment -nbn "{{notebook_name}}" -sync -g "{{group_name}}" -cn "{{canvas_name}}" -perfects
+
+reports notebook_name canvas_name group_name='Exercises':
+  python -m src.cli assignment -reports -nbn "{{notebook_name}}" -g "{{group_name}}" -cn "{{canvas_name}}"

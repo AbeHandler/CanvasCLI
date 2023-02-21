@@ -114,6 +114,15 @@ if __name__ == "__main__":
         print(f"[*] Created assignment {dt}")
         os._exit(0)
 
+    if args.command == "assignment" and args.assignment_reports:
+        id_ = course.lookup_assignment_id(args.group, args.canvas_name)
+        grader = NBGrader(course=course,
+                          grades_location="/Users/abe/everything/teaching/S2023/3220/3220/grades.jsonl",
+                          assignment_id=id_,
+                          feedback_location="/Users/abe/everything/teaching/S2023/3220/3220/feedback")
+        grader.upload_reports(assignment=args.nb_grader_name)
+        os._exit(0)
+
     if args.command == "assignment" and args.assignment_sync:
         
         id_ = course.lookup_assignment_id(args.group, args.canvas_name)
