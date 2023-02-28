@@ -135,7 +135,11 @@ if __name__ == "__main__":
 
         if args.assignment_grade_perfects:
             grader.grade_perfect_scores(assignment=args.nb_grader_name)
-            os._exit(0)
+
+        if args.assignment_grade_noattempts:
+            grader.grade_no_attempts(assignment=args.nb_grader_name)
+        
+        os._exit(0)
 
     if args.command == "assignment" and args.assignment_autograde:
         id_ = course.lookup_assignment_id(args.group, args.canvas_name)

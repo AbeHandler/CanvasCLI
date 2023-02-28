@@ -121,7 +121,7 @@ def get_args():
     parser_a = subparsers.add_parser('assignment', help='a help')
     parser_a.add_argument("-download", action="store_true", default=False, dest="download_assignment", help="Download assignment files")
     parser_a.add_argument("-canvas_name", '-cn', help="Canvas name for assignment")
-    parser_a.add_argument("-nb_grader_name", '-nbn', help="Name in nb_grader")
+    parser_a.add_argument("-nb_grader_name", '-nbn',  dest="nb_grader_name", help="Name in nb_grader")
     parser_a.add_argument("-g", '-group', "--group", default="Exercises", help="Canvas group")
     parser_a.add_argument("-sync",  action="store_true", default=False, dest="assignment_sync", help="Assign grades on Canvas")
     parser_a.add_argument("-autograde", action="store_true", default=False, dest="assignment_autograde", help="Run the nb_grader autograder")
