@@ -13,6 +13,8 @@ from src.assignment import Assignment
 from src.graders.nb_grader_feedback_file import Feedback
 from tqdm import tqdm as tqdm
 from src.submission import Submission
+from src.auto_graded_notebook import Notebook
+from src.auto_graded_notebook import NotebookParser
 import json
 
 class NBGrader(object):
@@ -27,7 +29,10 @@ class NBGrader(object):
                  course: Course,
                  grades_location: str, 
                  assignment_id: int,
-                 feedback_location: str):
+                 feedback_location: str,
+                 nbgrader_name: str,
+                 autograded_location: str,
+                 max_score: int = 10):
         assignment = Assignment(course=course, assignment_id=assignment_id)
         grades = []
         with open(grades_location, "r") as inf:
@@ -37,6 +42,10 @@ class NBGrader(object):
         self.course = course
         self.assignment = assignment
         self.feedback_location: Path = Path(feedback_location)
+        self.autograded_location: Path = Path(autograded_location)
+        self.nbgrader_name = nbgrader_name
+        self.filename = f"{nbgrader_name}.ipynb"
+        self.max_score = max_score
 
     def _get_grades_for_assignment(self, assignment: str):
         return [_ for _ in self.grades if _["assignment"] == assignment and _["student_id"] != "akh2103"]
@@ -51,9 +60,35 @@ class NBGrader(object):
         not_perfects = [_ for _ in assignment_scores if _["score"] != _["max_score"]]
         return not_perfects
 
+    def grade_no_attempts(self, assignment: str):
+        missings = self._get_non_perfect_scores(assignment)
+        count = 0
+        for missing in missings:
+            score = missing["score"]
+            cu_id = missing['student_id']
+            path_to = (self.autograded_location / cu_id / assignment / self.filename).as_posix()
+            try:
+                parser = NotebookParser(path_to)
+                cells = parser.parse()
+                notebook = Notebook(cells)
+                notimplemetned = notebook.all_missing_points_are_not_implemented(assigned_score=score,
+                                                                                 max_score=self.max_score)
+                if notimplemetned:
+                    comment = "Some problems not attempted, otherwise correct"
+                    grade = Grade(score=score, comments=[comment])
+                    student = self.course.lookup_student_by_cu_id(cu_id)
+                    submission = self.assignment.assignment.get_submission(student.canvas_id)
+                    submission = Submission(student=student,
+                                            submission=submission,
+                                            grade=grade)
+                    submission.sync()
+                    count += 1
+            except FileNotFoundError:
+                print(f"[*] Could not find submission for {cu_id}")
+        print(f"[*] Autograded {count} students who did not attempt some problems")
+
     def grade_perfect_scores(self, assignment: str):
         perfects = self._get_perfect_scores(assignment)
-        comments = ["Nice job", "Good work", "Great"]
 
         for perfect in tqdm(perfects, desc="Assigning perfect scores"):
             score = perfect["score"]
@@ -155,6 +190,8 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
     grader = NBGrader(course=course,
                       grades_location="/Users/abe/everything/teaching/S2023/3220/3220/grades.jsonl",
-                      assignment_id=1589752,
-                      feedback_location="/Users/abe/everything/teaching/S2023/3220/3220/feedback")
-    grader.grade_not_perfect_scores(assignment="three", min_score = 5)
+                      assignment_id=1589755,
+                      nbgrader_name='six',
+                      feedback_location="/Users/abe/everything/teaching/S2023/3220/3220/feedback",
+                      autograded_location="/Users/abe/everything/teaching/S2023/3220/3220/autograded")
+    grader.grade_no_attempts(assignment="six")

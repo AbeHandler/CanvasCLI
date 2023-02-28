@@ -13,9 +13,9 @@ quiz day="":
 autograde canvas_name notebook_name:
   python -m src.cli assignment -cn '{{canvas_name}}' -download -nbn '{{notebook_name}}' -autograde
 
-ta:
+ta target:
   rsync -r /Users/abe/everything/teaching/S2023/3220/3220 /Users/abe/BAIM3220FeedbackReports -v --ignore-existing --include="*/" --include="*.html" --exclude="*" 
-  cd /Users/abe/BAIM3220FeedbackReports
+  cd /Users/abe/BAIM3220FeedbackReports && git status  | grep {{target}} | grep -v "new file" | awk -F" " '{print $1}' | parallel -j 1 "git add {}"
 
 perfects notebook_name canvas_name group_name='Exercises':
   python -m src.cli assignment -nbn "{{notebook_name}}" -sync -g "{{group_name}}" -cn "{{canvas_name}}" -perfects

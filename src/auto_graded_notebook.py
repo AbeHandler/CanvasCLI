@@ -1,7 +1,7 @@
 from typing import Dict, List
 import json
 
-class NotebookCell:
+class NotebookCell(object):
     def __init__(self, cell_type: str, execution_count: int, id: str, metadata: Dict, outputs: List, source: List[str], points: int, not_implemented: bool):
         self.cell_type = cell_type
         self.execution_count = execution_count
@@ -12,8 +12,23 @@ class NotebookCell:
         self.points = points
         self.not_implemented = not_implemented
 
+class Notebook(object):
 
-class NotebookParser:
+    def __init__(self, cells):
+        self.cells = cells
+
+    def all_missing_points_are_not_implemented(self, 
+                                               assigned_score: int,
+                                               max_score: int) -> bool:
+        not_implemented_deduction = 0
+        for cell in self.cells:
+            if cell.not_implemented:
+                not_implemented_deduction += cell.points
+
+        return assigned_score + not_implemented_deduction == max_score
+
+
+class NotebookParser(object):
     def __init__(self, filepath):
         self.filepath = filepath
 
@@ -58,5 +73,5 @@ if __name__ == "__main__":
 
     parser = NotebookParser("test/fixtures/four.ipynb")
     cells = parser.parse()
-    for cell in cells:
-        print(cell.not_implemented)
+    notebook = Notebook(cells)
+    print(notebook.all_missing_points_are_not_implemented(assigned_score=9, max_score=10))

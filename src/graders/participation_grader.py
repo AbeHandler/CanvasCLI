@@ -40,12 +40,12 @@ class ParticipationGrader(object):
         for submission in tqdm(submissions):
             if submission.missing:
                 grade = Grade(score=0, comments=["No submission"])
-                submission = GradedSubmission(student=submission.student,
+                submission = Submission(student=submission.student,
                                               submission=submission,
                                               grade=grade)
             else:
                 grade = Grade(score=self.assignment.full_credit, comments=["Full credit"])
-                submission = GradedSubmission(student=submission.student,
+                submission = Submission(student=submission.student,
                                               submission=submission,
                                               grade=grade)
                 submission.sync()
