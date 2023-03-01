@@ -48,7 +48,7 @@ class ParticipationGrader(object):
                 submission = Submission(student=submission.student,
                                               submission=submission,
                                               grade=grade)
-                submission.sync()
+            submission.sync()
 
         print(f"[*] Graded {len(submissions)} based on participation")
 
