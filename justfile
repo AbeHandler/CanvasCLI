@@ -11,6 +11,7 @@ quiz day="":
   python -m src.cli -q {{day}}
 
 autograde canvas_name notebook_name:
+  #!/usr/bin/env bash
   python -m src.cli assignment -cn '{{canvas_name}}' -download -nbn '{{notebook_name}}' -autograde
 
 ta target:
