@@ -1,5 +1,5 @@
 '''
-Functions for parsing command-line inpue
+Functions for parsing command-line input
 '''
 
 import argparse
@@ -127,7 +127,9 @@ def get_args():
     parser_a.add_argument("-autograde", action="store_true", default=False, dest="assignment_autograde", help="Run the nb_grader autograder")
     parser_a.add_argument("-participation",  action="store_true", default=False, dest="participation_assignment")
     parser_a.add_argument('-perfects', action="store_true", default=False, dest="assignment_grade_perfects")
+    parser_a.add_argument('-skipped', action="store_true", default=False, dest="assignment_grade_skipped")
     parser_a.add_argument('-reports', action="store_true", default=False, dest="assignment_reports")
+    parser_a.add_argument('-dryrun', action="store_true", default=False, dest="dryrun")
 
 
 

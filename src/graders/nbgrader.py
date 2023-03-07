@@ -60,20 +60,22 @@ class NBGrader(object):
         not_perfects = [_ for _ in assignment_scores if _["score"] != _["max_score"]]
         return not_perfects
 
-    def grade_no_attempts(self, assignment: str):
+    def grade_skipped(self, assignment: str, dryrun: bool = True) -> None:
         missings = self._get_non_perfect_scores(assignment)
         count = 0
+
         for missing in missings:
             score = missing["score"]
             cu_id = missing['student_id']
             path_to = (self.autograded_location / cu_id / assignment / self.filename).as_posix()
             try:
                 parser = NotebookParser(path_to)
-                cells = parser.parse()
-                notebook = Notebook(cells)
-                notimplemetned = notebook.all_missing_points_are_not_implemented(assigned_score=score,
+                notebook = parser.get_notebook()
+                notimplemented = notebook.all_missing_points_are_not_implemented(assigned_score=score,
                                                                                  max_score=self.max_score)
-                if notimplemetned:
+                if notimplemented:
+                    count += 1
+                if notimplemented and not dryrun:
                     comment = "Some problems not attempted, otherwise correct"
                     grade = Grade(score=score, comments=[comment])
                     student = self.course.lookup_student_by_cu_id(cu_id)
@@ -82,14 +84,15 @@ class NBGrader(object):
                                             submission=submission,
                                             grade=grade)
                     submission.sync()
-                    count += 1
             except FileNotFoundError:
                 print(f"[*] Could not find submission for {cu_id}")
-        print(f"[*] Autograded {count} students who did not attempt some problems")
+        prefix = "Autograded" if not dryrun else "Dryrun: planning to autograde"
+        print(f"[*] {prefix} {count} students who did not attempt some problems")
 
     def grade_perfect_scores(self, assignment: str):
         perfects = self._get_perfect_scores(assignment)
 
+        comments = ["Nice job", "Good work", "Great"]
         for perfect in tqdm(perfects, desc="Assigning perfect scores"):
             score = perfect["score"]
             cu_id = perfect['student_id']

@@ -32,6 +32,10 @@ class NotebookParser(object):
     def __init__(self, filepath):
         self.filepath = filepath
 
+    def get_notebook(self) -> Notebook:
+        cells = self.parse()
+        return Notebook(cells)
+
     def parse(self) -> List[NotebookCell]:
         out = []
         with open(self.filepath, "r") as inf:

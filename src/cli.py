@@ -119,7 +119,8 @@ if __name__ == "__main__":
         grader = NBGrader(course=course,
                           grades_location="/Users/abe/everything/teaching/S2023/3220/3220/grades.jsonl",
                           assignment_id=id_,
-                          nb_grader_name=args.nb_grader_name,
+                          nbgrader_name=args.nb_grader_name,
+                          autograded_location="/Users/abe/everything/teaching/S2023/3220/3220/autograded",
                           feedback_location="/Users/abe/everything/teaching/S2023/3220/3220/feedback")
         grader.upload_reports(assignment=args.nb_grader_name)
         os._exit(0)
@@ -130,14 +131,15 @@ if __name__ == "__main__":
         grader = NBGrader(course=course,
                           grades_location="/Users/abe/everything/teaching/S2023/3220/3220/grades.jsonl",
                           assignment_id=id_,
-                          nb_grader_name=args.nb_grader_name,
+                          nbgrader_name=args.nb_grader_name,
+                          autograded_location="/Users/abe/everything/teaching/S2023/3220/3220/autograded",
                           feedback_location="/Users/abe/everything/teaching/S2023/3220/3220/feedback")
 
         if args.assignment_grade_perfects:
             grader.grade_perfect_scores(assignment=args.nb_grader_name)
 
-        if args.assignment_grade_noattempts:
-            grader.grade_no_attempts(assignment=args.nb_grader_name)
+        if args.assignment_grade_skipped:
+            grader.grade_skipped(assignment=args.nb_grader_name, dryrun=args.dryrun)
         
         os._exit(0)
 
