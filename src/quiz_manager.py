@@ -9,7 +9,7 @@ from src.api import get_api
 from datetime import timedelta
 from src.course import Course
 from datetime import datetime
-from src.vars import DATE_FORMAT
+from src.config import STANDARDDATE
 
 class QuizManager(object):
     '''
@@ -24,19 +24,19 @@ class QuizManager(object):
         self.course = course
         self.quiz_group = quiz_group
 
-    def create(self, due: datetime, publish=False, points=3):
+    def create(self, due: datetime, publish=False, points=3, time_limit: int = 5):
 
-        title = datetime.strptime(due, DATE_FORMAT).strftime("%b. %d") + " Quiz"
+        title = due.strftime("%b. %d") + " Quiz"
 
         self.course.course.create_quiz(
             {
                 "title": title,
                 "published": publish,
-                "time_limit": 5,
+                "time_limit": time_limit,
                 "allowed_attempts": 1,
                 "assignment_group_id": self.quiz_group,
                 "points_possible": points,
-                "due_at": due + "T" + self.course.config.end_time
+                "due_at": due.strftime('%Y-%m-%d') + "T" + self.course.config.end_time
             }
         )
         print(f"[*] Created {title}")

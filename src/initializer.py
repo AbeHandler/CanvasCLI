@@ -7,17 +7,20 @@ from src.api import get_api
 from canvasapi.canvas import Canvas
 from src.calendar import get_dates_for_course
 from src.calendar import get_weeks2dates
-from src.calendar import STANDARDDATE
 from jinja2 import Template
 from collections import defaultdict
+from datetime import datetime
+from src.config import STANDARDDATE
+from src.course import Course
+from src.quiz_manager import QuizManager
+from src.assignment_manager import AssignmentManager
 
 
 class Initializer(object):
 
-    def __init__(self, config: Config, api: Canvas):
+    def __init__(self, course: Course, config: Config):
+        self.course = course
         self.config = config
-        self.api = api
-        self.course = api.get_course(config.canvas_no)
 
     def makeHTMLforSemester(self):
         html = self._build_html()
@@ -49,6 +52,7 @@ class Initializer(object):
         self.init_wiki_page()
         self.makeHTMLforSemester()
         self.init_groups()
+
 
     def _build_html(self) -> str:
 
@@ -82,12 +86,35 @@ class Initializer(object):
 
         return out
 
+    def init_quizzes(self):
+        dates_for_course = get_dates_for_course(self.config)
+
+        quiz_group = self.course.get_assignment_group("Quizzes")
+        for _ in dates_for_course:
+            day = _["date"]
+            manager = QuizManager(quiz_group, self.course)
+            manager.create(day, time_limit=2)
+            print(day)
+
+    def init_assignments(self, group = "Interview grading"):
+        dates_for_course = get_dates_for_course(self.config)
+
+        dates_for_course = [o for o in dates_for_course if o["date"] > datetime.today()]
+        
+        quiz_group = self.course.get_assignment_group(group)
+        for _ in dates_for_course:
+            day = _["date"]
+            manager = AssignmentManager(course=self.course)
+            manager.create(due=day, group=group)
+
+            print(day)
 
 if __name__ == "__main__":
 
     path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
     config = Config(path)
     api = get_api()
-    initializer = Initializer(config=config, api=api)
-    initializer.init()
+    course = Course(api=api, config=config)
+    initializer = Initializer(course=course, config=config)
+    initializer.init_assignments(group = "In-class coding")
 

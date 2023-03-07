@@ -11,7 +11,7 @@ from copy import copy
 from typing import List
 from typing import Dict
 from collections import defaultdict
-from src.vars import DATE_FORMAT
+from src.config import STANDARDDATE
 
 
 # class syntax
@@ -63,7 +63,7 @@ def get_dates_for_course(config: Config) -> List[Dict]:
     """
     return dates of all class meetings
     """
-
+    assert type(config) == Config
     start = config.start_date
     end = config.end_date
 

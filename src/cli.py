@@ -39,7 +39,6 @@ from src.parser import get_day
 from src.quiz_manager import QuizManager
 from src.config import Config
 from pathlib import Path
-from src.vars import DATE_FORMAT
 from src.assignment_manager import AssignmentManager
 from src.course import Course
 from src.front_page import FrontPage
@@ -108,7 +107,7 @@ if __name__ == "__main__":
         manager = AssignmentManager(course)
         day = get_day(args)
 
-        day = datetime.strptime(day, DATE_FORMAT)
+        day = datetime.strptime(day, config.STANDARDDATE)
         manager.create_assignment(day, group = "In-class coding", points_possible = 1)
         dt = day.strftime('%B %d')
         print(f"[*] Created assignment {dt}")

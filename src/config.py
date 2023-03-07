@@ -6,13 +6,14 @@ import configparser
 from datetime import datetime
 import os
 
+STANDARDDATE = "%Y%m%d"
+
 
 class Config(object):
     def _str2date(self, str_):
         """
         format = YYYYMMDD
         """
-        STANDARDDATE = "%Y%m%d"
         data_date = datetime.strptime(str_, STANDARDDATE)
         return data_date
 

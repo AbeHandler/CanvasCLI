@@ -35,19 +35,17 @@ class AssignmentManager(object):
         return non_submitting_students
 
 
-    def create_assignment(self,
-                          duedate: datetime,
-                          group: str,
-                          title: str = None):
+    def create(self,
+               due: datetime,
+               group: str):
 
-        if title is None:
-            title = group + " " + duedate.strftime("%b %d")
+        title = group + " " + due.strftime("%b %d")
 
         self.course.course.create_assignment(
                 {
                     "name": title,
                     "published": False,
-                    "due_at": duedate.strftime("%Y-%m-%d") + "T23:59:00",
+                    "due_at": due.strftime("%Y-%m-%d") + "T23:59:00",
                     "points_possible": 10,
                     "description": title,
                     "assignment_group_id": self.assignment_groups[group],
