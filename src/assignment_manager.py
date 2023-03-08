@@ -82,18 +82,3 @@ class AssignmentManager(object):
                 }
             )
             date_counter = date_counter + timedelta(days=7)
-
-
-if __name__ == "__main__":
-    path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
-    config = Config(path)
-    api = get_api()
-    course = Course(config=config, api=api)
-    groups = course.get_assignment_groups()
-
-    manager = AssignmentManager(course)
-
-    manager.create_assignment(datetime(2023, 1, 17), group = "Interview grading")
-
-    #start_date = datetime(2023, 1, 23)
-    #manager.init_assignments(first_due = start_date)

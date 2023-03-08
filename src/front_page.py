@@ -6,12 +6,11 @@ from canvasapi.canvas import Canvas
 from pathlib import Path
 from src.api import get_api
 from src.course import Course
-from src.vars import DATE_FORMAT
 from bs4 import BeautifulSoup, Tag
 from datetime import datetime
 from datetime import date
 from src.calendar import isb4
-from src.vars import DATE_FORMAT
+from src.config import STANDARDDATE
 
 class FrontPage(object):
     '''

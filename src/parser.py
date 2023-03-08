@@ -7,7 +7,6 @@ import datetime
 
 from datetime import timedelta
 from datetime import date
-from src.vars import DATE_FORMAT
 
 
 def get_day(args) -> str:
