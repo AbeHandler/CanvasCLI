@@ -31,7 +31,7 @@ def isb4(input_date):
     that is true if its input is less than or equal to input_date
     Used for a lambda in bs4
     """
-    input_date = datetime.strptime(input_date, DATE_FORMAT)
+    input_date = datetime.strptime(input_date, STANDARDDATE)
 
     def hidden(t):
         if "data-date" not in t.attrs:

@@ -155,7 +155,9 @@ if __name__ == "__main__":
         nb_grader.run()
         os._exit(0)
 
-
+    if args.students:
+        for i in course.get_students():
+            print(i)
 
     if args.curve:
         print(course.get_average_grade())

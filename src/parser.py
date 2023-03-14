@@ -7,6 +7,7 @@ import datetime
 
 from datetime import timedelta
 from datetime import date
+from src.config import STANDARDDATE
 
 
 def get_day(args) -> str:
@@ -32,7 +33,7 @@ def get_day(args) -> str:
     else:
         day = day # the default, just adding for clarity
 
-    return day.strftime(DATE_FORMAT)
+    return day.strftime(STANDARDDATE)
 
 
 def get_args():
@@ -110,6 +111,11 @@ def get_args():
     parser.add_argument(
         "-curve",default=False,action="store_true"
     )
+
+    parser.add_argument(
+        "-students",default=False,action="store_true"
+    )
+
 
     parser_a = subparsers.add_parser('grade', help='a help')
     parser_a.add_argument("-participation", action="store_true", default=False, dest="grade_participation")

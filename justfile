@@ -26,3 +26,6 @@ skipped notebook_name canvas_name group_name='Exercises':
 
 reports notebook_name canvas_name group_name='Exercises':
   python -m src.cli assignment -reports -nbn "{{notebook_name}}" -g "{{group_name}}" -cn "{{canvas_name}}"
+
+students:
+  python -m src.cli -students
