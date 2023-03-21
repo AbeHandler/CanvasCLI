@@ -1,5 +1,5 @@
-visible:
-  python -m src.cli -v -tt
+visible when='-tt':
+  python -m src.cli -v {{when}}
 
 checkin:
   python -m src.cli -checkin
