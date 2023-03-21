@@ -75,6 +75,8 @@ class NBGrader(object):
                                                                                  max_score=self.max_score)
                 if notimplemented:
                     count += 1
+                if dryrun and notimplemented:
+                    print(f"did not implement: {cu_id}")
                 if notimplemented and not dryrun:
                     comment = "Some problems not attempted, otherwise correct"
                     grade = Grade(score=score, comments=[comment])
@@ -88,6 +90,38 @@ class NBGrader(object):
                 print(f"[*] Could not find submission for {cu_id}")
         prefix = "Autograded" if not dryrun else "Dryrun: planning to autograde"
         print(f"[*] {prefix} {count} students who did not attempt some problems")
+
+    def grade_missed_challenge(self, assignment: str, dryrun: bool = True) -> None:
+        count = 0
+
+        for missing in self._get_non_perfect_scores(assignment):
+            score = missing["score"]
+            cu_id = missing['student_id']
+            path_to = (self.autograded_location / cu_id / assignment / self.filename).as_posix()
+            try:
+                parser = NotebookParser(path_to)
+                notebook = parser.get_notebook()
+                attempted_last_but_missed = notebook.attempted_last_but_missed(assigned_score=score,
+                                                                               max_score=self.max_score)
+                if attempted_last_but_missed:
+                    count += 1
+                if dryrun and attempted_last_but_missed:
+                    print(f"Got all but challenge: {cu_id}")
+                if attempted_last_but_missed and not dryrun:
+                    comment = "Attempted challenge, but not correct. Otherwise all correct. 1/2 credit for challenge"
+                    score += (self.max_score - score)/2
+                    grade = Grade(score=score, comments=[comment])
+                    student = self.course.lookup_student_by_cu_id(cu_id)
+                    submission = self.assignment.assignment.get_submission(student.canvas_id)
+                    submission = Submission(student=student,
+                                            submission=submission,
+                                            grade=grade)
+                    submission.sync()
+            except FileNotFoundError:
+                print(f"[*] Could not find submission for {cu_id}")
+        prefix = "Autograded" if not dryrun else "Dryrun: planning to autograde"
+        print(f"[*] {prefix} {count} students who attempted challenge but was not correct")
+
 
     def grade_perfect_scores(self, assignment: str):
         perfects = self._get_perfect_scores(assignment)

@@ -140,6 +140,9 @@ if __name__ == "__main__":
         if args.assignment_grade_skipped:
             grader.grade_skipped(assignment=args.nb_grader_name, dryrun=args.dryrun)
         
+        if args.assignment_missed_challenge:
+            grader.grade_missed_challenge(assignment=args.nb_grader_name, dryrun=args.dryrun)
+
         os._exit(0)
 
     if args.command == "assignment" and args.assignment_autograde:

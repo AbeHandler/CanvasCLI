@@ -50,8 +50,7 @@ class TestAutogradedNotebook(unittest.TestCase):
         target_cell = [_ for _ in notebook.cells if _.id == _id][0]
         assert target_cell.points==1.5
 
-
-    def test_attempted_but_missed(self):
+    def test_attempted_last_but_missed(self):
         parser = NotebookParser("test/fixtures/nine.ipynb")
         cells = parser.parse()
         notebook = Notebook(cells)

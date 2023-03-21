@@ -51,6 +51,7 @@ class Notebook(object):
     def attempted_last_but_missed(self,
                                   assigned_score: int, 
                                   max_score: int) -> bool:
+
         last_graded_problem = self._get_last_graded()
 
         # if they implemented the last one
