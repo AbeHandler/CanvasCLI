@@ -21,7 +21,7 @@ students:
 #   |___/                         |___/ 
 #                                       
 
-autograde canvas_name notebook_name:
+autograde notebook_name canvas_name:
   #!/usr/bin/env bash
   python -m src.cli assignment -cn '{{canvas_name}}' -download -nbn '{{notebook_name}}' -autograde
 
