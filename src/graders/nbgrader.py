@@ -86,6 +86,8 @@ class NBGrader(object):
                                             submission=submission,
                                             grade=grade)
                     submission.sync()
+            except KeyError:
+                print(f"[*] Error for for {cu_id}")
             except FileNotFoundError:
                 print(f"[*] Could not find submission for {cu_id}")
         prefix = "Autograded" if not dryrun else "Dryrun: planning to autograde"
@@ -117,6 +119,8 @@ class NBGrader(object):
                                             submission=submission,
                                             grade=grade)
                     submission.sync()
+            except KeyError:
+                print(f"[*] Key error for {cu_id}")
             except FileNotFoundError:
                 print(f"[*] Could not find submission for {cu_id}")
         prefix = "Autograded" if not dryrun else "Dryrun: planning to autograde"
