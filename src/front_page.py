@@ -21,7 +21,7 @@ class FrontPage(object):
 
     def __init__(self, course):
         self.course = course
-        self.canvas_page = self.course.get_front_page()
+        self.canvas_page = self.course.course.get_page(self.course.course_name)
         self.html = self.canvas_page.body
         self.soup = BeautifulSoup(self.html, features="html.parser")
         self.front_page_date_tag_in_html = course.config.front_page_date_tag_in_html
@@ -30,10 +30,12 @@ class FrontPage(object):
 
     def get_data_bullet(self, date, bullet_text="in-class-assignment"):
 
+        '''date is in format STANDARDATE'''
         results = self.soup.find_all("li",
                                     attrs={self.front_page_date_tag_in_html: date,  
                                            self.data_bullet_tag_in_html: bullet_text})
 
+        assert len(results) != 0, "no bullet selected"
         assert len(results) == 1, "there should only be one bullet selected"
         return results[0]
 

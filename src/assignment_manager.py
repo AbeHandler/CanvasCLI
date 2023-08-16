@@ -37,7 +37,8 @@ class AssignmentManager(object):
 
     def create(self,
                due: datetime,
-               group: str):
+               group: str,
+               points: int = 10):
 
         title = group + " " + due.strftime("%b %d")
 
@@ -45,8 +46,8 @@ class AssignmentManager(object):
                 {
                     "name": title,
                     "published": False,
-                    "due_at": due.strftime("%Y-%m-%d") + "T23:59:00",
-                    "points_possible": 10,
+                    "due_at": due.strftime("%Y-%m-%d") + "T22:00:00-06:00",
+                    "points_possible": points,
                     "description": title,
                     "assignment_group_id": self.assignment_groups[group],
                     "submission_types": ["online_upload", "online_text_entry"],

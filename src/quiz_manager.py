@@ -24,9 +24,9 @@ class QuizManager(object):
         self.course = course
         self.quiz_group = quiz_group
 
-    def create(self, due: datetime, publish=False, points=3, time_limit: int = 5):
+    def create(self, due: datetime, section: int, publish=False, points=3, time_limit: int = 5):
 
-        title = due.strftime("%b. %d") + " Quiz"
+        title = due.strftime("%b. %d") + f" Quiz: section {section}"
 
         self.course.course.create_quiz(
             {
