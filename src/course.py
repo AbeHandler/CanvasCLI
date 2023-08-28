@@ -24,6 +24,9 @@ class Course(object):
     def get_quiz(self, quiz_id):
         return self.course.get_quiz(quiz_id)
 
+    def get_quizzes(self, search_term: str = "foo"):
+        return [o for o in self.course.get_quizzes(search_term=search_term)]
+
     def export(self):
         """This will create a course backup on Canvas"""
         self.course.export_content(export_type="common_cartridge")
@@ -136,8 +139,8 @@ class Course(object):
         
 
 if __name__ == "__main__":
-    path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
+    path = Path("/Users/abe/CanvasCLI/3220F2023.ini")
     config = Config(path)
     api = get_api()
     course = Course(config=config, api=api)
-    print(course.get_average_grade())
+    print(len(course.get_quizzes("Aug. 28")))

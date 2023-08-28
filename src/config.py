@@ -46,5 +46,5 @@ class Config(object):
 
 if __name__ == "__main__":
 
-    config = Config(Path("/Users/abe/CanvasCLI/3220S2023.ini"))
+    config = Config(Path("/Users/abe/CanvasCLI/3220F2023.ini"))
     print(config.days_of_week)

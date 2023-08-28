@@ -4,6 +4,22 @@ from src.config import Config
 from src.api import get_api
 from src.course import Course
 
+from enum import Enum
+
+class QuestionType(Enum):
+    CALCULATED = "calculated_question"
+    ESSAY = "essay_question"
+    FILE_UPLOAD = "file_upload_question"
+    FILL_IN_MULTIPLE_BLANKS = "fill_in_multiple_blanks_question"
+    MATCHING = "matching_question"
+    MULTIPLE_ANSWERS = "multiple_answers_question"
+    MULTIPLE_CHOICE = "multiple_choice_question"
+    MULTIPLE_DROPDOWNS = "multiple_dropdowns_question"
+    NUMERICAL = "numerical_question"
+    SHORT_ANSWER = "short_answer_question"
+    TEXT_ONLY = "text_only_question"
+    TRUE_FALSE = "true_false_question"
+
 class Quiz(object):
 
     def __init__(self, course, quiz_id):
@@ -22,23 +38,23 @@ class Quiz(object):
 
     def create_question(self, question_name: str = "Lorem impsum",
                         question_text: str = 'What is Lorem impsum?',
+                        question_type: QuestionType = QuestionType.NUMERICAL,
                         points_possible: int = 4):
-        id_ = random.randint(0, 10000) # TODO how to assign id_ in a pricipled way
-        print(question_name, question_text)
+        
+        print(question_type.value)
 
         question_data = {
             'question': {
                 'question_name': question_name,
                 'question_text': question_text,
                 'points_possible': points_possible,
-                "question_type": "numerical_question",
+                "question_type": question_type.value,
                 #'answers': [
                 #    {'answer_text': 'Choice 1', 'weight': 100}
                 #]
             }
         }
 
-        print(question_data)
         self._quiz.create_question(**question_data)
 
 if __name__ == "__main__":
@@ -48,4 +64,4 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
     quiz = Quiz(course, 337161)
     q = quiz.create_question(question_name="Participation",
-                             question_text="tess2ts")
+                             question_text="tess6ts")

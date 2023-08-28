@@ -53,7 +53,7 @@ from canvasapi.paginated_list import PaginatedList
 
 
 
-def get_course_from_ini(path_to_ini: str = "/Users/abe/CanvasCLI/3220S2023.ini"):
+def get_course_from_ini(path_to_ini: str = "/Users/abe/CanvasCLI/3220F2023.ini"):
     '''
     A convenience function which creates a course object
     from an ini file
@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     args = get_args()
 
-    PATH_TO_INI = "/Users/abe/CanvasCLI/3220S2023.ini"
+    PATH_TO_INI = "/Users/abe/CanvasCLI/3220F2023.ini"
 
     course = get_course_from_ini(PATH_TO_INI)
 
