@@ -36,9 +36,9 @@ class Quiz(object):
         self._quiz.create_question_group(quiz_groups=[group])
 
 
-    def create_question(self, question_name: str = "Lorem impsum",
-                        question_text: str = 'What is Lorem impsum?',
-                        question_type: QuestionType = QuestionType.NUMERICAL,
+    def create_question(self, question_name: str,
+                        question_text: str,
+                        question_type: QuestionType,
                         points_possible: int = 4):
         
         print(question_type.value)
@@ -55,6 +55,7 @@ class Quiz(object):
             }
         }
 
+        print(question_data)
         self._quiz.create_question(**question_data)
 
 if __name__ == "__main__":
@@ -63,5 +64,9 @@ if __name__ == "__main__":
     api = get_api()
     course = Course(config=config, api=api)
     quiz = Quiz(course, 337161)
-    q = quiz.create_question(question_name="Participation",
-                             question_text="tess6ts")
+
+    for quiz in course.get_quizzes("Aug. 28"):
+        quiz = Quiz(course, quiz.id)
+        q = quiz.create_question(question_name="Participation",
+                                 question_text="Which quiz should you take?",
+                                 question_type=QuestionType.MULTIPLE_CHOICE)
