@@ -32,6 +32,7 @@ and aliasing it as "canvas"
 import argparse
 import glob
 import os
+from datetime import datetime
 from src.graders.nbgrader import NBGrader
 from src.api import get_api
 from src.parser import get_args
@@ -168,6 +169,9 @@ if __name__ == "__main__":
     if args.checkin:
         avg = course.get_average_grade()
         print("Average grade {:.2f}".format(avg))
-        assignments = course.get_ungraded_assignments_in_group("In-class coding")
+        assignments = course.get_ungraded_assignments_in_group(group="Participation")
+        
+        assignments = [_ for _ in assignments if _.due_at < datetime.today()]
+
         for _ in assignments:
             print(_)

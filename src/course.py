@@ -9,6 +9,7 @@ from datetime import date
 from collections import defaultdict
 from src.assignment import Assignment
 from src.section import Section
+from datetime import datetime
 
 class Course(object):
 
