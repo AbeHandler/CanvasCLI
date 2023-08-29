@@ -8,6 +8,7 @@ from typing import List
 from datetime import date
 from collections import defaultdict
 from src.assignment import Assignment
+from src.section import Section
 
 class Course(object):
 
@@ -151,7 +152,12 @@ class Course(object):
         return [i.id for i in self.course.get_sections()]
 
     def get_section(self, id_):
-        return self.course.get_section(id_)
+        section = self.course.get_section(id_)
+        return Section(name = section.name, section_id = section.id)
+
+    def get_sections(self):
+        sections = self.get_section_ids()
+        return [self.get_section(id_) for id_ in sections]
 
     def get_student_to_section(self):
         sections = self.get_section_ids()
@@ -161,7 +167,6 @@ class Course(object):
             for e in enrollments:
                 student_2_section[e.user_id] = section
         return dict(student_2_section)
-            
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220F2023.ini")
@@ -170,4 +175,4 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
     #print([o for o in course.get_section().get_enrollments()])
     #course.upload("/Users/abe/everything/teaching/3220/3220/release/one/one.ipynb")
-    print(course.get_students())
+    print([course.get_sections()])

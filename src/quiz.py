@@ -26,6 +26,7 @@ class Quiz(object):
         self.course = course
         self.quiz_id = quiz_id
         self._quiz = course.get_quiz(quiz_id)
+        self.title = self._quiz.title
 
     def create_question_group(self, group_name: str, 
                               pick_count: int = 1,
@@ -67,6 +68,7 @@ if __name__ == "__main__":
     config = Config(path)
     api = get_api()
     course = Course(config=config, api=api)
+    students = course.get_students()
     quiz = Quiz(course, 337161)
 
     #for quiz in course.get_quizzes("Aug. 28"):
@@ -77,4 +79,6 @@ if __name__ == "__main__":
 
     subs = quiz.get_submissions()
     for s in subs:
-        print(s.)
+        student = [i for i in students if i.canvas_id == s.user_id]
+        assert len(student) == 1
+        student = [0]
