@@ -121,15 +121,20 @@ class Course(object):
         students = []
 
         student2section = self.get_student_to_section()
+        sections = self.get_sections()
 
         for student in self.course.get_recent_students():
             name = student.name
             canvas_id = student.id
             cu_id = student.login_id
-            section_id = student2section[canvas_id]
+            section_id = student2section[student.id]
+            section = [o for o in sections if o.section_id == section_id]
+            assert len(section) == 1
+            section_name = section[0].name
             student = Student(name=name,
                               canvas_id=canvas_id,
                               section_id=section_id,
+                              section_name = section_name,
                               cu_id=cu_id)
             students.append(student)
         return students
@@ -163,7 +168,7 @@ class Course(object):
         sections = self.get_section_ids()
         student_2_section = defaultdict()
         for section in sections:
-            enrollments = [o for o in self.get_section(section).get_enrollments()]
+            enrollments = [o for o in self.course.get_section(section).get_enrollments()]
             for e in enrollments:
                 student_2_section[e.user_id] = section
         return dict(student_2_section)
@@ -175,4 +180,4 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
     #print([o for o in course.get_section().get_enrollments()])
     #course.upload("/Users/abe/everything/teaching/3220/3220/release/one/one.ipynb")
-    print([course.get_sections()])
+    print([course.get_students()])

@@ -7,3 +7,4 @@ class Student:
     cu_id: str
     name: str
     section_id: int
+    section_name: str

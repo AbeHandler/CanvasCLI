@@ -76,9 +76,3 @@ if __name__ == "__main__":
     #    q = quiz.create_question(question_name="Main question",
     #                             question_text="What does the code print?",
     #                             question_type=QuestionType.MULTIPLE_CHOICE)
-
-    subs = quiz.get_submissions()
-    for s in subs:
-        student = [i for i in students if i.canvas_id == s.user_id]
-        assert len(student) == 1
-        student = [0]
