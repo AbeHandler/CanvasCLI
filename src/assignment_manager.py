@@ -38,9 +38,11 @@ class AssignmentManager(object):
     def create(self,
                due: datetime,
                group: str,
+               title: str = None,
                points: int = 10):
 
-        title = group + " " + due.strftime("%b %d")
+        if title is None:
+            title = group + " " + due.strftime("%b %d")
 
         self.course.course.create_assignment(
                 {

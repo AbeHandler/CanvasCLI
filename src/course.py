@@ -6,6 +6,7 @@ from src.student import Student
 from src.grade_enum import LetterGrade
 from typing import List
 from datetime import date
+from collections import defaultdict
 from src.assignment import Assignment
 
 class Course(object):
@@ -115,13 +116,19 @@ class Course(object):
 
     def get_students(self):
         '''Create a list of students in the course'''
+
         students = []
+
+        student2section = self.get_student_to_section()
+
         for student in self.course.get_recent_students():
             name = student.name
             canvas_id = student.id
             cu_id = student.login_id
+            section_id = student2section[canvas_id]
             student = Student(name=name,
                               canvas_id=canvas_id,
+                              section_id=section_id,
                               cu_id=cu_id)
             students.append(student)
         return students
@@ -137,10 +144,30 @@ class Course(object):
         ungraded = [_ for _ in assignments if not _.graded_submissions_exist]
         return ungraded
         
+    def upload(self, path_to: str):
+        self.course.upload(path_to)
+
+    def get_section_ids(self) -> List[int]:
+        return [i.id for i in self.course.get_sections()]
+
+    def get_section(self, id_):
+        return self.course.get_section(id_)
+
+    def get_student_to_section(self):
+        sections = self.get_section_ids()
+        student_2_section = defaultdict()
+        for section in sections:
+            enrollments = [o for o in self.get_section(section).get_enrollments()]
+            for e in enrollments:
+                student_2_section[e.user_id] = section
+        return dict(student_2_section)
+            
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220F2023.ini")
     config = Config(path)
     api = get_api()
     course = Course(config=config, api=api)
-    print(len(course.get_quizzes("Aug. 28")))
+    #print([o for o in course.get_section().get_enrollments()])
+    #course.upload("/Users/abe/everything/teaching/3220/3220/release/one/one.ipynb")
+    print(course.get_students())

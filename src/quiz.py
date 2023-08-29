@@ -49,14 +49,18 @@ class Quiz(object):
                 'question_text': question_text,
                 'points_possible': points_possible,
                 "question_type": question_type.value,
-                #'answers': [
-                #    {'answer_text': 'Choice 1', 'weight': 100}
-                #]
+                'answers': [
+                    {'answer_text': 'Welcome', 'weight': 0},
+                    {'answer_text': 'Welcome to 3220', 'weight': 100}
+                ]
             }
         }
 
         print(question_data)
         self._quiz.create_question(**question_data)
+
+    def get_submissions(self):
+        return [o for o in self._quiz.get_submissions()]
 
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220F2023.ini")
@@ -65,8 +69,12 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
     quiz = Quiz(course, 337161)
 
-    for quiz in course.get_quizzes("Aug. 28"):
-        quiz = Quiz(course, quiz.id)
-        q = quiz.create_question(question_name="Participation",
-                                 question_text="Which quiz should you take?",
-                                 question_type=QuestionType.MULTIPLE_CHOICE)
+    #for quiz in course.get_quizzes("Aug. 28"):
+    #    quiz = Quiz(course, quiz.id)
+    #    q = quiz.create_question(question_name="Main question",
+    #                             question_text="What does the code print?",
+    #                             question_type=QuestionType.MULTIPLE_CHOICE)
+
+    subs = quiz.get_submissions()
+    for s in subs:
+        print(s.)

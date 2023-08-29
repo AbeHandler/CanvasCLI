@@ -4,10 +4,8 @@ from src.student import Student
 
 class Submission(object):
     '''
-    Not alll submissions are graded. Some are just submitted.
+    Not all submissions are graded. Some are just submitted.
     '''
-
-
     def __init__(self, student: Student,
     				   submission: CanvasSubmission,
     				   grade: Grade = None

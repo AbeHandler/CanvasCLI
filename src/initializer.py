@@ -12,7 +12,7 @@ from src.calendar import get_dates_for_course
 from src.calendar import get_weeks2dates
 from jinja2 import Template
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from src.config import STANDARDDATE
 from src.course import Course
 from src.quiz_manager import QuizManager
@@ -110,16 +110,20 @@ class Initializer(object):
     def init_assignments(self, group = "Interview grading", points=1.5):
         dates_for_course = get_dates_for_course(self.config)
 
-        dates_for_course = [o for o in dates_for_course if o["date"] > datetime.today()]
+        dates_for_course = [o for o in dates_for_course] # if o["date"] >= datetime.today()]
         
         quiz_group = self.course.get_assignment_group(group)
-        for _ in dates_for_course:
-            day = _["date"]
+        for no, _ in enumerate(dates_for_course):
 
-            manager = AssignmentManager(course=self.course)
-            manager.create(due=day, group=group, points=points)
+            if _["date"].weekday() == 0:
+                day = _["date"]
+                one_week = timedelta(weeks=1)
+                due = day + one_week
 
-            print(day)
+                manager = AssignmentManager(course=self.course)
+                num = no + 1
+                manager.create(due=due, group=group, points=points, title=f"Exercize #{num}")
+
 
 
     def update_quiz_links(self, course):
@@ -181,5 +185,7 @@ if __name__ == "__main__":
     #import os; os._exit(0)
     
     # then uncomment and run this
-    initializer.update_participation_links(course)
+    #initializer.update_participation_links(course)
+
+    initializer.init_assignments(group = "Exercises", points=25)
 

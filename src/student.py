@@ -6,3 +6,4 @@ class Student:
     canvas_id: int
     cu_id: str
     name: str
+    section_id: int
