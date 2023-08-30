@@ -4,6 +4,7 @@ from src.config import Config
 from src.api import get_api
 from src.course import Course
 
+from datetime import datetime
 from enum import Enum
 
 class QuestionType(Enum):
@@ -50,10 +51,10 @@ class Quiz(object):
                 'question_text': question_text,
                 'points_possible': points_possible,
                 "question_type": question_type.value,
-                'answers': [
-                    {'answer_text': 'Welcome', 'weight': 0},
-                    {'answer_text': 'Welcome to 3220', 'weight': 100}
-                ]
+                #'answers': [
+                #    {'answer_text': 'Welcome', 'weight': 0},
+                #    {'answer_text': 'Welcome to 3220', 'weight': 100}
+                #]
             }
         }
 
@@ -63,16 +64,31 @@ class Quiz(object):
     def get_submissions(self):
         return [o for o in self._quiz.get_submissions()]
 
+    @staticmethod
+    def init_quizzes_for_day(course, day=None, participation="Most meals?"):
+        if day is None:
+            day = datetime.now().strftime("%b. %d")
+
+        for quiz in course.get_quizzes(day):
+            quiz = Quiz(course, quiz.id)
+            q = quiz.create_question(question_name="Main question",
+                                     question_text="What does the code print?",
+                                     points_possible=5,
+                                     question_type=QuestionType.MULTIPLE_CHOICE)
+
+            q = quiz.create_question(question_name="Participation",
+                                     question_text="Most meals?",
+                                     points_possible=3,
+                                     question_type=QuestionType.NUMERICAL)
+
+            print(quiz)
+
 if __name__ == "__main__":
     path = Path("/Users/abe/CanvasCLI/3220F2023.ini")
     config = Config(path)
     api = get_api()
     course = Course(config=config, api=api)
-    students = course.get_students()
-    quiz = Quiz(course, 337161)
+    Quiz.init_quizzes_for_day(course)
 
-    #for quiz in course.get_quizzes("Aug. 28"):
-    #    quiz = Quiz(course, quiz.id)
-    #    q = quiz.create_question(question_name="Main question",
-    #                             question_text="What does the code print?",
-    #                             question_type=QuestionType.MULTIPLE_CHOICE)
+
+
