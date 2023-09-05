@@ -32,6 +32,7 @@ and aliasing it as "canvas"
 import argparse
 import glob
 import os
+import sys
 from datetime import datetime
 from src.graders.nbgrader import NBGrader
 from src.api import get_api
@@ -85,24 +86,24 @@ if __name__ == "__main__":
 
     if args.init:
         initializer = Initializer(config=config, api=api)
-        os._exit(0)
+        sys.exit(0)
 
     if args.visible:
         fp = FrontPage(course)
         day = get_day(args)
         fp.show_before_date(day)
-        os._exit(0)
+        sys.exit(0)
 
     if args.quiz:
         quiz_group = course.get_assignment_group("Quizzes")
         due = get_day(args)
         manager = QuizManager(quiz_group, course)
         manager.create(due)
-        os._exit(0)
+        sys.exit(0)
 
     if args.export:
         course.export()
-        os._exit(0)
+        sys.exit(0)
 
     if args.command == "assignment" and args.participation_assignment:
         manager = AssignmentManager(course)
@@ -112,18 +113,18 @@ if __name__ == "__main__":
         manager.create_assignment(day, group = "In-class coding", points_possible = 1)
         dt = day.strftime('%B %d')
         print(f"[*] Created assignment {dt}")
-        os._exit(0)
+        sys.exit(0)
 
     if args.command == "assignment" and args.assignment_reports:
         id_ = course.lookup_assignment_id(args.group, args.canvas_name)
         grader = NBGrader(course=course,
-                          grades_location="/Users/abe/everything/teaching/S2023/3220/3220/grades.jsonl",
+                          grades_location=course.config.path_to_grades,
                           assignment_id=id_,
                           nbgrader_name=args.nb_grader_name,
-                          autograded_location="/Users/abe/everything/teaching/S2023/3220/3220/autograded",
-                          feedback_location="/Users/abe/everything/teaching/S2023/3220/3220/feedback")
+                          autograded_location=course.config.path_to_autograded,
+                          feedback_location=course.config.path_to_feedback)
         grader.upload_reports(assignment=args.nb_grader_name)
-        os._exit(0)
+        sys.exit(0)
 
     if args.command == "assignment" and args.assignment_sync:
         
@@ -144,7 +145,7 @@ if __name__ == "__main__":
         if args.assignment_missed_challenge:
             grader.grade_missed_challenge(assignment=args.nb_grader_name, dryrun=args.dryrun)
 
-        os._exit(0)
+        sys.exit(0)
 
     if args.command == "assignment" and args.assignment_autograde:
         id_ = course.lookup_assignment_id(args.group, args.canvas_name)
@@ -157,7 +158,7 @@ if __name__ == "__main__":
 
         nb_grader = NBGraderManager(course.config, args.nb_grader_name)
         nb_grader.run()
-        os._exit(0)
+        sys.exit(0)
 
     if args.students:
         for i in course.get_students():
