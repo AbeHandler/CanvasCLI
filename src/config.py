@@ -23,8 +23,10 @@ class Config(object):
         ), "Config file not found. Do you have the wrong semester?"
         config = configparser.ConfigParser()
         config.read(path_to_file.as_posix())
+
         self.start_date = self._str2date(config["dates"]["start_date"])
         self.end_date = self._str2date(config["dates"]["end_date"])
+
         self.canvas_no = config["course_info"]["canvas_no"]
         self.course_name = config["course_info"]["course_name"]
         self.start_time = config["course_info"]["start_time"]
@@ -33,9 +35,11 @@ class Config(object):
         self.main_page = config["course_info"]["main_page"]
         self.days_of_week = config["course_info"]["days_of_week"].split(",")
         self.daily_bullets = config["course_info"]["daily_bullets"].split(",")
-        self.submitted_location = Path(config["course_info"]["submitted_location"])
-        self.path_to_autograded = Path(config["course_info"]["path_to_autograded"])
-        self.path_to_autograde_script = Path(config["course_info"]["path_to_autograde_script"])
+        self.submitted_location = Path(config["nbgrader"]["base_dir"]) / "submitted"
+        self.path_to_autograded = Path(config["nbgrader"]['base_dir']) / "autograded"
+        self.path_to_feedback = Path(config["nbgrader"]["base_dir"]) / "feedback"
+        self.path_to_autograde_script = Path(config["nbgrader"]["base_dir"]) / config["nbgrader"]["path_to_autograde_script"]
+        self.path_to_grades = Path(config["nbgrader"]["base_dir"]) / config["nbgrader"]["path_to_grades"]
         self.front_page_date_tag_in_html = config["course_info"]["front_page_date_tag_in_html"]
         self.data_bullet_tag_in_html = config['course_info']["data_bullet_tag_in_html"]
         groups = config['assignment_configs']['groups'].split(",")

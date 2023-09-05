@@ -127,8 +127,13 @@ class NBGrader(object):
         print(f"[*] {prefix} {count} students who attempted challenge but was not correct")
 
 
-    def grade_perfect_scores(self, assignment: str):
+    def grade_perfect_scores(self, assignment: str, dryrun: bool = True):
         perfects = self._get_perfect_scores(assignment)
+
+        if dryrun:
+            Nperfects = len(perfects)
+            return(f"[*] {Nperfects} got perfect scores; ending early for dryrun")
+            import os; os._exit()
 
         comments = ["Nice job", "Good work", "Great"]
         for perfect in tqdm(perfects, desc="Assigning perfect scores"):

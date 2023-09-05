@@ -129,11 +129,11 @@ if __name__ == "__main__":
         
         id_ = course.lookup_assignment_id(args.group, args.canvas_name)
         grader = NBGrader(course=course,
-                          grades_location="/Users/abe/everything/teaching/S2023/3220/3220/grades.jsonl",
+                          grades_location=course.config.path_to_grades,
                           assignment_id=id_,
                           nbgrader_name=args.nb_grader_name,
-                          autograded_location="/Users/abe/everything/teaching/S2023/3220/3220/autograded",
-                          feedback_location="/Users/abe/everything/teaching/S2023/3220/3220/feedback")
+                          autograded_location=course.config.path_to_autograded,
+                          feedback_location=course.config.path_to_feedback)
 
         if args.assignment_grade_perfects:
             grader.grade_perfect_scores(assignment=args.nb_grader_name)
