@@ -51,12 +51,20 @@ class NBGrader(object):
         return [_ for _ in self.grades if _["assignment"] == assignment and _["student_id"] != "akh2103"]
 
     def _get_perfect_scores(self, assignment: str):
+        '''
+        assignment is nbgrader name, e.g. "one"
+        '''
         assignment_scores = self._get_grades_for_assignment(assignment)
+        assert len(assignment_scores) > 0, f"Could not fild assignment {assignment}. Are you using nbgrader name?"
         perfects = [_ for _ in assignment_scores if _["score"] == _["max_score"]]
         return perfects
 
     def _get_non_perfect_scores(self, assignment: str):
+        '''
+        assignment is nbgrader name, e.g. "one"
+        '''
         assignment_scores = self._get_grades_for_assignment(assignment)
+        assert len(assignment_scores) > 0, f"Could not fild assignment {assignment}. Are you using nbgrader name?"
         not_perfects = [_ for _ in assignment_scores if _["score"] != _["max_score"]]
         return not_perfects
 
@@ -195,13 +203,12 @@ class NBGrader(object):
                 print(student)
 
 
-    def grade_not_perfect_scores(self, assignment: str, min_score: int = 0):
+    def grade_not_perfect_scores(self, assignment: str, partial_credit: float = 0.0):
         not_perfects = self._get_non_perfect_scores(assignment)
 
+        not_perfects = not_perfects[2:]
 
-        not_perfects = not_perfects[6:]
-
-        for perfect in tqdm(not_perfects, desc="Assigning not perfect scores"):
+        for perfect in tqdm(not_perfects, desc=f"Assigning not perfect scores with patial credit {partial_credit}"):
             
             cu_id = perfect['student_id']
             feedback_path = Path(self.feedback_location / cu_id / assignment/ f"{assignment}.html")
@@ -210,34 +217,67 @@ class NBGrader(object):
                 feedback = Feedback(feedback_path)
                 student = self.course.lookup_student_by_cu_id(cu_id)
                 submission = self.assignment.assignment.get_submission(student.canvas_id)
-                comments=["Please see attached report", "Please send me a Canvas message if you have any questions about your grade."]
-                if feedback.score < min_score:
-                    score = min_score
-                    comment ="5 points for attempting assignment"
-                    comments.append(comment)
-                else:
-                    score = feedback.score
+                score = feedback.score
+                missing_points = self.max_score - score
+                partial_credit_points = missing_points * partial_credit
 
-                grade = Grade(score=score, comments=comments)
-                
+                comments=["Please see attached report. "]
+                if partial_credit > 0:
+                    comments.append(f"For this assignment, we assigned {partial_credit} for missed questions.")
+                else:
+                    comments.append(f"The class average was pretty high for this assignment. So we did not assign partial credit for missed questions.")
+
+                comments.append("Please send a Canvas message to the instructor or TA if you have any questions about your grade.")
+
+                grade = Grade(score=score + partial_credit_points, comments=comments)
+
                 submission = Submission(student=student,
                                         submission=submission,
                                         grade=grade)
 
                 submission.sync()
-                submission.add_attachment(feedback_path.as_posix())
 
+    def get_class_average(self, assignment: str) -> float:
+        '''
+        assignment is the nbgrader name, e.g. "five" but not 194132
+        '''        
+        perfects = self._get_perfect_scores(assignment)
+        nonperfects = self._get_non_perfect_scores(assignment)
+        all_ = perfects + nonperfects
+
+        perfect_points = sum(i["score"] for i in perfects)
+        non_perfect_points = sum(i["score"] for i in nonperfects)
+        total_points = sum(i["max_score"] for i in all_)
+        return ((perfect_points + non_perfect_points)/total_points)
+
+    def get_class_average_with_partial_credit(self, assignment: str, partial: float) -> float:
+        '''
+        assignment is the nbgrader name, e.g. "five" but not 194132
+        '''        
+        perfects = self._get_perfect_scores(assignment)
+        nonperfects = self._get_non_perfect_scores(assignment)
+        all_ = perfects + nonperfects
+
+        perfect_points = sum(i["score"] for i in perfects)
+        non_perfect_points = sum(i["score"] for i in nonperfects)
+        partial_points = sum(partial * (i["max_score"] - i["score"]) for i in nonperfects)
+        total_points = sum(i["max_score"] for i in all_)
+        return ((perfect_points + non_perfect_points + partial_points)/total_points)
 
 if __name__ == "__main__":
-    path = Path("/Users/abe/CanvasCLI/3220S2023.ini")
+    path = Path("/Users/abe/CanvasCLI/3220F2023.ini")
     config = Config(path)
     api = get_api()
     
     course = Course(config=config, api=api)
     grader = NBGrader(course=course,
-                      grades_location="/Users/abe/everything/teaching/S2023/3220/3220/grades.jsonl",
-                      assignment_id=1589755,
-                      nbgrader_name='six',
-                      feedback_location="/Users/abe/everything/teaching/S2023/3220/3220/feedback",
-                      autograded_location="/Users/abe/everything/teaching/S2023/3220/3220/autograded")
-    grader.grade_no_attempts(assignment="six")
+                      grades_location=config.path_to_grades,
+                      assignment_id=1793756,
+                      nbgrader_name='one',
+                      feedback_location=config.path_to_feedback,
+                      max_score=25,
+                      autograded_location=config.path_to_autograded)
+
+    grader.grade_not_perfect_scores("one", 0.0)
+
+
