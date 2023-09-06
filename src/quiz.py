@@ -74,10 +74,10 @@ class Quiz(object):
             q = quiz.create_question(question_name="Main question",
                                      question_text="What does the code print?",
                                      points_possible=5,
-                                     question_type=QuestionType.MULTIPLE_CHOICE)
+                                     question_type=QuestionType.NUMERICAL)
 
             q = quiz.create_question(question_name="Participation",
-                                     question_text="Most meals?",
+                                     question_text="Most sleep?",
                                      points_possible=3,
                                      question_type=QuestionType.NUMERICAL)
 
