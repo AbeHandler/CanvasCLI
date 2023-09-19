@@ -213,7 +213,6 @@ class NBGrader(object):
                 feedback_path = Path(self.feedback_location / cu_id / assignment/ f"{assignment}.html")
 
                 if feedback_path.is_file():
-                    print(feedback_path)
                     feedback = Feedback(feedback_path)
                     student = self.course.lookup_student_by_cu_id(cu_id)
                     submission = self.assignment.assignment.get_submission(student.canvas_id)
