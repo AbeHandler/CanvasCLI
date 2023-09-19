@@ -206,36 +206,41 @@ class NBGrader(object):
     def grade_not_perfect_scores(self, assignment: str, partial_credit: float = 0.0):
         not_perfects = self._get_non_perfect_scores(assignment)
 
-        not_perfects = not_perfects[2:]
-
         for perfect in tqdm(not_perfects, desc=f"Assigning not perfect scores with patial credit {partial_credit}"):
-            
-            cu_id = perfect['student_id']
-            feedback_path = Path(self.feedback_location / cu_id / assignment/ f"{assignment}.html")
-            
-            if feedback_path.is_file():
-                feedback = Feedback(feedback_path)
-                student = self.course.lookup_student_by_cu_id(cu_id)
-                submission = self.assignment.assignment.get_submission(student.canvas_id)
-                score = feedback.score
-                missing_points = self.max_score - score
-                partial_credit_points = missing_points * partial_credit
 
-                comments=["Please see attached report. "]
-                if partial_credit > 0:
-                    comments.append(f"For this assignment, we assigned {partial_credit} for missed questions.")
+            try:
+                cu_id = perfect['student_id']
+                feedback_path = Path(self.feedback_location / cu_id / assignment/ f"{assignment}.html")
+
+                if feedback_path.is_file():
+                    print(feedback_path)
+                    feedback = Feedback(feedback_path)
+                    student = self.course.lookup_student_by_cu_id(cu_id)
+                    submission = self.assignment.assignment.get_submission(student.canvas_id)
+                    score = feedback.score
+                    missing_points = self.max_score - score
+                    partial_credit_points = missing_points * partial_credit
+
+                    comments=["Please see attached report. "]
+
+                    if partial_credit > 0:
+                        comments.append(f"For this assignment, we assigned {partial_credit} for missed questions.")
+                    else:
+                        comments.append(f"The class average was pretty high for this assignment. So we did not assign partial credit for missed questions.")
+
+                    comments.append("Please send a Canvas message to the instructor or TA if you have any questions about your grade.")
+
+                    grade = Grade(score=score + partial_credit_points, comments=comments)
+
+                    submission = Submission(student=student,
+                                            submission=submission,
+                                            grade=grade)
+
+                    submission.sync()
                 else:
-                    comments.append(f"The class average was pretty high for this assignment. So we did not assign partial credit for missed questions.")
-
-                comments.append("Please send a Canvas message to the instructor or TA if you have any questions about your grade.")
-
-                grade = Grade(score=score + partial_credit_points, comments=comments)
-
-                submission = Submission(student=student,
-                                        submission=submission,
-                                        grade=grade)
-
-                submission.sync()
+                    print("No file file")
+            except ValueError:
+                print("ERROR", feedback_path)
 
     def get_class_average(self, assignment: str) -> float:
         '''
@@ -272,12 +277,11 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
     grader = NBGrader(course=course,
                       grades_location=config.path_to_grades,
-                      assignment_id=1793756,
-                      nbgrader_name='one',
+                      assignment_id=1793758,
+                      nbgrader_name='three',
                       feedback_location=config.path_to_feedback,
                       max_score=25,
                       autograded_location=config.path_to_autograded)
 
-    grader.grade_not_perfect_scores("one", 0.0)
-
+    grader.grade_not_perfect_scores("three", 0.0)
 
