@@ -42,6 +42,7 @@ class Config(object):
         self.path_to_grades = Path(config["nbgrader"]["base_dir"]) / config["nbgrader"]["path_to_grades"]
         self.front_page_date_tag_in_html = config["course_info"]["front_page_date_tag_in_html"]
         self.data_bullet_tag_in_html = config['course_info']["data_bullet_tag_in_html"]
+        self.max_score = float(config['assignment_configs']['max_score'])
         groups = config['assignment_configs']['groups'].split(",")
         weights = config['assignment_configs']['weights'].split(",")
         self.group2weight = {k: v for k, v in zip(groups, weights)}

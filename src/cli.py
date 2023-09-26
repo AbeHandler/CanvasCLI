@@ -134,6 +134,7 @@ if __name__ == "__main__":
                           assignment_id=id_,
                           nbgrader_name=args.nb_grader_name,
                           autograded_location=course.config.path_to_autograded,
+                          max_score=course.config.max_score,
                           feedback_location=course.config.path_to_feedback)
 
         if args.assignment_grade_perfects:

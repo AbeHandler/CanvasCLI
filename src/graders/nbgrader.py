@@ -79,6 +79,7 @@ class NBGrader(object):
             try:
                 parser = NotebookParser(path_to)
                 notebook = parser.get_notebook()
+
                 notimplemented = notebook.all_missing_points_are_not_implemented(assigned_score=score,
                                                                                  max_score=self.max_score)
                 if notimplemented:

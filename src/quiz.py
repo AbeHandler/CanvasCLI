@@ -50,11 +50,7 @@ class Quiz(object):
                 'question_name': question_name,
                 'question_text': question_text,
                 'points_possible': points_possible,
-                "question_type": question_type.value,
-                #'answers': [
-                #    {'answer_text': 'Welcome', 'weight': 0},
-                #    {'answer_text': 'Welcome to 3220', 'weight': 100}
-                #]
+                "question_type": question_type.value
             }
         }
 
@@ -65,7 +61,7 @@ class Quiz(object):
         return [o for o in self._quiz.get_submissions()]
 
     @staticmethod
-    def init_quizzes_for_day(course, day=None, participation="Most meals?"):
+    def init_quizzes_for_day(course, day: str=None, participation="Most meals?"):
         if day is None:
             day = datetime.now().strftime("%b. %d")
 
@@ -73,12 +69,12 @@ class Quiz(object):
             quiz = Quiz(course, quiz.id)
             q = quiz.create_question(question_name="Main question",
                                      question_text="What does the code print?",
-                                     points_possible=5,
+                                     points_possible=6,
                                      question_type=QuestionType.NUMERICAL)
 
             q = quiz.create_question(question_name="Participation",
                                      question_text="Most sleep?",
-                                     points_possible=3,
+                                     points_possible=2,
                                      question_type=QuestionType.NUMERICAL)
 
             print(quiz)
@@ -88,7 +84,10 @@ if __name__ == "__main__":
     config = Config(path)
     api = get_api()
     course = Course(config=config, api=api)
-    Quiz.init_quizzes_for_day(course)
+    from src.calendar import get_dates_for_course
+    for ino, d in enumerate(get_dates_for_course(config)):
+        if ino > 6:
+            Quiz.init_quizzes_for_day(course, d["date"].strftime("%b. %d"))
 
 
 
