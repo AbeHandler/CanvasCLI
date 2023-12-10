@@ -161,6 +161,14 @@ if __name__ == "__main__":
         nb_grader.run()
         sys.exit(0)
 
+    if args.command == "assignment" and args.partial:
+        id_ = course.lookup_assignment_id(args.group, args.canvas_name)
+        assignment = Assignment(course=course, assignment_id=id_)
+
+        nb_grader = NBGraderManager(course.config, args.nb_grader_name)
+        nb_grader.run()
+        sys.exit(0)
+
     if args.students:
         for i in course.get_students():
             print(i)
@@ -170,7 +178,8 @@ if __name__ == "__main__":
 
     if args.checkin:
         avg = course.get_average_grade()
-        print("Average grade {:.2f}".format(avg))
+        for k, v in avg.items():
+            print("Average grade " + k + "={:.2f}".format(v))
         assignments = course.get_ungraded_assignments_in_group(group="Participation")
         
         assignments = [_ for _ in assignments if _.due_at < datetime.today()]

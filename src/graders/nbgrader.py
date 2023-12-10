@@ -138,10 +138,13 @@ class NBGrader(object):
 
     def grade_perfect_scores(self, assignment: str, dryrun: bool = False):
         perfects = self._get_perfect_scores(assignment)
+        notperfects = self._get_non_perfect_scores(assignment)
 
         if dryrun:
             Nperfects = len(perfects)
+            Nnotperfects = len(notperfects)
             print(f"[*] {Nperfects} got perfect scores; ending early for dryrun")
+            print(f"[*] {Nnotperfects} got not perfect scores; ending early for dryrun")
             import os; os._exit(0)
 
         comments = ["Nice job", "Good work", "Great"]
@@ -212,6 +215,7 @@ class NBGrader(object):
             try:
                 cu_id = perfect['student_id']
                 feedback_path = Path(self.feedback_location / cu_id / assignment/ f"{assignment}.html")
+                print(feedback_path)
 
                 if feedback_path.is_file():
                     feedback = Feedback(feedback_path)
@@ -277,11 +281,10 @@ if __name__ == "__main__":
     course = Course(config=config, api=api)
     grader = NBGrader(course=course,
                       grades_location=config.path_to_grades,
-                      assignment_id=1793758,
-                      nbgrader_name='three',
+                      assignment_id=1793764,
+                      nbgrader_name='nine',
                       feedback_location=config.path_to_feedback,
                       max_score=25,
                       autograded_location=config.path_to_autograded)
 
-    grader.grade_not_perfect_scores("three", 0.0)
-
+    grader.grade_not_perfect_scores("nine")

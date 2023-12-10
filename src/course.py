@@ -90,21 +90,27 @@ class Course(object):
         '''
         grades = []
         enollments = self.course.get_enrollments()
+        section_grades = defaultdict(list)
         for ino, i in enumerate(enollments):
             try:
                 grade = i.grades["current_grade"]
                 grade = grade.replace("+", "_PLUS")
                 grade = grade.replace("-", "_MINUS")
-                grades.append(grade)
+                section = i.sis_section_id.split("-")[-2]
+                section_grades[section].append(grade)
             except AttributeError:
                 print("error")
-        return grades
+        return section_grades
 
     def get_average_grade(self):
 
         letter_grades = self.get_letter_grades()
-        total = sum([LetterGrade[i].value for i in letter_grades])
-        return total/len(letter_grades)
+        averagegrades = defaultdict()
+        for section in letter_grades:
+            total = sum([LetterGrade[i].value for i in letter_grades[section]])
+            grade = total/len(letter_grades[section])
+            averagegrades[section] = grade
+        return averagegrades
 
 
     def _validate_assignment_group(self, group: str):
