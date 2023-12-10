@@ -91,6 +91,7 @@ class Course(object):
         grades = []
         enollments = self.course.get_enrollments()
         section_grades = defaultdict(list)
+        errors = 0
         for ino, i in enumerate(enollments):
             try:
                 grade = i.grades["current_grade"]
@@ -99,7 +100,8 @@ class Course(object):
                 section = i.sis_section_id.split("-")[-2]
                 section_grades[section].append(grade)
             except AttributeError:
-                print("error")
+                errors += 1
+        print(f"Got grades with {errors} errors")
         return section_grades
 
     def get_average_grade(self):
