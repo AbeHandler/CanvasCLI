@@ -131,7 +131,7 @@ class Course(object):
         for k in out:
             half = int(out[k]["points"]/2)
 
-            out[k]["ratings"] = {"1":{"description":"Full credit", "points":}, 
+            out[k]["ratings"] = {"1":{"description":"Full credit", "points": out[k]["points"]}, 
                                  "2":{"description":"Partial credit","points":half},
                                  "3":{"description":"No credit","points":0.0}}
 
