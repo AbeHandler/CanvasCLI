@@ -33,6 +33,7 @@ import argparse
 import glob
 import os
 import sys
+import getpass
 from datetime import datetime
 from src.graders.nbgrader import NBGrader
 from src.api import get_api
@@ -74,9 +75,14 @@ if __name__ == "__main__":
 
     args = get_args()
 
-    PATH_TO_INI = "/Users/abe/CanvasCLI/3220F2023.ini"
+    username = getpass.getuser()
+    PATH_TO_INI = f"/Users/{username}/CanvasCLI/4525S2024.ini"
 
     course = get_course_from_ini(PATH_TO_INI)
+
+    course.create_rubric("Exercise #1", filename="config/rubric1.jsonl")
+
+    import os; os._exit(0)
 
     if args.command == "grade" and args.grade_participation:
         assert args.assignment_id is not None, "You must supply an assignment id to grade participation"

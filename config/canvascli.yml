@@ -7,5 +7,7 @@ dependencies:
   - conda-forge::conda-build=3.23.3
   - pip
   - pip:
-      - canvasapi==3.0.0
+      - bs4
+      - canvasapi==3.2.0
+      - tqdm
 prefix: /home/ubuntu/anaconda3

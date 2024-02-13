@@ -1,3 +1,4 @@
+import json
 from src.config import Config
 from canvasapi.canvas import Canvas
 from pathlib import Path
@@ -123,6 +124,37 @@ class Course(object):
         assignment_names = [o.name for o in assignments]
         if not assignment_name in assignment_names:
             raise ValueError(f"There is no {assignment_name} in group {assignment_group}")
+
+    def read_criteria_from_file(path, filename: str):
+        out = {str(k): json.loads(v) for k, v in enumerate(open(filename))}
+
+        for k in out:
+            half = int(out[k]["points"]/2)
+
+            out[k]["ratings"] = {"1":{"description":"Full credit", "points":}, 
+                                 "2":{"description":"Partial credit","points":half},
+                                 "3":{"description":"No credit","points":0.0}}
+
+        return out
+
+    def create_rubric(self, rubric_name, points_possible: int = 75, filename: str = None):
+
+        rubric_criteria =  self.read_criteria_from_file(filename)
+
+        payload = {
+            "rubric": {
+              "title": rubric_name,
+              "points_possible": points_possible,
+              "criteria": rubric_criteria
+            },
+            "rubric_association": {
+                "association_id": self.config.canvas_no,
+                "association_type": "Course"
+            }
+        }
+
+        self.course.create_rubric(**payload)
+
 
     def get_students(self):
         '''Create a list of students in the course'''
